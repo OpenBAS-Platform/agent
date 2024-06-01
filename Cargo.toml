@@ -1,0 +1,8 @@
+[package]
+name = "openbas-agent"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+
+ureq = { version = "2.1", features = ["tls", "json"] }
