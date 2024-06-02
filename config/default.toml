@@ -1,0 +1,5 @@
+debug=false
+
+[openbas]
+url = "http://localhost:3001"
+token = "ChangeMe"

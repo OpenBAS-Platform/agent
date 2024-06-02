@@ -13,6 +13,8 @@ Cargo.lock
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 obas-executor.*
+config/development.toml
+config/production.toml
 
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

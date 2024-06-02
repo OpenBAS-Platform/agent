@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 ureq = { version = "2.1", features = ["tls", "json"] }
 config = "0.14.0"
-clap = { version = "4.5.4", features = ["derive"] }
 serde = { version = "1.0.203", features = ["derive"] }
 log = "0.4.21"
 hostname = "0.4.0"
