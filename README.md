@@ -4,6 +4,7 @@
 [![Slack Status](https://img.shields.io/badge/slack-3K%2B%20members-4A154B)](https://community.filigran.io)
 
 The following repository is used to store the OpenBAS agent for the platform.
+For performance and low level access, the agent is written in Rust. Please start your journey with https://doc.rust-lang.org/book
 
 ## License
 
