@@ -15,6 +15,7 @@ Cargo.lock
 obas-executor.*
 config/development.toml
 config/production.toml
+installer/windows/*.exe
 
 # RustRover
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

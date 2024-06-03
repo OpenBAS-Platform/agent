@@ -1,0 +1,134 @@
+# Remaining
+# (x) Make uri and token mandatory
+# (x) Install the executable as a service
+
+;includes
+!include nsDialogs.nsh
+!include LogicLib.nsh
+!include FileFunc.nsh
+
+!insertmacro GetParameters
+!insertmacro GetOptions
+
+!define APPNAME "OBAS Agent"
+!define COMPANYNAME "Filigran"
+!define DESCRIPTION "Filigran's agent for OpenBAS"
+# These three must be integers
+!define VERSIONMAJOR 0
+!define VERSIONMINOR 0
+!define VERSIONBUILD 1
+# These will be displayed by the "Click here for support information" link in "Add/Remove Programs"
+# It is possible to use "mailto:" links in here to open the email client
+!define HELPURL "https://filigran.io/" # "Support Information" link
+!define UPDATEURL "https://filigran.io/" # "Product Updates" link
+!define ABOUTURL "https://filigran.io/" # "Publisher" link
+ 
+RequestExecutionLevel admin ;Require admin rights on NT6+ (When UAC is turned on)
+ 
+InstallDir "$PROGRAMFILES\${COMPANYNAME}\${APPNAME}"
+ 
+# rtf or txt file - remember if it is txt, it must be in the DOS text format (\r\n)
+LicenseData "license.txt"
+# This will be in the installer/uninstaller's title bar
+Name "${COMPANYNAME} - ${APPNAME}"
+Icon "openbas.ico"
+outFile "filigran-obas-agent-installer-${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONBUILD}.exe"
+ 
+; page definition
+page license
+page directory
+Page custom nsDialogsConfig nsDialogsPageLeave
+Page instfiles
+ 
+!macro VerifyUserIsAdmin
+UserInfo::GetAccountType
+pop $0
+${If} $0 != "admin" ;Require admin rights on NT4+
+        messageBox mb_iconstop "Administrator rights required!"
+        setErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
+        quit
+${EndIf}
+!macroend
+
+Var Dialog
+Var LabelURL
+Var /GLOBAL ConfigURL
+Var LabelToken
+Var /GLOBAL ConfigToken
+
+function .onInit
+	setShellVarContext all
+	!insertmacro VerifyUserIsAdmin
+	${GetParameters} $R0
+    ${GetOptions} $R0 /OPENBAS_URL= $ConfigURL
+    ${GetOptions} $R0 /ACCESS_TOKEN= $ConfigToken
+functionEnd
+
+
+Var ConfigURLForm
+Var ConfigTokenForm
+Function nsDialogsConfig
+	nsDialogs::Create 1018
+	Pop $Dialog
+
+	${If} $Dialog == error
+		Abort
+	${EndIf}
+
+  ${NSD_CreateLabel} 0 0 100% 12u "OpenBAS URL *"
+	Pop $LabelURL
+	${NSD_CreateText} 0 13u 100% 12u "http://localhost:3001"
+	Pop $ConfigURLForm
+  ${NSD_CreateLabel} 0 30u 100% 12u "Access token *"
+	Pop $LabelToken
+	${NSD_CreatePassword} 0 42u 100% 12u ""
+	Pop $ConfigTokenForm
+
+	nsDialogs::Show
+FunctionEnd
+
+
+Function nsDialogsPageLeave
+  ; save in register the values entered by user
+  ${NSD_GetText} $ConfigURLForm $ConfigURL
+  ${NSD_GetText} $ConfigTokenForm $ConfigToken
+FunctionEnd
+
+section "install"
+	# Files for the install directory - to build the installer, these should be in the same directory as the install script (this file)
+	setOutPath $INSTDIR
+	# Files added here should be removed by the uninstaller (see section "uninstall")
+	file "..\..\target\release\openbas-agent.exe"
+	file "openbas.ico"
+	
+  ; write agent config file
+  FileOpen $4 "$INSTDIR\openbas-agent.toml" w
+    FileWrite $4 "debug=false$\r$\n"
+    FileWrite $4 "$\r$\n"
+    FileWrite $4 "[openbas]$\r$\n"
+    FileWrite $4 "url = $\"$ConfigURL$\"$\r$\n"
+    FileWrite $4 "token = $\"$ConfigToken$\"$\r$\n"
+    FileWrite $4 "$\r$\n" ; newline
+  FileClose $4
+ 
+	# Uninstaller - See function un.onInit and section "uninstall" for configuration
+	writeUninstaller "$INSTDIR\uninstall.exe"
+
+sectionEnd
+ 
+# Uninstaller
+ 
+function un.onInit
+	SetShellVarContext all
+ 
+	#Verify the uninstaller - last chance to back out
+	MessageBox MB_OKCANCEL "Permanently remove ${APPNAME}?" IDOK next
+		Abort
+	next:
+	!insertmacro VerifyUserIsAdmin
+functionEnd
+ 
+section "uninstall"
+  ; delete everything
+	RMDir /r $INSTDIR 
+sectionEnd
