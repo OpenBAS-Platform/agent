@@ -22,6 +22,11 @@
 !define HELPURL "https://filigran.io/" # "Support Information" link
 !define UPDATEURL "https://filigran.io/" # "Product Updates" link
 !define ABOUTURL "https://filigran.io/" # "Publisher" link
+
+# Windows Service
+!define displayName "${APPNAME} Service"
+!define serviceName "OBASAgentService"
+
  
 RequestExecutionLevel admin ;Require admin rights on NT6+ (When UAC is turned on)
  
@@ -68,6 +73,11 @@ functionEnd
 Var ConfigURLForm
 Var ConfigTokenForm
 Function nsDialogsConfig
+
+  ; disable next button
+  GetDlgItem $0 $HWNDPARENT 1
+  EnableWindow $0 0
+
 	nsDialogs::Create 1018
 	Pop $Dialog
 
@@ -84,14 +94,42 @@ Function nsDialogsConfig
 	${NSD_CreatePassword} 0 42u 100% 12u ""
 	Pop $ConfigTokenForm
 
+
+  ${NSD_OnChange} $ConfigURLForm onFieldChange
+  ${NSD_OnChange} $ConfigTokenForm onFieldChange
+
 	nsDialogs::Show
 FunctionEnd
 
-
-Function nsDialogsPageLeave
+Function onFieldChange
   ; save in register the values entered by user
   ${NSD_GetText} $ConfigURLForm $ConfigURL
   ${NSD_GetText} $ConfigTokenForm $ConfigToken
+
+  ; enable next button if both defined 
+  ${If} $ConfigURL != "" 
+  ${AndIf} $ConfigToken != ""
+    GetDlgItem $0 $HWNDPARENT 1
+    EnableWindow $0 1
+  ${Else}
+    GetDlgItem $0 $HWNDPARENT 1
+    EnableWindow $0 0
+  ${EndIf}
+
+FunctionEnd
+
+Function nsDialogsPageLeave
+  ; check values are defined
+  ${If} $ConfigURL == ""
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Missing URL"
+	  Abort
+  ${EndIf}
+
+  ${If} $ConfigToken == ""
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Missing Token"
+	  Abort
+  ${EndIf}
+
 FunctionEnd
 
 section "install"
@@ -110,6 +148,9 @@ section "install"
     FileWrite $4 "token = $\"$ConfigToken$\"$\r$\n"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
+
+  ; register windows service
+  ExecWait 'sc create ${serviceName} error="severe" displayname="${displayName}" type="own" start="auto" binpath="$INSTDIR\openbas-agent.exe"'
  
 	# Uninstaller - See function un.onInit and section "uninstall" for configuration
 	writeUninstaller "$INSTDIR\uninstall.exe"
@@ -129,6 +170,9 @@ function un.onInit
 functionEnd
  
 section "uninstall"
+  ; unregister service
+  ExecWait 'sc delete ${serviceName}'
+
   ; delete everything
-	RMDir /r $INSTDIR 
+	RMDir /r $INSTDIR
 sectionEnd
