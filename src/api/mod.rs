@@ -14,7 +14,8 @@ pub struct Client {
 impl Client {
     pub fn new(server_url: String, token: String) -> Client {
         let http_client = ureq::AgentBuilder::new()
-            .timeout(Duration::from_secs(10))
+            .timeout_connect(Duration::from_secs(2))
+            .timeout(Duration::from_secs(5))
             .user_agent("openbas-agent/0.0.1")
             .build();
 

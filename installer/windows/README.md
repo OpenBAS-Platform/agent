@@ -16,4 +16,4 @@ Just double click on **filigran-obas-agent-installer-0.0.1.exe** and follow the 
 
 You can install in silent mode following this kind of command
 
-`filigran-obas-agent-installer-0.0.1.exe /S /OPENBAS_URL=http://your_openbas /ACCESS_TOKEN=your_access_token`
+`filigran-obas-agent-installer-0.0.1.exe /S /OPENBAS_URL="http://your_openbas" /ACCESS_TOKEN="your_access_token"`

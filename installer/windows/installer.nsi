@@ -1,7 +1,3 @@
-# Remaining
-# (x) Make uri and token mandatory
-# (x) Install the executable as a service
-
 ;includes
 !include nsDialogs.nsh
 !include LogicLib.nsh
@@ -26,7 +22,6 @@
 # Windows Service
 !define displayName "${APPNAME} Service"
 !define serviceName "OBASAgentService"
-
  
 RequestExecutionLevel admin ;Require admin rights on NT6+ (When UAC is turned on)
  
@@ -133,14 +128,14 @@ Function nsDialogsPageLeave
 FunctionEnd
 
 section "install"
-	# Files for the install directory - to build the installer, these should be in the same directory as the install script (this file)
-	setOutPath $INSTDIR
-	# Files added here should be removed by the uninstaller (see section "uninstall")
-	file "..\..\target\release\openbas-agent.exe"
-	file "openbas.ico"
+  # Files for the install directory - to build the installer, these should be in the same directory as the install script (this file)
+  setOutPath $INSTDIR
+  # Files added here should be removed by the uninstaller (see section "uninstall")
+  file "..\..\target\release\openbas-agent.exe"
+  file "openbas.ico"
 	
   ; write agent config file
-  FileOpen $4 "$INSTDIR\openbas-agent.toml" w
+  FileOpen $4 "$INSTDIR\openbas-agent-config.toml" w
     FileWrite $4 "debug=false$\r$\n"
     FileWrite $4 "$\r$\n"
     FileWrite $4 "[openbas]$\r$\n"
@@ -151,9 +146,11 @@ section "install"
 
   ; register windows service
   ExecWait 'sc create ${serviceName} error="severe" displayname="${displayName}" type="own" start="auto" binpath="$INSTDIR\openbas-agent.exe"'
- 
-	# Uninstaller - See function un.onInit and section "uninstall" for configuration
-	writeUninstaller "$INSTDIR\uninstall.exe"
+  ; start the service
+  ExecWait 'sc start ${serviceName}'
+
+  # Uninstaller - See function un.onInit and section "uninstall" for configuration
+  writeUninstaller "$INSTDIR\uninstall.exe"
 
 sectionEnd
  
