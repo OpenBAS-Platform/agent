@@ -17,16 +17,15 @@ pub fn listen(uri: String, token: String) -> Result<JoinHandle<()>, Error> {
             let jobs = api.list_jobs();
             if jobs.is_ok() {
                 jobs.unwrap().iter().for_each(|j| {
-                    info!("Start handling {:?}", j.asset_agent_inject);
+                    info!("Start handling inject: {:?}", j.asset_agent_inject);
                     // 01. Remove the execution job
-                    info!("Cleaning {:?}", j.asset_agent_id);
+                    info!("Cleaning job: {:?}", j.asset_agent_id);
                     let clean_result = api.clean_job(j.asset_agent_id.as_str());
                     // 02. Execute the command
                     if clean_result.is_ok() {
-                        info!("Executing {:?}", j.asset_agent_command);
                         let _ = agent_exec::command_execution(j.asset_agent_command.as_str());
                     }
-                    info!("Done handling {:?}", j.asset_agent_inject);
+                    info!("Done handling inject: {:?}", j.asset_agent_inject);
                 });
             }
             // Wait for the next ping (30 secs)
