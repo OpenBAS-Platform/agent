@@ -9,10 +9,6 @@
 !define APPNAME "OBAS Agent"
 !define COMPANYNAME "Filigran"
 !define DESCRIPTION "Filigran's agent for OpenBAS"
-# These three must be integers
-!define VERSIONMAJOR 0
-!define VERSIONMINOR 0
-!define VERSIONBUILD 1
 # These will be displayed by the "Click here for support information" link in "Add/Remove Programs"
 # It is possible to use "mailto:" links in here to open the email client
 !define HELPURL "https://filigran.io/" # "Support Information" link
@@ -32,7 +28,7 @@ LicenseData "license.txt"
 # This will be in the installer/uninstaller's title bar
 Name "${COMPANYNAME} - ${APPNAME}"
 Icon "openbas.ico"
-outFile "filigran-obas-agent-installer-${VERSIONMAJOR}.${VERSIONMINOR}.${VERSIONBUILD}.exe"
+outFile "openbas-agent-installer.exe"
  
 ; page definition
 page license
