@@ -6,7 +6,7 @@ orbs:
 executors:
   docker:
     docker:
-      - image: ubuntu:22.04
+      - image: ubuntu:24.10
 
 jobs:
   windows_build:
