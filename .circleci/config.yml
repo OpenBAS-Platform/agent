@@ -6,9 +6,7 @@ orbs:
 executors:
   docker:
     docker:
-      - image: cimg/rust:1.78
-  linux:
-    machine: true
+      - image: ubuntu:22.04
   macos:
     macos:
       xcode: 12.5.1
@@ -35,11 +33,35 @@ jobs:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
+  linux_build:
+    executor: docker
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+            - cargo-{{ arch }}
+      - run: apt-get update
+      - run: apt-get -y install curl musl-tools
+      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: . "$HOME/.cargo/env"; rustup target add x86_64-unknown-linux-musl
+      - run: . "$HOME/.cargo/env"; cargo build --target=x86_64-unknown-linux-musl --release
+      - run: strip ./target/x86_64-unknown-linux-musl/release/openbas-agent
+      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/x86_64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/openbas-agent-latest"
+      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/openbas-agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/openbas-agent-installer-latest.sh"
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
 
 workflows:
   openbas-agent:
     jobs:
       - windows_build:
+          filters:
+            tags:
+              only: /.*/
+      - linux_build:
           filters:
             tags:
               only: /.*/
