@@ -7,9 +7,6 @@ executors:
   docker:
     docker:
       - image: ubuntu:22.04
-  macos:
-    macos:
-      xcode: 12.5.1
 
 jobs:
   windows_build:
@@ -27,8 +24,8 @@ jobs:
       - run: rustup default stable-x86_64-pc-windows-msvc
       - run: cargo build --release
       - run: $env:Path += "C:\Program Files (x86)\NSIS\Bin"; makensis ./installer/windows/installer.nsi
-      - run: curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./target/release/openbas-agent.exe "https://filigran.jfrog.io/artifactory/openbas-agent/openbas-agent-latest.exe"
-      - run: curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/openbas-agent-installer.exe "https://filigran.jfrog.io/artifactory/openbas-agent/openbas-agent-installer-latest.exe"
+      - run: $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { "latest" }; curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./target/release/openbas-agent.exe "https://filigran.jfrog.io/artifactory/openbas-agent/openbas-agent-$env:version.exe"
+      - run: $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { "latest" }; curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/openbas-agent-installer.exe "https://filigran.jfrog.io/artifactory/openbas-agent/openbas-agent-installer-$env:version.exe"
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -47,8 +44,8 @@ jobs:
       - run: . "$HOME/.cargo/env"; rustup target add x86_64-unknown-linux-musl
       - run: . "$HOME/.cargo/env"; cargo build --target=x86_64-unknown-linux-musl --release
       - run: strip ./target/x86_64-unknown-linux-musl/release/openbas-agent
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/x86_64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/openbas-agent-latest"
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/openbas-agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/openbas-agent-installer-latest.sh"
+      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/x86_64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/openbas-agent-${CIRCLE_TAG:-latest}"
+      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/openbas-agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/openbas-agent-installer-${CIRCLE_TAG:-latest}.sh"
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -60,8 +57,12 @@ workflows:
       - windows_build:
           filters:
             tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
               only: /.*/
       - linux_build:
           filters:
             tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
               only: /.*/
