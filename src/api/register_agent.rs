@@ -6,6 +6,8 @@ use crate::common::error_model::Error;
 
 use super::Client;
 
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 #[derive(Debug, Deserialize)]
 pub struct RegisterAgentResponse {
     pub asset_id: String,
@@ -33,6 +35,7 @@ impl Client {
         let post_data = ureq::json!({
           "asset_name": hostname::get()?.to_string_lossy(),
           "asset_external_reference": mid::get("openbas").unwrap(),
+          "endpoint_agent_version": VERSION,
           "endpoint_ips": ip_addresses,
           "endpoint_platform": capitalize(env::consts::OS),
           "endpoint_mac_addresses": mac_addresses,

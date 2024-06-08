@@ -16,7 +16,7 @@ pub fn ping(uri: String, token: String) -> Result<JoinHandle<()>, Error> {
             // Register, ping the agent
             let register = api.register_agent();
             if register.is_err() {
-                error!("Fail registering the agent, API is not accessible")
+                error!("Fail registering the agent {}", register.unwrap_err())
             }
             // Wait for the next ping (2 minutes)
             sleep(Duration::from_secs(120));

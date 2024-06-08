@@ -6,7 +6,7 @@ use super::Client;
 #[derive(Debug, Deserialize)]
 pub struct JobResponse {
     pub asset_agent_id: String,
-    pub asset_agent_inject: String,
+    pub asset_agent_inject: Option<String>,
     pub asset_agent_asset: String,
     pub asset_agent_command: String,
 }

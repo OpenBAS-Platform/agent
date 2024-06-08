@@ -1,4 +1,4 @@
-use log::{info};
+use log::{error, info};
 use std::io::Error;
 use std::sync::atomic::{Ordering};
 use std::thread;
@@ -27,6 +27,8 @@ pub fn listen(uri: String, token: String) -> Result<JoinHandle<()>, Error> {
                     }
                     info!("Done handling inject: {:?}", j.asset_agent_inject);
                 });
+            } else {
+                error!("Fail getting jobs {}", jobs.unwrap_err())
             }
             // Wait for the next ping (30 secs)
             sleep(Duration::from_secs(30));
