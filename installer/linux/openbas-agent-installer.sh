@@ -2,7 +2,7 @@
 set -e
 echo "Downloading OpenBAS Agent into /opt/openbas-agent..."
 (mkdir -p /opt/openbas-agent && touch /opt/openbas-agent >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)
-curl -sSf http://localhost:8000/openbas-agent -o /opt/openbas-agent/openbas-agent
+curl -sSf ${OPENBAS_URL}/api/agent/executable/openbas/linux -o /opt/openbas-agent/openbas-agent
 chmod 755 /opt/openbas-agent/openbas-agent
 
 cat > /opt/openbas-agent/openbas-agent-config.toml <<EOF
