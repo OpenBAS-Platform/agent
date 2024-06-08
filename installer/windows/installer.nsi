@@ -56,8 +56,8 @@ function .onInit
 	setShellVarContext all
 	!insertmacro VerifyUserIsAdmin
 	${GetParameters} $R0
-    ${GetOptions} $R0 /OPENBAS_URL= $ConfigURL
-    ${GetOptions} $R0 /ACCESS_TOKEN= $ConfigToken
+    ${GetOptions} $R0 -OPENBAS_URL= $ConfigURL
+    ${GetOptions} $R0 -ACCESS_TOKEN= $ConfigToken
 functionEnd
 
 
