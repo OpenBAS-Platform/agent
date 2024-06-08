@@ -1,5 +1,9 @@
 #!/bin/sh
 set -e
+if [ -d /run/systemd/system ]; then
+  echo "Stopping existing openbas-agent..."
+  systemctl stop openbas-agent
+fi
 echo "Downloading OpenBAS Agent into /opt/openbas-agent..."
 (mkdir -p /opt/openbas-agent && touch /opt/openbas-agent >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)
 curl -sSf ${OPENBAS_URL}/api/agent/executable/openbas/linux -o /opt/openbas-agent/openbas-agent
@@ -13,7 +17,7 @@ token = "${OPENBAS_TOKEN}"
 EOF
 
 
-if [ -d /etc/systemd/system -a  "$(systemctl is-system-running)" != "offline" ]; then
+if [ -d /run/systemd/system ]; then
   echo "Detected init: systemd"
 
   cat > /opt/openbas-agent/openbas-agent.service <<EOF
@@ -35,10 +39,7 @@ EOF
     systemctl start openbas-agent
   ) || (echo "Error while enabling OpenBAS Agent systemd unit file or starting the agent" >&2 && exit 1)
 
-  echo "OpenBAS Agent started... Runtime status:\n"
-  systemctl status openbas-agent
-  exit 0
+  echo "OpenBAS Agent started."
+else
+  echo "No init found, you need to configure it yourself to start /opt/openbas-agent/openbas-agent at startup"
 fi
-
-
-echo "No init found, you need to configure it yourself to start /opt/openbas-agent/openbas-agent at startup"
