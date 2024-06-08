@@ -10,6 +10,22 @@ For performance and low level access, the agent is written in Rust. Please start
 
 **Unless specified otherwise**, agent are released under the Filigran License
 
+## Installation
+
+Installation process will be done through the usage of OpenBAS platform.
+
+### Linux installation
+
+A admin execution is required.
+
+`curl -s http://[OPENBAS_URI]/api/agent/installer/openbas/linux | sudo sh`
+
+### Windows installation
+
+An elevated powershell is required.
+
+`iex (iwr "http://[OPENBAS_URI]/api/agent/installer/openbas/windows").Content`
+
 ## About
 
 OpenBAS is a product designed and developed by the company [Filigran](https://filigran.io).
