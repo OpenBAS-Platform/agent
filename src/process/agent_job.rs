@@ -23,7 +23,7 @@ pub fn listen(uri: String, token: String) -> Result<JoinHandle<()>, Error> {
                     let clean_result = api.clean_job(j.asset_agent_id.as_str());
                     // 02. Execute the command
                     if clean_result.is_ok() {
-                        let _ = agent_exec::command_execution(j.asset_agent_command.as_str());
+                        let _ = agent_exec::command_execution(j.asset_agent_id.as_str(), j.asset_agent_command.as_str());
                     }
                     info!("Done handling inject: {:?}", j.asset_agent_inject);
                 });

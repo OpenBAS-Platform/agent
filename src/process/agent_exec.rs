@@ -1,35 +1,72 @@
 use std::env;
+use std::fs::{create_dir, File};
+use std::io::Write;
+use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use base64::Engine;
-use base64::prelude::BASE64_STANDARD;
 use log::info;
 use crate::common::error_model::Error;
 
-pub struct ExecutionResult {
-    pub stdout: String,
-    pub stderr: String,
+pub fn compute_working_dir(asset_agent_id: &str) -> PathBuf {
+    let current_exe_patch = env::current_exe().unwrap();
+    let executable_path = current_exe_patch.parent().unwrap();
+    return executable_path.join(format!("execution-{}", asset_agent_id));
 }
 
-pub fn command_execution(command: &str) -> Result<ExecutionResult, Error> {
+pub fn command_execution(asset_agent_id: &str, command: &str) -> Result<(), Error> {
     if cfg!(target_os = "windows") {
-        let current_exe_patch = env::current_exe().unwrap();
-        let executable_path = current_exe_patch.parent().unwrap();
-        let command_with_location = command.replace("#{location}", &executable_path.display().to_string().as_str());
-        info!("Invoking command execution {}", command_with_location);
-        let invoke_expression = format!("Invoke-Expression ([System.Text.Encoding]::UTF8.GetString([convert]::FromBase64String(\"{}\")))", BASE64_STANDARD.encode(command_with_location));
-        let command_args = &["/d", "/c", "powershell.exe", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-NonInteractive", "-NoProfile", "-Command", &invoke_expression];
-        let invoke_output = Command::new("cmd.exe")
+        let working_dir = compute_working_dir(asset_agent_id);
+        let command_with_location = command.replace("#{location}", working_dir.to_str().unwrap());
+        info!(identifier:? = asset_agent_id, command:? = command_with_location; "Invoking execution");
+        // Write the script in specific directory
+        create_dir(working_dir.clone())?;
+        let script_file_name = working_dir.join("execution.ps1");
+        {
+            let mut file = File::create(script_file_name.clone())?;
+            file.write_all(command_with_location.as_bytes())?;
+        }
+        // Prepare and execute the command
+        let command_args = &["/d", "/c", "powershell.exe", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
+            "-NonInteractive", "-NoProfile", script_file_name.to_str().unwrap()];
+        let child_execution = Command::new("cmd.exe")
             .args(command_args)
             .stderr(Stdio::piped())
             .stdout(Stdio::piped())
-            .spawn()?.wait_with_output();
-        let invoke_result = invoke_output.unwrap().clone();
-        let stdout =  String::from_utf8 (invoke_result.stdout).unwrap();
-        let stderr = String::from_utf8 (invoke_result.stderr).unwrap();
-        Ok(ExecutionResult { stderr, stdout })
-    } else {
-        // TODO implement linux execution
-        // LINUX|MAC => /bin/sh -c "/bin/echo $1 | base64 -d | sh"
-        Err(Error::Internal(String::from("Not implemented yet")))
+            .spawn()?;
+        // Save execution pid
+        let pid_file_name = working_dir.join("execution.pid");
+        {
+            let mut file = File::create(pid_file_name.clone())?;
+            file.write_all(child_execution.id().to_string().as_bytes())?;
+        }
+        info!(identifier:? = asset_agent_id; "Invoking result");
+        return Ok(())
     }
+    if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
+        let working_dir = compute_working_dir(asset_agent_id);
+        let command_with_location = command.replace("#{location}", working_dir.to_str().unwrap());
+        info!(identifier = asset_agent_id, command = &command_with_location.as_str(); "Invoking execution");
+        // Write the script in specific directory
+        create_dir(working_dir.clone())?;
+        let script_file_name = working_dir.join("execution.sh");
+        {
+            let mut file = File::create(script_file_name.clone())?;
+            file.write_all(command_with_location.as_bytes())?;
+        }
+        // Prepare and execute the command
+        let command_args = &[script_file_name.to_str().unwrap(), "&"];
+        let child_execution = Command::new("bash")
+            .args(command_args)
+            .stderr(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()?;
+        // Save execution pid
+        let pid_file_name = working_dir.join("execution.pid");
+        {
+            let mut file = File::create(pid_file_name.clone())?;
+            file.write_all(child_execution.id().to_string().as_bytes())?;
+        }
+        info!(identifier = asset_agent_id; "Revoking execution");
+        return Ok(())
+    }
+    Err(Error::Internal(String::from("Not implemented yet")))
 }
