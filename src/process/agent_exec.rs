@@ -1,6 +1,7 @@
 use std::env;
 use std::fs::{create_dir, File};
 use std::io::Write;
+use std::os::windows::process::CommandExt;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use log::info;
@@ -37,10 +38,12 @@ pub fn command_execution(asset_agent_id: &str, raw_command: &str) -> Result<(), 
             file.write_all(command.as_bytes())?;
         }
         // Prepare and execute the command
+        let win_path = format!("\"{}\"", script_file_name.to_str().unwrap());
         let command_args = &["/d", "/c", "powershell.exe", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
-            "-NonInteractive", "-NoProfile", script_file_name.to_str().unwrap()];
+            "-NonInteractive", "-NoProfile", "-File"];
         let child_execution = Command::new("cmd.exe")
             .args(command_args)
+            .raw_arg(win_path.as_str())
             .stderr(Stdio::piped())
             .stdout(Stdio::piped())
             .spawn()?;
