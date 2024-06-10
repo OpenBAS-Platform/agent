@@ -1,7 +1,6 @@
 use std::env;
 use std::fs::{create_dir, File};
 use std::io::Write;
-use std::os::windows::process::CommandExt;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use log::info;
@@ -29,6 +28,8 @@ pub fn command_execution(asset_agent_id: &str, raw_command: &str) -> Result<(), 
     let command = command_with_context(asset_agent_id, raw_command);
     let working_dir = compute_working_dir(asset_agent_id);
     if cfg!(target_os = "windows") {
+        use std::os::windows::process::CommandExt;
+        
         info!(identifier:? = asset_agent_id, command:? = command; "Invoking execution");
         // Write the script in specific directory
         create_dir(working_dir.clone())?;
