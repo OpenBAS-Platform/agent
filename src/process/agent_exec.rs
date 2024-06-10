@@ -6,23 +6,35 @@ use std::process::{Command, Stdio};
 use log::info;
 use crate::common::error_model::Error;
 
-pub fn compute_working_dir(asset_agent_id: &str) -> PathBuf {
+fn compute_working_dir(asset_agent_id: &str) -> PathBuf {
     let current_exe_patch = env::current_exe().unwrap();
     let executable_path = current_exe_patch.parent().unwrap();
     return executable_path.join(format!("execution-{}", asset_agent_id));
 }
 
-pub fn command_execution(asset_agent_id: &str, command: &str) -> Result<(), Error> {
+fn command_with_context(asset_agent_id: &str, command: &str) -> String {
+    let working_dir = compute_working_dir(asset_agent_id);
+    let command_server_location = command.replace("#{location}", working_dir.to_str().unwrap());
     if cfg!(target_os = "windows") {
-        let working_dir = compute_working_dir(asset_agent_id);
-        let command_with_location = command.replace("#{location}", working_dir.to_str().unwrap());
-        info!(identifier:? = asset_agent_id, command:? = command_with_location; "Invoking execution");
+        return format!("Set-Location -Path \"{}\"; {}", working_dir.to_str().unwrap(), command_server_location);
+    }
+    if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
+        return format!("cd \"{}\"; {}", working_dir.to_str().unwrap(), command_server_location); 
+    }
+    return String::from(command);
+}
+
+pub fn command_execution(asset_agent_id: &str, raw_command: &str) -> Result<(), Error> {
+    let command = command_with_context(asset_agent_id, raw_command);
+    let working_dir = compute_working_dir(asset_agent_id);
+    if cfg!(target_os = "windows") {
+        info!(identifier:? = asset_agent_id, command:? = command; "Invoking execution");
         // Write the script in specific directory
         create_dir(working_dir.clone())?;
         let script_file_name = working_dir.join("execution.ps1");
         {
             let mut file = File::create(script_file_name.clone())?;
-            file.write_all(command_with_location.as_bytes())?;
+            file.write_all(command.as_bytes())?;
         }
         // Prepare and execute the command
         let command_args = &["/d", "/c", "powershell.exe", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
@@ -42,15 +54,13 @@ pub fn command_execution(asset_agent_id: &str, command: &str) -> Result<(), Erro
         return Ok(())
     }
     if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
-        let working_dir = compute_working_dir(asset_agent_id);
-        let command_with_location = command.replace("#{location}", working_dir.to_str().unwrap());
-        info!(identifier = asset_agent_id, command = &command_with_location.as_str(); "Invoking execution");
+        info!(identifier = asset_agent_id, command = &command.as_str(); "Invoking execution");
         // Write the script in specific directory
         create_dir(working_dir.clone())?;
         let script_file_name = working_dir.join("execution.sh");
         {
             let mut file = File::create(script_file_name.clone())?;
-            file.write_all(command_with_location.as_bytes())?;
+            file.write_all(command.as_bytes())?;
         }
         // Prepare and execute the command
         let command_args = &[script_file_name.to_str().unwrap(), "&"];
