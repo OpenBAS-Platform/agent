@@ -11,7 +11,7 @@ use log::info;
 use rolling_file::{BasicRollingFileAppender, RollingConditionBasic};
 
 use crate::common::error_model::Error;
-use crate::process::keep_alive;
+use crate::process::{agent_cleanup, keep_alive};
 use crate::process::agent_job;
 use crate::config::settings::Settings;
 use crate::windows::service::service_stub;
@@ -26,8 +26,14 @@ fn agent_start(settings_data: Settings) -> Result<Vec<JoinHandle<()>>, Error> {
     let keep_alive_thread = keep_alive::ping(url.clone(), token.clone());
     // Starts the agent listening thread
     let agent_job_thread = agent_job::listen(url.clone(), token.clone());
+    // Starts the cleanup thread
+    let cleanup_thread = agent_cleanup::clean();
     // Don't stop the exec until the listening thread is done
-    return Ok(vec![keep_alive_thread.unwrap(), agent_job_thread.unwrap()])
+    return Ok(vec![
+        keep_alive_thread.unwrap(), 
+        agent_job_thread.unwrap(), 
+        cleanup_thread.unwrap()]
+    )
 }
 
 fn main() -> Result<(), Error> {
