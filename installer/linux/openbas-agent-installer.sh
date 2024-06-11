@@ -1,14 +1,12 @@
 #!/bin/sh
 set -e
-if [ -d /run/systemd/system ]; then
-  echo "Stopping existing openbas-agent..."
-  systemctl stop openbas-agent
-fi
+
 echo "Downloading OpenBAS Agent into /opt/openbas-agent..."
 (mkdir -p /opt/openbas-agent && touch /opt/openbas-agent >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)
 curl -sSf ${OPENBAS_URL}/api/agent/executable/openbas/linux -o /opt/openbas-agent/openbas-agent
 chmod 755 /opt/openbas-agent/openbas-agent
 
+echo "Creating OpenBAS configuration file"
 cat > /opt/openbas-agent/openbas-agent-config.toml <<EOF
 debug=true
 [openbas]
@@ -16,9 +14,11 @@ url = "${OPENBAS_URL}"
 token = "${OPENBAS_TOKEN}"
 EOF
 
-
 if [ -d /run/systemd/system ]; then
   echo "Detected init: systemd"
+
+  echo "Stopping existing openbas-agent..."
+  systemctl stop openbas-agent || echo "Fail stopping openbas-agent"
 
   cat > /opt/openbas-agent/openbas-agent.service <<EOF
 [Unit]
