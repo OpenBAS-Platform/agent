@@ -77,18 +77,18 @@ jobs:
 workflows:
   openbas-agent:
     jobs:
-      - windows_x86_64_build:
-          filters:
-            tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
-            branches:
-              only: /.*/
-      - linux_x86_64_build:
-          filters:
-            tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
-            branches:
-              only: /.*/
+      # - windows_x86_64_build:
+      #     filters:
+      #       tags:
+      #         only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+      #       branches:
+      #         only: /.*/
+      # - linux_x86_64_build:
+      #     filters:
+      #       tags:
+      #         only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+      #       branches:
+      #         only: /.*/
       - macos_arm_64_build:
           filters:
             tags:
