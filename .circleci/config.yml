@@ -37,8 +37,8 @@ jobs:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
-      - run: apt-get update
-      - run: apt-get -y install curl musl-tools
+      - run: sudo apt-get update
+      - run: sudo apt-get -y install curl musl-tools
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - run: . "$HOME/.cargo/env"; rustup target add x86_64-unknown-linux-musl
       - run: . "$HOME/.cargo/env"; cargo build --target=x86_64-unknown-linux-musl --release
@@ -60,8 +60,8 @@ jobs:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
-      - run: apt-get update
-      - run: apt-get -y install curl musl-tools
+      - run: sudo apt-get update
+      - run: sudo apt-get -y install curl musl-tools
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - run: . "$HOME/.cargo/env"; rustup target add aarch64-unknown-linux-musl
       - run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
