@@ -4,11 +4,6 @@ orbs:
   win: circleci/windows@5.0
   macos: circleci/macos@2.5.1
 
-executors:
-  docker:
-    docker:
-      - image: ubuntu:22.04
-
 jobs:
   windows_x86_64_build:
     executor: win/default
@@ -34,7 +29,8 @@ jobs:
           paths:
             - ~/.cargo
   linux_x86_64_build:
-    executor: docker
+    machine:
+      image: ubuntu-2204:current
     steps:
       - checkout
       - restore_cache:
@@ -50,6 +46,29 @@ jobs:
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/x86_64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/linux/x86_64/openbas-agent-${CIRCLE_TAG:-latest}"
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/x86_64/openbas-agent-installer-${CIRCLE_TAG:-latest}.sh"
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/x86_64/openbas-agent-upgrade-${CIRCLE_TAG:-latest}.sh"
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
+  linux_arm_64_build:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+            - cargo-{{ arch }}
+      - run: apt-get update
+      - run: apt-get -y install curl musl-tools
+      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: . "$HOME/.cargo/env"; rustup target add aarch64-unknown-linux-musl
+      - run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
+      - run: strip ./target/aarch64-unknown-linux-musl/release/openbas-agent
+      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/aarch64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/linux/arm_64/openbas-agent-${CIRCLE_TAG:-latest}"
+      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/arm_64/openbas-agent-installer-${CIRCLE_TAG:-latest}.sh"
+      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/arm_64/openbas-agent-upgrade-${CIRCLE_TAG:-latest}.sh"
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -93,31 +112,39 @@ jobs:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
-
+https://www:
+  launchd:
+    info/:
 workflows:
   openbas-agent:
     jobs:
-      - windows_x86_64_build:
-          filters:
-            tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
-            branches:
-              only: /.*/
+      # - windows_x86_64_build:
+      #     filters:
+      #       tags:
+      #         only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+      #       branches:
+      #         only: /.*/
       - linux_x86_64_build:
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
               only: /.*/
-      - macos_x86_64_build:
+      - linux_arm_64_build:
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
               only: /.*/
-      - macos_arm_64_build:
-          filters:
-            tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
-            branches:
-              only: /.*/
+      # - macos_x86_64_build:
+      #     filters:
+      #       tags:
+      #         only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+      #       branches:
+      #         only: /.*/
+      # - macos_arm_64_build:
+      #     filters:
+      #       tags:
+      #         only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+      #       branches:
+      #         only: /.*/
