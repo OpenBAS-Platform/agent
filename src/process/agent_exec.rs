@@ -46,8 +46,8 @@ pub fn command_execution(asset_agent_id: &str, raw_command: &str) -> Result<(), 
     let child_execution = Command::new("cmd.exe")
         .args(command_args)
         .raw_arg(win_path.as_str())
-        .stderr(Stdio::piped())
-        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .stdout(Stdio::null())
         .spawn()?;
     // Save execution pid
     let pid_file_name = working_dir.join("execution.pid");
@@ -75,8 +75,8 @@ pub fn command_execution(asset_agent_id: &str, raw_command: &str) -> Result<(), 
     let command_args = &[script_file_name.to_str().unwrap(), "&"];
     let child_execution = Command::new("bash")
         .args(command_args)
-        .stderr(Stdio::piped())
-        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .stdout(Stdio::null())
         .spawn()?;
     // Save execution pid
     let pid_file_name = working_dir.join("execution.pid");

@@ -28,7 +28,7 @@ LicenseData "license.txt"
 # This will be in the installer/uninstaller's title bar
 Name "${COMPANYNAME} - ${APPNAME}"
 Icon "openbas.ico"
-outFile "openbas-agent-installer.exe"
+outFile "agent-installer.exe"
  
 ; page definition
 page license
