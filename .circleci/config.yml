@@ -55,7 +55,9 @@ jobs:
           paths:
             - ~/.cargo
   macos_arm_64_build:
-    executor: macos
+    macos:
+      xcode: 15.4.0
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - restore_cache:
