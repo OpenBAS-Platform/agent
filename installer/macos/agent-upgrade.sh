@@ -12,7 +12,7 @@ if [ "${os}" = "darwin" ]; then
   os="macos"
 fi
 
-if [ "${os}" = "darwin" ]; then
+if [ "${os}" = "macos" ]; then
     echo "Starting upgrade script for ${os} | ${architecture}"
 
     echo "01. Downloading OpenBAS Agent into /opt/openbas-agent..."
