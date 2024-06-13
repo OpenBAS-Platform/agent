@@ -7,10 +7,7 @@ if [ "${architecture}" = "arm64" ]; then
   architecture="arm_64"
 fi
 
-os="unknown"
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  os="linux"
-fi
+os=$(uname | tr '[:upper:]' '[:lower:]')
 
 if [ "${os}" = "linux" ]; then
     if ! [ -d /run/systemd/system ]; then

@@ -7,8 +7,8 @@ if [ "${architecture}" = "arm64" ]; then
   architecture="arm_64"
 fi
 
-os="unknown"
-if [[ "$OSTYPE" == "darwin"* ]]; then
+os=$(uname | tr '[:upper:]' '[:lower:]')
+if [ "${os}" = "darwin" ]; then
   os="macos"
 fi
 

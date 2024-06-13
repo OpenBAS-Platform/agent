@@ -8,6 +8,9 @@ if [ "${architecture}" = "arm64" ]; then
 fi
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
+if [ "${os}" = "darwin" ]; then
+  os="macos"
+fi
 
 if [ "${os}" = "darwin" ]; then
     echo "Starting upgrade script for ${os} | ${architecture}"
