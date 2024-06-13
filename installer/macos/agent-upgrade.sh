@@ -7,12 +7,9 @@ if [ "${architecture}" = "arm64" ]; then
   architecture="arm_64"
 fi
 
-os="unknown"
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  os="macos"
-fi
+os=$(uname | tr '[:upper:]' '[:lower:]')
 
-if [ "${os}" = "macos" ]; then
+if [ "${os}" = "darwin" ]; then
     echo "Starting upgrade script for ${os} | ${architecture}"
 
     echo "01. Downloading OpenBAS Agent into /opt/openbas-agent..."
@@ -27,6 +24,6 @@ if [ "${os}" = "macos" ]; then
 
     echo "OpenBAS Agent started."
 else
-    echo "Operating system $OSTYPE is not supported yet, please create a ticket in openbas github project"
+    echo "Operating system ${os} is not supported yet, please create a ticket in openbas github project"
     exit 1
 fi

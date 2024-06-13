@@ -7,10 +7,7 @@ if [ "${architecture}" = "arm64" ]; then
   architecture="arm_64"
 fi
 
-os="unknown"
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  os="linux"
-fi
+os=$(uname | tr '[:upper:]' '[:lower:]')
 
 if [ "${os}" = "linux" ]; then
     if ! [ -d /run/systemd/system ]; then
@@ -30,6 +27,6 @@ if [ "${os}" = "linux" ]; then
 
     echo "OpenBAS Agent started."
 else
-  echo "Operating system $OSTYPE is not supported yet, please create a ticket in openbas github project"
+  echo "Operating system ${os} is not supported yet, please create a ticket in openbas github project"
   exit 1
 fi
