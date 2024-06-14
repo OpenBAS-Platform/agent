@@ -18,13 +18,13 @@ Installation process will be done through the usage of OpenBAS platform.
 
 A admin execution is required.
 
-`curl -s http://[OPENBAS_URI]/api/agent/installer/openbas/linux | sudo sh`
+`curl -s http://[OPENBAS_URI]/api/agent/installer/openbas/linux/[OPENBAS_TOKEN] | sudo sh`
 
 ### Windows installation
 
 An elevated powershell is required.
 
-`iex (iwr "http://[OPENBAS_URI]/api/agent/installer/openbas/windows").Content`
+`iex (iwr "http://[OPENBAS_URI]/api/agent/installer/openbas/windows/[OPENBAS_TOKEN]").Content`
 
 ## About
 
