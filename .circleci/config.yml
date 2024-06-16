@@ -5,6 +5,24 @@ orbs:
   macos: circleci/macos@2.5.1
 
 jobs:
+  windows_x86_64_compile:
+    executor: win/default
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+            - cargo-{{ arch }}
+      - run: choco install -y mingw nsis
+      - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe
+      - run: ./rustup-init.exe -vy
+      - run: rustup toolchain install stable-x86_64-pc-windows-msvc
+      - run: rustup default stable-x86_64-pc-windows-msvc
+      - run: cargo build --release
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
   windows_x86_64_build:
     executor: win/default
     steps:
@@ -28,6 +46,25 @@ jobs:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
+  linux_x86_64_compile:
+    machine:
+      image: ubuntu-2204:current
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+            - cargo-{{ arch }}
+      - run: sudo apt-get update
+      - run: sudo apt-get -y install curl musl-tools
+      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: . "$HOME/.cargo/env"; rustup target add x86_64-unknown-linux-musl
+      - run: . "$HOME/.cargo/env"; cargo build --target=x86_64-unknown-linux-musl --release
+      - run: strip ./target/x86_64-unknown-linux-musl/release/openbas-agent
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
   linux_x86_64_build:
     machine:
       image: ubuntu-2204:current
@@ -46,6 +83,26 @@ jobs:
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/x86_64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/linux/x86_64/openbas-agent-${CIRCLE_TAG:-latest}"
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-installer-${CIRCLE_TAG:-latest}.sh"
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-upgrade-${CIRCLE_TAG:-latest}.sh"
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
+  linux_arm_64_compile:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+            - cargo-{{ arch }}
+      - run: sudo apt-get update
+      - run: sudo apt-get -y install curl musl-tools
+      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: . "$HOME/.cargo/env"; rustup target add aarch64-unknown-linux-musl
+      - run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
+      - run: strip ./target/aarch64-unknown-linux-musl/release/openbas-agent
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -73,6 +130,23 @@ jobs:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
+  macos_x86_64_compile:
+    macos:
+      xcode: 15.3.0
+    resource_class: macos.x86.medium.gen2
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+            - cargo-{{ arch }}
+      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: . "$HOME/.cargo/env"; cargo build --release
+      - run: strip ./target/release/openbas-agent
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
   macos_x86_64_build:
     macos:
       xcode: 15.3.0
@@ -89,6 +163,22 @@ jobs:
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/macos/x86_64/openbas-agent-${CIRCLE_TAG:-latest}"
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/macos/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/macos/openbas-agent-installer-${CIRCLE_TAG:-latest}.sh"
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/macos/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/macos/openbas-agent-upgrade-${CIRCLE_TAG:-latest}.sh"
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
+  macos_arm_64_compile:
+    machine: true
+    resource_class: openbas-platform/agent-macos-arm-m2
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+            - cargo-{{ arch }}
+      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: . "$HOME/.cargo/env"; cargo build --release
+      - run: strip ./target/release/openbas-agent
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -118,33 +208,59 @@ https://www:
 workflows:
   openbas-agent:
     jobs:
+      - windows_x86_64_compile:
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              ignore: main
       - windows_x86_64_build:
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
-              only: /.*/
+              only: main
+      - linux_x86_64_compile:
+          tags:
+            ignore: /.*/
+          branches:
+            ignore: main
       - linux_x86_64_build:
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
-              only: /.*/
+              only: main
+      - linux_arm_64_compile:
+          tags:
+            ignore: /.*/
+          branches:
+            ignore: main
       - linux_arm_64_build:
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
-              only: /.*/
+              only: main
+      - macos_x86_64_compile:
+          tags:
+            ignore: /.*/
+          branches:
+            ignore: main
       - macos_x86_64_build:
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
-              only: /.*/
+              only: main
+      - macos_arm_64_compile:
+          tags:
+            ignore: /.*/
+          branches:
+            ignore: main
       - macos_arm_64_build:
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
-              only: /.*/
+              only: main
