@@ -221,10 +221,11 @@ workflows:
             branches:
               only: main
       - linux_x86_64_compile:
-          tags:
-            ignore: /.*/
-          branches:
-            ignore: main
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              ignore: main
       - linux_x86_64_build:
           filters:
             tags:
@@ -232,10 +233,11 @@ workflows:
             branches:
               only: main
       - linux_arm_64_compile:
-          tags:
-            ignore: /.*/
-          branches:
-            ignore: main
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              ignore: main
       - linux_arm_64_build:
           filters:
             tags:
@@ -243,10 +245,11 @@ workflows:
             branches:
               only: main
       - macos_x86_64_compile:
-          tags:
-            ignore: /.*/
-          branches:
-            ignore: main
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              ignore: main
       - macos_x86_64_build:
           filters:
             tags:
@@ -254,10 +257,11 @@ workflows:
             branches:
               only: main
       - macos_arm_64_compile:
-          tags:
-            ignore: /.*/
-          branches:
-            ignore: main
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              ignore: main
       - macos_arm_64_build:
           filters:
             tags:
