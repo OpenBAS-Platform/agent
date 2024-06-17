@@ -10,6 +10,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Deserialize)]
 pub struct RegisterAgentResponse {
+    #[allow(dead_code)]
     pub asset_id: String,
 }
 
@@ -37,13 +38,17 @@ impl Client {
             .flatten()
             .map(|addr| addr.ip().to_string())
             .collect();
+        let arch = match env::consts::ARCH {
+            "aarch64" => "arm64", // Mac still use the old nomenclature
+            other => other,
+        };
         let post_data = ureq::json!({
           "asset_name": hostname::get()?.to_string_lossy(),
           "asset_external_reference": mid::get("openbas").unwrap(),
           "endpoint_agent_version": VERSION,
           "endpoint_ips": ip_addresses,
           "endpoint_platform": capitalize(env::consts::OS),
-          "endpoint_arch": env::consts::ARCH,
+          "endpoint_arch": arch,
           "endpoint_mac_addresses": mac_addresses,
           "endpoint_hostname": hostname::get()?.to_string_lossy()
         });

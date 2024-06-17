@@ -7,6 +7,7 @@ use super::Client;
 pub struct JobResponse {
     pub asset_agent_id: String,
     pub asset_agent_inject: Option<String>,
+    #[allow(dead_code)]
     pub asset_agent_asset: String,
     pub asset_agent_command: String,
 }
