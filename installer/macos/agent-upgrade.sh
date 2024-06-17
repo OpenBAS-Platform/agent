@@ -3,9 +3,6 @@ set -e
 
 base_url=${OPENBAS_URL}
 architecture=$(uname -m)
-if [ "${architecture}" = "arm64" ]; then
-  architecture="arm64"
-fi
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
 if [ "${os}" = "darwin" ]; then
