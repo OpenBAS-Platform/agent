@@ -123,7 +123,7 @@ jobs:
       - run: . "$HOME/.cargo/env"; rustup target add aarch64-unknown-linux-musl
       - run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
       - run: strip ./target/aarch64-unknown-linux-musl/release/openbas-agent
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/aarch64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/linux/arm_64/openbas-agent-${CIRCLE_TAG:-latest}"
+      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/aarch64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/linux/arm64/openbas-agent-${CIRCLE_TAG:-latest}"
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-installer-${CIRCLE_TAG:-latest}.sh"
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-upgrade-${CIRCLE_TAG:-latest}.sh"
       - save_cache:
@@ -195,7 +195,7 @@ jobs:
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - run: . "$HOME/.cargo/env"; cargo build --release
       - run: strip ./target/release/openbas-agent
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/macos/arm_64/openbas-agent-${CIRCLE_TAG:-latest}"
+      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/macos/arm64/openbas-agent-${CIRCLE_TAG:-latest}"
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/macos/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/macos/openbas-agent-installer-${CIRCLE_TAG:-latest}.sh"
       - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/macos/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/macos/openbas-agent-upgrade-${CIRCLE_TAG:-latest}.sh"
       - save_cache:
