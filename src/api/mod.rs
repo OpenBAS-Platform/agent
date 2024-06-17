@@ -4,6 +4,8 @@ use ureq::{Agent, Request};
 mod register_agent;
 mod manage_jobs;
 
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 #[derive(Debug)]
 pub struct Client {
     http_client: Agent,
@@ -16,12 +18,17 @@ impl Client {
         let http_client = ureq::AgentBuilder::new()
             .timeout_connect(Duration::from_secs(2))
             .timeout(Duration::from_secs(5))
-            .user_agent("openbas-agent/0.0.1")
+            .user_agent(format!("openbas-agent/{}", VERSION).as_str())
             .build();
-
+        // Remove trailing slash
+        let mut url = server_url;
+        if url.ends_with('/') {
+            url.pop();
+        }
+        // Initiate client
         Client {
             http_client,
-            server_url,
+            server_url: url,
             token
         }
     }
