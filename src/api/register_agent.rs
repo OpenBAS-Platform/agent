@@ -22,6 +22,22 @@ pub fn capitalize(s: &str) -> String {
     }
 }
 
+pub fn get_arch() -> String {
+    let arch = match env::consts::ARCH {
+        "aarch64" => "arm64", // Mac still use the old nomenclature
+        other => other,
+    };
+    return String::from(arch);
+}
+
+pub fn get_operating_system() -> String {
+    let os = match env::consts::OS {
+        "macos" => String::from("MacOS"),
+        other => capitalize(other),
+    };
+    return os;
+}
+
 impl Client {
     pub fn register_agent(&self) -> Result<RegisterAgentResponse, Error> {
         // region Build the content to register
@@ -38,17 +54,13 @@ impl Client {
             .flatten()
             .map(|addr| addr.ip().to_string())
             .collect();
-        let arch = match env::consts::ARCH {
-            "aarch64" => "arm64", // Mac still use the old nomenclature
-            other => other,
-        };
         let post_data = ureq::json!({
           "asset_name": hostname::get()?.to_string_lossy(),
           "asset_external_reference": mid::get("openbas").unwrap(),
           "endpoint_agent_version": VERSION,
           "endpoint_ips": ip_addresses,
-          "endpoint_platform": capitalize(env::consts::OS),
-          "endpoint_arch": arch,
+          "endpoint_platform": get_operating_system(),
+          "endpoint_arch": get_arch(),
           "endpoint_mac_addresses": mac_addresses,
           "endpoint_hostname": hostname::get()?.to_string_lossy()
         });

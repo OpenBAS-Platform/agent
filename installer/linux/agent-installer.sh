@@ -24,10 +24,11 @@ if [ "${os}" = "linux" ]; then
 
     echo "03. Creating OpenBAS configuration file"
     cat > /opt/openbas-agent/openbas-agent-config.toml <<EOF
-      debug=true
-      [openbas]
-      url = "${OPENBAS_URL}"
-      token = "${OPENBAS_TOKEN}"
+debug=false
+
+[openbas]
+url = "${OPENBAS_URL}"
+token = "${OPENBAS_TOKEN}"
 EOF
 
     echo "04. Writing agent service"
