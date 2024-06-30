@@ -133,7 +133,7 @@ jobs:
   macos_x86_64_compile:
     macos:
       xcode: 15.3.0
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - restore_cache:
@@ -150,7 +150,7 @@ jobs:
   macos_x86_64_build:
     macos:
       xcode: 15.3.0
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - restore_cache:
