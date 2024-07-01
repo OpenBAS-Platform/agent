@@ -130,46 +130,10 @@ jobs:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
-  macos_x86_64_compile:
-    macos:
-      xcode: 15.3.0
-    resource_class: macos.m1.medium.gen1
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
-            - cargo-{{ arch }}
-      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
-      - run: . "$HOME/.cargo/env"; cargo build --release
-      - run: strip ./target/release/openbas-agent
-      - save_cache:
-          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
-          paths:
-            - ~/.cargo
-  macos_x86_64_build:
-    macos:
-      xcode: 15.3.0
-    resource_class: macos.m1.medium.gen1
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
-            - cargo-{{ arch }}
-      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
-      - run: . "$HOME/.cargo/env"; cargo build --release
-      - run: strip ./target/release/openbas-agent
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/macos/x86_64/openbas-agent-${CIRCLE_TAG:-latest}"
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/macos/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/macos/openbas-agent-installer-${CIRCLE_TAG:-latest}.sh"
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/macos/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/macos/openbas-agent-upgrade-${CIRCLE_TAG:-latest}.sh"
-      - save_cache:
-          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
-          paths:
-            - ~/.cargo
   macos_arm_64_compile:
-    machine: true
-    resource_class: openbas-platform/agent-macos-arm-m2
+    macos:
+      xcode: 15.3.0
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - restore_cache:
@@ -184,8 +148,9 @@ jobs:
           paths:
             - ~/.cargo
   macos_arm_64_build:
-    machine: true
-    resource_class: openbas-platform/agent-macos-arm-m2
+    macos:
+      xcode: 15.3.0
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - restore_cache:
@@ -202,9 +167,7 @@ jobs:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
-https://www:
-  launchd:
-    info/:
+
 workflows:
   openbas-agent:
     jobs:
@@ -239,18 +202,6 @@ workflows:
             branches:
               ignore: main
       - linux_arm_64_build:
-          filters:
-            tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
-            branches:
-              only: main
-      - macos_x86_64_compile:
-          filters:
-            tags:
-              ignore: /.*/
-            branches:
-              ignore: main
-      - macos_x86_64_build:
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
