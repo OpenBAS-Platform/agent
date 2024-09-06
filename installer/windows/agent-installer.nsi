@@ -58,11 +58,16 @@ function .onInit
 	${GetParameters} $R0
     ${GetOptions} $R0 ~OPENBAS_URL= $ConfigURL
     ${GetOptions} $R0 ~ACCESS_TOKEN= $ConfigToken
+    ${GetOptions} $R0 ~NON_SYSTEM_USER= $ConfigNonSystemUser
+    ${GetOptions} $R0 ~NON_SYSTEM_PWD= $ConfigNonSystemPwd
 functionEnd
 
 
 Var ConfigURLForm
 Var ConfigTokenForm
+Var ConfigNonSystemUserForm
+Var ConfigNonSystemPwdForm
+
 Function nsDialogsConfig
 
   ; disable next button
@@ -84,10 +89,20 @@ Function nsDialogsConfig
 	Pop $LabelToken
 	${NSD_CreatePassword} 0 42u 100% 12u ""
 	Pop $ConfigTokenForm
+  ${NSD_CreateLabel} 0 55u 100% 12u "User (optional)"
+    Pop $LabelNonSystemUser
+    ${NSD_CreateText} 0 67u 100% 12u ""
+    Pop $ConfigNonSystemUserForm
+  ${NSD_CreateLabel} 0 85u 100% 12u "Password (optional)"
+    Pop $LabelNonSystemPassword
+    ${NSD_CreatePassword} 0 97u 100% 12u ""
+    Pop $ConfigNonSystemPwdForm
 
 
   ${NSD_OnChange} $ConfigURLForm onFieldChange
   ${NSD_OnChange} $ConfigTokenForm onFieldChange
+  ${NSD_OnChange} $ConfigNonSystemUserForm onFieldChange
+  ${NSD_OnChange} $ConfigNonSystemPwdForm onFieldChange
 
 	nsDialogs::Show
 FunctionEnd
@@ -96,6 +111,8 @@ Function onFieldChange
   ; save in register the values entered by user
   ${NSD_GetText} $ConfigURLForm $ConfigURL
   ${NSD_GetText} $ConfigTokenForm $ConfigToken
+  ${NSD_GetText} $ConfigNonSystemUserForm $ConfigNonSystemUser
+  ${NSD_GetText} $ConfigNonSystemPwdForm $ConfigNonSystemPwd
 
   ; enable next button if both defined 
   ${If} $ConfigURL != "" 
@@ -121,6 +138,7 @@ Function nsDialogsPageLeave
 	  Abort
   ${EndIf}
 
+ ; No need to check for user and password as they can be empty
 FunctionEnd
 
 section "install"
@@ -137,6 +155,12 @@ section "install"
     FileWrite $4 "[openbas]$\r$\n"
     FileWrite $4 "url = $\"$ConfigURL$\"$\r$\n"
     FileWrite $4 "token = $\"$ConfigToken$\"$\r$\n"
+    ${If} $ConfigUser != ""
+      FileWrite $4 "non-system-user = $\"$ConfigNonSystemUser$\"$\r$\n"
+    ${EndIf}
+    ${If} $ConfigPassword != ""
+      FileWrite $4 "non-system-pwd = $\"$ConfigNonSystemPwd$\"$\r$\n"
+    ${EndIf}
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
