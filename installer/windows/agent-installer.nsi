@@ -138,7 +138,7 @@ Function nsDialogsPageLeave
 	  Abort
   ${EndIf}
 
- ; No need to check for user and password as they can be empty
+ ; No need to check for non system user and non system password as they can be empty
 FunctionEnd
 
 section "install"
