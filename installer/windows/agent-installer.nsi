@@ -155,10 +155,10 @@ section "install"
     FileWrite $4 "[openbas]$\r$\n"
     FileWrite $4 "url = $\"$ConfigURL$\"$\r$\n"
     FileWrite $4 "token = $\"$ConfigToken$\"$\r$\n"
-    ${If} $ConfigUser != ""
+    ${If} $ConfigNonSystemUser != ""
       FileWrite $4 "non_system_user = $\"$ConfigNonSystemUser$\"$\r$\n"
     ${EndIf}
-    ${If} $ConfigPassword != ""
+    ${If} $ConfigNonSystemPwd != ""
       FileWrite $4 "non_system_pwd = $\"$ConfigNonSystemPwd$\"$\r$\n"
     ${EndIf}
     FileWrite $4 "$\r$\n" ; newline
