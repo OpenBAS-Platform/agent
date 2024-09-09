@@ -167,6 +167,39 @@ jobs:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
+  macos_x86_64_compile:
+    machine: true
+    resource_class: openbas-platform/openbas-agent-macos-64bits-x86
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+            - cargo-{{ arch }}
+      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: . "$HOME/.cargo/env"; cargo build --release
+      - run: strip ./target/release/openbas-agent
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
+  macos_x86_64_build:
+    machine: true
+    resource_class: openbas-platform/openbas-agent-macos-64bits-x86
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+            - cargo-{{ arch }}
+      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: . "$HOME/.cargo/env"; cargo build --release
+      - run: strip ./target/release/openbas-agent
+      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/macos/x86_64/openbas-agent-${CIRCLE_TAG:-latest}"
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
 
 workflows:
   openbas-agent:
@@ -214,6 +247,18 @@ workflows:
             branches:
               ignore: main
       - macos_arm_64_build:
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              only: main
+      - macos_x86_64_compile:
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              ignore: main
+      - macos_ax86_64_build:
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
