@@ -1,18 +1,20 @@
 use config::{Config, ConfigError, Environment, File};
-use std::env;
 use serde::Deserialize;
+use std::env;
 
 const ENV_PRODUCTION: &str = "production";
 const ENV_PRODUCTION_CONFIG_FILE: &str = "openbas-agent-config";
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(unused)]
 pub struct OpenBAS {
     pub url: String,
     pub token: String,
+    pub non_system_user: String,
+    pub non_system_pwd: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(unused)]
 pub struct Settings {
     pub debug: bool,
@@ -21,7 +23,7 @@ pub struct Settings {
 
 impl Settings {
     pub fn mode() -> String {
-        return env::var("env").unwrap_or_else(|_| ENV_PRODUCTION.into())
+        return env::var("env").unwrap_or_else(|_| ENV_PRODUCTION.into());
     }
 
     pub fn new() -> Result<Self, ConfigError> {

@@ -156,10 +156,10 @@ section "install"
     FileWrite $4 "url = $\"$ConfigURL$\"$\r$\n"
     FileWrite $4 "token = $\"$ConfigToken$\"$\r$\n"
     ${If} $ConfigUser != ""
-      FileWrite $4 "non-system-user = $\"$ConfigNonSystemUser$\"$\r$\n"
+      FileWrite $4 "non_system_user = $\"$ConfigNonSystemUser$\"$\r$\n"
     ${EndIf}
     ${If} $ConfigPassword != ""
-      FileWrite $4 "non-system-pwd = $\"$ConfigNonSystemPwd$\"$\r$\n"
+      FileWrite $4 "non_system_pwd = $\"$ConfigNonSystemPwd$\"$\r$\n"
     ${EndIf}
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4

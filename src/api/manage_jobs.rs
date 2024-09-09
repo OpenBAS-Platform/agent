@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use crate::common::error_model::Error;
+use serde::Deserialize;
 
 use super::Client;
 
@@ -10,6 +10,7 @@ pub struct JobResponse {
     #[allow(dead_code)]
     pub asset_agent_asset: String,
     pub asset_agent_command: String,
+    pub asset_agent_elevation_required: bool,
 }
 
 impl Client {
@@ -22,7 +23,7 @@ impl Client {
             }
             Err(ureq::Error::Status(_, response)) => {
                 Err(Error::Api(response.into_string().unwrap()))
-            },
+            }
             Err(err) => {
                 Err(Error::Internal(err.to_string()))
             }
@@ -36,7 +37,7 @@ impl Client {
             }
             Err(ureq::Error::Status(_, response)) => {
                 Err(Error::Api(response.into_string().unwrap()))
-            },
+            }
             Err(err) => {
                 Err(Error::Internal(err.to_string()))
             }
