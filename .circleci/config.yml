@@ -258,7 +258,7 @@ workflows:
               ignore: /.*/
             branches:
               ignore: main
-      - macos_ax86_64_build:
+      - macos_x86_64_build:
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
