@@ -76,6 +76,7 @@ fn run_as_user_command(username: &str, domain: &str, password: &str, script_file
     let domain_wide = to_wide_string(domain);
     let password_wide = to_wide_string(password);
 
+    println!("User: {}", username);
     println!("Script file path: {}", script_file_path.to_str().unwrap());
 
     let command_line = format!(
