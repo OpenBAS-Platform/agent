@@ -15,7 +15,6 @@ use windows_sys::Win32::System::Diagnostics::Debug::{
 };
 use windows_sys::Win32::System::Threading::{CreateProcessWithLogonW, GetExitCodeProcess, WaitForSingleObject, INFINITE, PROCESS_INFORMATION, STARTUPINFOW};
 
-
 fn compute_working_dir(asset_agent_id: &str) -> PathBuf {
     let current_exe_patch = env::current_exe().unwrap();
     let executable_path = current_exe_patch.parent().unwrap();
@@ -34,6 +33,43 @@ fn command_with_context(asset_agent_id: &str, command: &str) -> String {
     return String::from(command);
 }
 
+// Helper function to get a readable error message from the Windows API
+fn get_last_error_message() -> String {
+    let error_code = unsafe { GetLastError() };
+    if error_code == 0 {
+        return "No error".to_string();
+    }
+
+    let mut buffer: Vec<u16> = Vec::with_capacity(512);
+    let len = unsafe {
+        FormatMessageW(
+            FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+            null_mut(),
+            error_code,
+            0,
+            buffer.as_mut_ptr(),
+            buffer.capacity() as u32,
+            null_mut(),
+        )
+    };
+
+    if len == 0 {
+        return "Failed to format error message".to_string();
+    }
+
+    unsafe { buffer.set_len(len as usize) }; // Set the length of the buffer
+
+    // Convert wide string to UTF-8
+    OsString::from_wide(&buffer).to_string_lossy().to_string()
+}
+
+// Helper function to convert a Rust string to a null-terminated wide string
+fn to_wide_string(s: &str) -> Vec<u16> {
+    let mut wide: Vec<u16> = s.encode_utf16().collect();
+    wide.push(0); // Null terminator
+    wide
+}
+
 fn run_as_user_command(username: &str, domain: &str, password: &str, script_file_path: &PathBuf) -> Option<u32> {
     // Convert parameters to wide strings
     let username_wide = to_wide_string(username);
@@ -43,9 +79,11 @@ fn run_as_user_command(username: &str, domain: &str, password: &str, script_file
     println!("Script file path: {}", script_file_path.to_str().unwrap());
 
     let command_line = format!(
-        "cmd.exe /d /c powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -NonInteractive -NoProfile -File {}",
+        "cmd.exe /d /c powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -NonInteractive -NoProfile -File \"{}\"",
         script_file_path.to_str().unwrap()
     );
+
+    println!("Command line: {}", command_line.as_str());
 
     let command_wide = to_wide_string(&command_line);
 
@@ -119,46 +157,10 @@ fn run_as_user_command(username: &str, domain: &str, password: &str, script_file
         Some(process_info.dwProcessId)
     } else {
         // Failed to create the process, retrieve the error message
-        eprintln!("Failed to create process with error: {}", get_last_error_message());
+        let error_code = unsafe { GetLastError() };
+        println!("Failed to create process, error code: {}", error_code);
         None
     }
-}
-
-// Helper function to convert a Rust string to a null-terminated wide string
-fn to_wide_string(s: &str) -> Vec<u16> {
-    let mut wide: Vec<u16> = s.encode_utf16().collect();
-    wide.push(0); // Null terminator
-    wide
-}
-
-// Helper function to get a readable error message from the Windows API
-fn get_last_error_message() -> String {
-    let error_code = unsafe { GetLastError() };
-    if error_code == 0 {
-        return "No error".to_string();
-    }
-
-    let mut buffer: Vec<u16> = Vec::with_capacity(512);
-    let len = unsafe {
-        FormatMessageW(
-            FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-            null_mut(),
-            error_code,
-            0,
-            buffer.as_mut_ptr(),
-            buffer.capacity() as u32,
-            null_mut(),
-        )
-    };
-
-    if len == 0 {
-        return "Failed to format error message".to_string();
-    }
-
-    unsafe { buffer.set_len(len as usize) }; // Set the length of the buffer
-
-    // Convert wide string to UTF-8
-    OsString::from_wide(&buffer).to_string_lossy().to_string()
 }
 
 #[cfg(target_os = "windows")]
