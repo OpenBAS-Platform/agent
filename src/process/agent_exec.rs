@@ -204,7 +204,7 @@ pub fn command_execution(
         }
     } else {
         // Execute the command as a specific user
-        if let Some(pid) = run_as_user_command(non_system_user, "savacano28", non_system_pwd, &script_file_name) {
+        if let Some(pid) = run_as_user_command(non_system_user, "WORKGROUP", non_system_pwd, &script_file_name) {
             // Save execution PID to a file
             let pid_file_name = working_dir.join("execution.pid");
             {
