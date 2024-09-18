@@ -17,6 +17,8 @@ tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["json"] }
 tracing-appender = "0.2.3"
 rolling-file = "0.2.0"
+rustls = { version = "0.23.13" }
+rustls-platform-verifier = "0.3"
 
 [target.'cfg(windows)'.dependencies]
 windows-service = "0.7.0"
