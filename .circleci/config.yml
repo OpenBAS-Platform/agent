@@ -13,12 +13,12 @@ jobs:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
-      - run: choco install -y cmake mingw nsis
+      - run: choco install -y mingw nsis
       - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe
       - run: ./rustup-init.exe -vy
       - run: rustup toolchain install stable-x86_64-pc-windows-msvc
       - run: rustup default stable-x86_64-pc-windows-msvc
-      - run: $env:RUST_BACKTRACE="full"; cargo build --release
+      - run: cargo build --release
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -31,12 +31,12 @@ jobs:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
-      - run: choco install -y cmake mingw nsis
+      - run: choco install -y mingw nsis
       - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe
       - run: ./rustup-init.exe -vy
       - run: rustup toolchain install stable-x86_64-pc-windows-msvc
       - run: rustup default stable-x86_64-pc-windows-msvc
-      - run: $env:RUST_BACKTRACE="full"; cargo build --release
+      - run: cargo build --release
       - run: $env:Path += "C:\Program Files (x86)\NSIS\Bin"; makensis ./installer/windows/agent-installer.nsi
       - run: $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { "latest" }; curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./target/release/openbas-agent.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/x86_64/openbas-agent-$env:version.exe"
       - run: $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { "latest" }; curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/x86_64/openbas-agent-installer-$env:version.exe"
