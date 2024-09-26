@@ -8,9 +8,9 @@ use crate::api::Client;
 use crate::process::agent_exec;
 use crate::THREADS_CONTROL;
 
-pub fn listen(uri: String, token: String) -> Result<JoinHandle<()>, Error> {
+pub fn listen(uri: String, token: String, unsecured_certificate: bool, with_proxy: bool) -> Result<JoinHandle<()>, Error> {
     info!("Starting listening jobs thread");
-    let api = Client::new(uri, token);
+    let api = Client::new(uri, token, unsecured_certificate, with_proxy);
     let handle = thread::spawn(move || {
         // While no stop signal received
         while THREADS_CONTROL.load(Ordering::Relaxed) {

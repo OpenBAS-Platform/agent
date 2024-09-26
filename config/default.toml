@@ -3,3 +3,5 @@ debug=false
 [openbas]
 url = "http://localhost:3001"
 token = "ChangeMe"
+unsecured_certificate = false
+with_proxy = false
