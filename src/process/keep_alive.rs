@@ -7,9 +7,9 @@ use log::{error, info};
 use crate::api::Client;
 use crate::{THREADS_CONTROL};
 
-pub fn ping(uri: String, token: String) -> Result<JoinHandle<()>, Error> {
+pub fn ping(uri: String, token: String, unsecured_certificate: bool, with_proxy: bool) -> Result<JoinHandle<()>, Error> {
     info!("Starting ping thread");
-    let api = Client::new(uri, token);
+    let api = Client::new(uri, token,unsecured_certificate, with_proxy);
     let handle = thread::spawn(move || {
         // While no stop signal received
         while THREADS_CONTROL.load(Ordering::Relaxed) {

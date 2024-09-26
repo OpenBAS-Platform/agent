@@ -10,6 +10,8 @@ const ENV_PRODUCTION_CONFIG_FILE: &str = "openbas-agent-config";
 pub struct OpenBAS {
     pub url: String,
     pub token: String,
+    pub unsecured_certificate: bool,
+    pub with_proxy: bool
 }
 
 #[derive(Debug, Deserialize)]

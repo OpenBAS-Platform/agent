@@ -23,9 +23,11 @@ const PREFIX_LOG_NAME: &str = "openbas-agent.log";
 fn agent_start(settings_data: Settings) -> Result<Vec<JoinHandle<()>>, Error> {
     let url = settings_data.openbas.url;
     let token = settings_data.openbas.token;
-    let keep_alive_thread = keep_alive::ping(url.clone(), token.clone());
+    let unsecured_certificate = settings_data.openbas.unsecured_certificate;
+    let with_proxy = settings_data.openbas.with_proxy;
+    let keep_alive_thread = keep_alive::ping(url.clone(), token.clone(), unsecured_certificate.clone(), with_proxy.clone());
     // Starts the agent listening thread
-    let agent_job_thread = agent_job::listen(url.clone(), token.clone());
+    let agent_job_thread = agent_job::listen(url.clone(), token.clone(), unsecured_certificate.clone(), with_proxy.clone());
     // Starts the cleanup thread
     let cleanup_thread = agent_cleanup::clean();
     // Don't stop the exec until the listening thread is done
