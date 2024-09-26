@@ -18,8 +18,7 @@ jobs:
       - run: ./rustup-init.exe -vy
       - run: rustup toolchain install stable-x86_64-pc-windows-msvc
       - run: rustup default stable-x86_64-pc-windows-msvc
-      - run: RUST_BACKTRACE=1
-      - run: cargo build --release
+      - run: $env:RUST_BACKTRACE=1; cargo build --release
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -37,8 +36,7 @@ jobs:
       - run: ./rustup-init.exe -vy
       - run: rustup toolchain install stable-x86_64-pc-windows-msvc
       - run: rustup default stable-x86_64-pc-windows-msvc
-      - run: RUST_BACKTRACE=1
-      - run: cargo build --release
+      - run: $env:RUST_BACKTRACE=1; cargo build --release
       - run: $env:Path += "C:\Program Files (x86)\NSIS\Bin"; makensis ./installer/windows/agent-installer.nsi
       - run: $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { "latest" }; curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./target/release/openbas-agent.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/x86_64/openbas-agent-$env:version.exe"
       - run: $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { "latest" }; curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/x86_64/openbas-agent-installer-$env:version.exe"
