@@ -18,7 +18,18 @@ if [ "${os}" = "macos" ]; then
     mv /opt/openbas-agent/openbas-agent_upgrade /opt/openbas-agent/openbas-agent
     chmod 755 /opt/openbas-agent/openbas-agent
 
-    echo "02. Starting agent service"
+    echo "02. Updating OpenBAS configuration file"
+    cat > /opt/openbas-agent/openbas-agent-config.toml <<EOF
+debug=false
+
+[openbas]
+url = "${OPENBAS_URL}"
+token = "${OPENBAS_TOKEN}"
+unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
+with_proxy = "${OPENBAS_WITH_PROXY}"
+EOF
+
+    echo "03. Starting agent service"
     launchctl bootout system/ ~/Library/LaunchDaemons/openbas-agent.plist || echo "openbas-agent already stopped"
     launchctl bootstrap system/ ~/Library/LaunchDaemons/openbas-agent.plist
 
