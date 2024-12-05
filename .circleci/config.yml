@@ -206,7 +206,6 @@ jobs:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
-
 workflows:
   openbas-agent:
     jobs:
@@ -215,7 +214,9 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              ignore: main
+              ignore:
+                - main
+                - release/*
       - windows_x86_64_build:
           filters:
             tags:
@@ -229,7 +230,9 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              ignore: main
+              ignore:
+                - main
+                - release/*
       - linux_x86_64_build:
           filters:
             tags:
@@ -243,7 +246,9 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              ignore: main
+              ignore:
+                - main
+                - release/*
       - linux_arm_64_build:
           filters:
             tags:
@@ -257,7 +262,9 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              ignore: main
+              ignore:
+                - main
+                - release/*
       - macos_arm_64_build:
           filters:
             tags:
@@ -271,7 +278,9 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              ignore: main
+              ignore:
+                - main
+                - release/*
       - macos_x86_64_build:
           filters:
             tags:
