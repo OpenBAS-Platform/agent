@@ -39,11 +39,14 @@ jobs:
       - run: rustup default stable-x86_64-pc-windows-msvc
       - run: cargo build --release
       - run: $env:Path += "C:\Program Files (x86)\NSIS\Bin"; makensis ./installer/windows/agent-installer.nsi
-      - run: $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { if ($env:CIRCLE_BRANCH -eq "main") { "latest" } else { "prerelease" } }
-      - run: curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./target/release/openbas-agent.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/x86_64/openbas-agent-$env:version.exe"
-      - run: curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/x86_64/openbas-agent-installer-$env:version.exe"
-      - run: curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-installer-$env:version.ps1"
-      - run: curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-upgrade.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-upgrade-$$env:version.ps1"
+      - run:
+          name: push to jfrog
+          command: |
+            $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { if ($env:CIRCLE_BRANCH -eq "main") { "latest" } else { "prerelease" } }
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./target/release/openbas-agent.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/x86_64/openbas-agent-$env:version.exe"
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/x86_64/openbas-agent-installer-$env:version.exe"
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-installer-$env:version.ps1"
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-upgrade.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-upgrade-$$env:version.ps1"
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -82,10 +85,13 @@ jobs:
       - run: . "$HOME/.cargo/env"; rustup target add x86_64-unknown-linux-musl
       - run: . "$HOME/.cargo/env"; cargo build --target=x86_64-unknown-linux-musl --release
       - run: strip ./target/x86_64-unknown-linux-musl/release/openbas-agent
-      - run: export version=${CIRCLE_TAG:-$( [ "$CIRCLE_BRANCH" = "main" ] && echo "latest" || echo "prerelease" )}
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/x86_64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/linux/x86_64/openbas-agent-$version"
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-installer-$version.sh"
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-upgrade-$version.sh"
+      - run:
+          name: push to jfrog
+          command: |
+            export version=${CIRCLE_TAG:-$( [ "$CIRCLE_BRANCH" = "main" ] && echo "latest" || echo "prerelease" )}
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/x86_64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/linux/x86_64/openbas-agent-$version"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-installer-$version.sh"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-upgrade-$version.sh"
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -126,10 +132,13 @@ jobs:
       - run: . "$HOME/.cargo/env"; rustup target add aarch64-unknown-linux-musl
       - run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
       - run: strip ./target/aarch64-unknown-linux-musl/release/openbas-agent
-      - run: export version=${CIRCLE_TAG:-$( [ "$CIRCLE_BRANCH" = "main" ] && echo "latest" || echo "prerelease" )}
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/aarch64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/linux/arm64/openbas-agent-$version"
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-installer-$version.sh"
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-upgrade-$version.sh"
+      - run:
+          name: push to jfrog
+          command: |
+            export version=${CIRCLE_TAG:-$( [ "$CIRCLE_BRANCH" = "main" ] && echo "latest" || echo "prerelease" )}
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/aarch64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/linux/arm64/openbas-agent-$version"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-installer-$version.sh"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-upgrade-$version.sh"
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -164,10 +173,13 @@ jobs:
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - run: . "$HOME/.cargo/env"; cargo build --release
       - run: strip ./target/release/openbas-agent
-      - run: export version=${CIRCLE_TAG:-$( [ "$CIRCLE_BRANCH" = "main" ] && echo "latest" || echo "prerelease" )}
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/macos/arm64/openbas-agent-$version"
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/macos/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/macos/openbas-agent-installer-$version.sh"
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/macos/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/macos/openbas-agent-upgrade-$version.sh"
+      - run:
+          name: push to jfrog
+          command: |
+            export version=${CIRCLE_TAG:-$( [ "$CIRCLE_BRANCH" = "main" ] && echo "latest" || echo "prerelease" )}
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/macos/arm64/openbas-agent-$version"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/macos/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/macos/openbas-agent-installer-$version.sh"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/macos/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/macos/openbas-agent-upgrade-$version.sh"
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -200,8 +212,11 @@ jobs:
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - run: . "$HOME/.cargo/env"; cargo build --release
       - run: strip ./target/release/openbas-agent
-      - run: export version=${CIRCLE_TAG:-$( [ "$CIRCLE_BRANCH" = "main" ] && echo "latest" || echo "prerelease" )}
-      - run: curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/macos/x86_64/openbas-agent-$version"
+      - run:
+          name: push to jfrog
+          command: |
+            export version=${CIRCLE_TAG:-$( [ "$CIRCLE_BRANCH" = "main" ] && echo "latest" || echo "prerelease" )}
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/macos/x86_64/openbas-agent-$version"
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
