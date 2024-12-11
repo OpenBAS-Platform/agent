@@ -3,7 +3,6 @@ version: 2.1
 orbs:
   win: circleci/windows@5.0.0
   macos: circleci/macos@2.5.2
-  kubernetes: circleci/kubernetes@1.3.1
 
 jobs:
   windows_x86_64_compile:
@@ -46,7 +45,7 @@ jobs:
             curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./target/release/openbas-agent.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/x86_64/openbas-agent-$env:version.exe"
             curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/x86_64/openbas-agent-installer-$env:version.exe"
             curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-installer-$env:version.ps1"
-            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-upgrade.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-upgrade-$$env:version.ps1"
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-upgrade.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-upgrade-$env:version.ps1"
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
