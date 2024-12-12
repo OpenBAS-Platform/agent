@@ -90,10 +90,14 @@ jobs:
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
       - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
       - run: Invoke-Expression '& "C:\Program Files (x86)\NSIS\Bin\makensis" ./installer/windows/agent-installer.nsi'
-      - run: $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { "latest" }; curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./target/release/openbas-agent.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/arm64/openbas-agent-$env:version.exe"
-      - run: $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { "latest" }; curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/arm64/openbas-agent-installer-$env:version.exe"
-      - run: $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { "latest" }; curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-installer-$env:version.ps1"
-      - run: $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { "latest" }; curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-upgrade.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-upgrade-$env:version.ps1"
+      - run:
+          name: push to jfrog
+          command: |
+            $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { if ($env:CIRCLE_BRANCH -eq "main") { "latest" } else { "prerelease" } }
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./target/release/openbas-agent.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/arm64/openbas-agent-$env:version.exe"
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/arm64/openbas-agent-installer-$env:version.exe"
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-installer-$env:version.ps1"
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-upgrade.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-upgrade-$env:version.ps1"
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -284,13 +288,17 @@ workflows:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
-              only: main
+              only:
+                - main
+                - /^release\/\d+\.\d+\.\d+$/
       - windows_arm_64_compile:
           filters:
             tags:
               ignore: /.*/
             branches:
-              ignore: main
+              ignore:
+                - main
+                - /^release\/\d+\.\d+\.\d+$/
       - windows_arm_64_build:
           filters:
             tags:
