@@ -50,6 +50,58 @@ jobs:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
+  windows_arm_64_compile:
+    machine: true
+    resource_class: openbas-platform/openbas-agent-windows-64bits-arm
+    shell: 'powershell.exe -ExecutionPolicy Bypass'
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+            - cargo-{{ arch }}
+      - run: curl.exe -SL --output vs_buildtools.exe --url https://aka.ms/vs/17/release/vs_buildtools.exe
+      - run: ./vs_buildtools.exe --add Microsoft.VisualStudio.Component.Clang --add Microsoft.VisualStudio.Component.VC.tools.arm64 --wait --includeRecommended --quiet --norestart
+      - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe
+      - run: ./rustup-init.exe -vy
+      - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" toolchain install stable-aarch64-pc-windows-msvc'
+      - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
+      - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
+  windows_arm_64_build:
+    machine: true
+    resource_class: openbas-platform/openbas-agent-windows-64bits-arm
+    shell: 'powershell.exe -ExecutionPolicy Bypass'
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+            - cargo-{{ arch }}
+      - run: choco install -y nsis
+      - run: curl.exe -SL --output vs_buildtools.exe --url https://aka.ms/vs/17/release/vs_buildtools.exe
+      - run: ./vs_buildtools.exe --add Microsoft.VisualStudio.Component.Clang --add Microsoft.VisualStudio.Component.VC.tools.arm64 --wait --includeRecommended --quiet --norestart
+      - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe
+      - run: ./rustup-init.exe -vy
+      - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" toolchain install stable-aarch64-pc-windows-msvc'
+      - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
+      - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
+      - run: Invoke-Expression '& "C:\Program Files (x86)\NSIS\Bin\makensis" ./installer/windows/agent-installer.nsi'
+      - run:
+          name: push to jfrog
+          command: |
+            $env:version = if ($env:CIRCLE_TAG) { $env:CIRCLE_TAG } else { if ($env:CIRCLE_BRANCH -eq "main") { "latest" } else { "prerelease" } }
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./target/release/openbas-agent.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/arm64/openbas-agent-$env:version.exe"
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.exe "https://filigran.jfrog.io/artifactory/openbas-agent/windows/arm64/openbas-agent-installer-$env:version.exe"
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-installer.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-installer-$env:version.ps1"
+            curl.exe -u samuel.hassine@filigran.io:$env:JFROG_TOKEN -T ./installer/windows/agent-upgrade.ps1 "https://filigran.jfrog.io/artifactory/openbas-agent/windows/openbas-agent-upgrade-$env:version.ps1"
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
   linux_x86_64_compile:
     machine:
       image: ubuntu-2204:current
@@ -232,6 +284,22 @@ workflows:
                 - main
                 - /^release\/\d+\.\d+\.\d+$/
       - windows_x86_64_build:
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              only:
+                - main
+                - /^release\/\d+\.\d+\.\d+$/
+      - windows_arm_64_compile:
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              ignore:
+                - main
+                - /^release\/\d+\.\d+\.\d+$/
+      - windows_arm_64_build:
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
