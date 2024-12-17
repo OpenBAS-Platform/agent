@@ -1,8 +1,14 @@
-if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") { $architecture = "x86_64" }
-elseif ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { $architecture = "arm64" }
-elseif ($env:PROCESSOR_ARCHITECTURE -eq "x86") {
-    if ($env:PROCESSOR_ARCHITEW6432 -eq "AMD64") { $architecture = "x86_64" }
-    elseif ($env:PROCESSOR_ARCHITEW6432 -eq "ARM64") { $architecture = "arm64" }
+switch ($env:PROCESSOR_ARCHITECTURE)
+{
+    "AMD64" {$architecture = "x86_64"; Break}
+	"ARM64" {$architecture = "arm64"; Break}
+	"x86" {
+		switch ($env:PROCESSOR_ARCHITEW6432)
+		{
+			"AMD64" {$architecture = "x86_64"; Break}
+			"ARM64" {$architecture = "arm64"; Break}
+		}
+	}
 }
 if ([string]::IsNullOrEmpty($architecture)) { throw "Architecture $env:PROCESSOR_ARCHITECTURE is not supported yet, please create a ticket in openbas github project" }
 if ((Get-Host).Version.Major -lt 7) { throw "PowerShell 7 or higher is required for installation" }
