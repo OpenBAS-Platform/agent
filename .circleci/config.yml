@@ -37,7 +37,7 @@ jobs:
       - run: rustup toolchain install stable-x86_64-pc-windows-msvc
       - run: rustup default stable-x86_64-pc-windows-msvc
       - run: cargo build --release
-      - run: $env:Path += "C:\Program Files (x86)\NSIS\Bin"; makensis ./installer/windows/agent-installer.nsi
+      - run: Invoke-Expression '& "C:\Program Files (x86)\NSIS\Bin\makensis" ./installer/windows/agent-installer.nsi'
       - run:
           name: push to jfrog
           command: |
