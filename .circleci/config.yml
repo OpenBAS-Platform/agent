@@ -108,6 +108,8 @@ jobs:
   linux_x86_64_compile:
     machine:
       image: ubuntu-2204:current
+    environment:
+      RUSTFLAGS: '-D warnings'
     steps:
       - checkout
       - restore_cache:
@@ -154,6 +156,8 @@ jobs:
     machine:
       image: ubuntu-2204:current
     resource_class: arm.medium
+    environment:
+      RUSTFLAGS: '-D warnings'
     steps:
       - checkout
       - restore_cache:
@@ -201,6 +205,8 @@ jobs:
     macos:
       xcode: 15.3.0
     resource_class: macos.m1.medium.gen1
+    environment:
+      RUSTFLAGS: '-D warnings'
     steps:
       - checkout
       - restore_cache:
@@ -241,6 +247,8 @@ jobs:
   macos_x86_64_compile:
     machine: true
     resource_class: openbas-platform/openbas-agent-macos-64bits-x86
+    environment:
+      RUSTFLAGS: '-D warnings'
     steps:
       - checkout
       - restore_cache:
