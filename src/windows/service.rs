@@ -92,6 +92,6 @@ pub mod service_stub {
     }
 
     pub fn is_windows_service() -> bool {
-        return false
+        false
     }
 }
