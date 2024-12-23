@@ -17,14 +17,11 @@ jobs:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
-      - run: |
-          choco install -y mingw nsis
-          if (-not (Get-Command rustup -ErrorAction SilentlyContinue)) {
-            curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe
-            ./rustup-init.exe -vy
-          }
-          rustup toolchain install stable-x86_64-pc-windows-msvc
-          rustup default stable-x86_64-pc-windows-msvc
+      - run: choco install -y mingw nsis
+      - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe
+      - run: ./rustup-init.exe -vy
+      - run: rustup toolchain install stable-x86_64-pc-windows-msvc
+      - run: rustup default stable-x86_64-pc-windows-msvc
       # Install quality tools
       - run: |
           rustup component add clippy
