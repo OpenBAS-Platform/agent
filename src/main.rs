@@ -31,20 +31,20 @@ fn agent_start(settings_data: Settings) -> Result<Vec<JoinHandle<()>>, Error> {
     // Starts the cleanup thread
     let cleanup_thread = agent_cleanup::clean();
     // Don't stop the exec until the listening thread is done
-    return Ok(vec![
-        keep_alive_thread.unwrap(), 
-        agent_job_thread.unwrap(), 
-        cleanup_thread.unwrap()]
+    Ok(vec![
+        keep_alive_thread?,
+        agent_job_thread?,
+        cleanup_thread?]
     )
 }
 
 fn main() -> Result<(), Error> {
     // region Init logger
-    let current_exe_patch = env::current_exe().unwrap();
+    let current_exe_patch = env::current_exe()?;
     let parent_path = current_exe_patch.parent().unwrap();
     let log_file = parent_path.join(PREFIX_LOG_NAME);
     let condition = RollingConditionBasic::new().daily();
-    let file_appender = BasicRollingFileAppender::new(log_file, condition, 3).unwrap();
+    let file_appender = BasicRollingFileAppender::new(log_file, condition, 3)?;
     let (file_writer, _guard) = tracing_appender::non_blocking(file_appender);
     tracing_subscriber::fmt().json().with_writer(file_writer).init();
     // endregion
@@ -54,7 +54,7 @@ fn main() -> Result<(), Error> {
     let settings_data = settings.unwrap();
     if service_stub::is_windows_service() {
         // Running as a Windows service
-        agent_start(settings_data).unwrap();
+        agent_start(settings_data)?;
         // Service stub is a blocking thread managed by Windows service
         service_stub::run().unwrap();
     } else {
@@ -64,7 +64,7 @@ fn main() -> Result<(), Error> {
         agent_handle.into_iter().for_each(|handle| handle.join().unwrap());
     }
     // endregion
-    return Ok(())
+    Ok(())
 }
 
 
