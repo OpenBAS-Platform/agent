@@ -20,7 +20,7 @@ fn get_old_execution_directories(path: &str, since_minutes: u64) -> Result<Vec<D
     let current_exe_patch = env::current_exe().unwrap();
     let executable_path = current_exe_patch.parent().unwrap();
     let entries = fs::read_dir(executable_path).unwrap();
-    return entries.into_iter().filter(|entry| {
+    entries.into_iter().filter(|entry| {
         let file_entry = entry.as_ref().unwrap();
         let file_name = file_entry.file_name();
         let metadata = fs::metadata(file_entry.path()).unwrap();
@@ -31,7 +31,7 @@ fn get_old_execution_directories(path: &str, since_minutes: u64) -> Result<Vec<D
             return old_minutes > since_minutes
         }
         false
-    }).collect();
+    }).collect()
 }
 
 fn create_cleanup_scripts() {
