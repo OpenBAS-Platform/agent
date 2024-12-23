@@ -15,16 +15,19 @@ pub fn listen(uri: String, token: String, unsecured_certificate: bool, with_prox
         // While no stop signal received
         while THREADS_CONTROL.load(Ordering::Relaxed) {
             let jobs = api.list_jobs();
-            if jobs.is_ok() {
-                jobs.unwrap().iter().for_each(|j| {
+            if let Ok(jobs) = jobs {
+                jobs.iter().for_each(|j| {
                     info!("Start handling inject: {:?}", j.asset_agent_inject);
-                    // 01. Remove the execution job
                     info!("Cleaning job: {:?}", j.asset_agent_id);
+
                     let clean_result = api.clean_job(j.asset_agent_id.as_str());
-                    // 02. Execute the command
+
                     if clean_result.is_ok() {
                         let _ = agent_exec::command_execution(j.asset_agent_id.as_str(), j.asset_agent_command.as_str());
+                    } else {
+                        info!("Failed to clean job: {:?}", j.asset_agent_id);
                     }
+
                     info!("Done handling inject: {:?}", j.asset_agent_inject);
                 });
             } else {
