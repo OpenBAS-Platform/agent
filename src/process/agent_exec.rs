@@ -1,9 +1,9 @@
+use log::info;
 use std::env;
 use std::fs::{create_dir, File};
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use log::info;
 
 use crate::common::error_model::Error;
 
@@ -17,10 +17,18 @@ fn command_with_context(asset_agent_id: &str, command: &str) -> String {
     let working_dir = compute_working_dir(asset_agent_id);
     let command_server_location = command.replace("#{location}", working_dir.to_str().unwrap());
     if cfg!(target_os = "windows") {
-        return format!("Set-Location -Path \"{}\"; {}", working_dir.to_str().unwrap(), command_server_location);
+        return format!(
+            "Set-Location -Path \"{}\"; {}",
+            working_dir.to_str().unwrap(),
+            command_server_location
+        );
     }
     if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
-        return format!("cd \"{}\"; {}", working_dir.to_str().unwrap(), command_server_location);
+        return format!(
+            "cd \"{}\"; {}",
+            working_dir.to_str().unwrap(),
+            command_server_location
+        );
     }
     String::from(command)
 }
@@ -41,8 +49,18 @@ pub fn command_execution(asset_agent_id: &str, raw_command: &str) -> Result<(), 
     }
     // Prepare and execute the command
     let win_path = format!("\"{}\"", script_file_name.to_str().unwrap());
-    let command_args = &["/d", "/c", "powershell.exe", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
-        "-NonInteractive", "-NoProfile", "-File"];
+    let command_args = &[
+        "/d",
+        "/c",
+        "powershell.exe",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-WindowStyle",
+        "Hidden",
+        "-NonInteractive",
+        "-NoProfile",
+        "-File",
+    ];
     let child_execution = Command::new("cmd.exe")
         .args(command_args)
         .raw_arg(win_path.as_str())

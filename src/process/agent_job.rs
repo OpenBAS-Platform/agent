@@ -1,14 +1,19 @@
-use log::{error, info};
-use std::io::Error;
-use std::sync::atomic::{Ordering};
-use std::thread;
-use std::thread::{JoinHandle, sleep};
-use std::time::Duration;
 use crate::api::Client;
 use crate::process::agent_exec;
 use crate::THREADS_CONTROL;
+use log::{error, info};
+use std::io::Error;
+use std::sync::atomic::Ordering;
+use std::thread;
+use std::thread::{sleep, JoinHandle};
+use std::time::Duration;
 
-pub fn listen(uri: String, token: String, unsecured_certificate: bool, with_proxy: bool) -> Result<JoinHandle<()>, Error> {
+pub fn listen(
+    uri: String,
+    token: String,
+    unsecured_certificate: bool,
+    with_proxy: bool,
+) -> Result<JoinHandle<()>, Error> {
     info!("Starting listening jobs thread");
     let api = Client::new(uri, token, unsecured_certificate, with_proxy);
     let handle = thread::spawn(move || {
@@ -23,7 +28,10 @@ pub fn listen(uri: String, token: String, unsecured_certificate: bool, with_prox
                     let clean_result = api.clean_job(j.asset_agent_id.as_str());
 
                     if clean_result.is_ok() {
-                        let _ = agent_exec::command_execution(j.asset_agent_id.as_str(), j.asset_agent_command.as_str());
+                        let _ = agent_exec::command_execution(
+                            j.asset_agent_id.as_str(),
+                            j.asset_agent_command.as_str(),
+                        );
                     } else {
                         info!("Failed to clean job: {:?}", j.asset_agent_id);
                     }

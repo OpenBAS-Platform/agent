@@ -1,6 +1,6 @@
 use config::{Config, ConfigError, Environment, File};
-use std::env;
 use serde::Deserialize;
+use std::env;
 
 const ENV_PRODUCTION: &str = "production";
 const ENV_PRODUCTION_CONFIG_FILE: &str = "openbas-agent-config";
@@ -11,7 +11,7 @@ pub struct OpenBAS {
     pub url: String,
     pub token: String,
     pub unsecured_certificate: bool,
-    pub with_proxy: bool
+    pub with_proxy: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -36,11 +36,16 @@ impl Settings {
             // Join the expected config file with the parent
             let config_file = parent_path.join(ENV_PRODUCTION_CONFIG_FILE);
             let config_path = config_file.display();
-            config.add_source(File::with_name(&config_path.to_string()).required(true)).build()?.try_deserialize()
+            config
+                .add_source(File::with_name(&config_path.to_string()).required(true))
+                .build()?
+                .try_deserialize()
         } else {
-            config.add_source(File::with_name("config/default"))
+            config
+                .add_source(File::with_name("config/default"))
                 .add_source(File::with_name(&format!("config/{}", run_mode)).required(false))
-                .build()?.try_deserialize()
+                .build()?
+                .try_deserialize()
         }
     }
 }

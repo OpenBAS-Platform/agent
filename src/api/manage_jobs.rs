@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use crate::common::error_model::Error;
+use serde::Deserialize;
 
 use super::Client;
 
@@ -16,30 +16,25 @@ impl Client {
     pub fn list_jobs(&self) -> Result<Vec<JobResponse>, Error> {
         // Post the input to the OpenBAS API
         let agent_id = mid::get("openbas").unwrap();
-        match self.get(&format!("/api/endpoints/jobs/{}", agent_id)).call() {
-            Ok(response) => {
-                Ok(response.into_json()?)
-            }
+        match self
+            .get(&format!("/api/endpoints/jobs/{}", agent_id))
+            .call()
+        {
+            Ok(response) => Ok(response.into_json()?),
             Err(ureq::Error::Status(_, response)) => {
                 Err(Error::Api(response.into_string().unwrap()))
-            },
-            Err(err) => {
-                Err(Error::Internal(err.to_string()))
             }
+            Err(err) => Err(Error::Internal(err.to_string())),
         }
     }
     pub fn clean_job(&self, job_id: &str) -> Result<(), Error> {
         // Post the input to the OpenBAS API
         match self.post(&format!("/api/endpoints/jobs/{}", job_id)).call() {
-            Ok(_) => {
-                Ok(())
-            }
+            Ok(_) => Ok(()),
             Err(ureq::Error::Status(_, response)) => {
                 Err(Error::Api(response.into_string().unwrap()))
-            },
-            Err(err) => {
-                Err(Error::Internal(err.to_string()))
             }
+            Err(err) => Err(Error::Internal(err.to_string())),
         }
     }
 }
