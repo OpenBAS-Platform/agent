@@ -75,6 +75,10 @@ jobs:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
       - run: curl.exe -SL --output vs_buildtools.exe --url https://aka.ms/vs/17/release/vs_buildtools.exe
       - run: ./vs_buildtools.exe --add Microsoft.VisualStudio.Component.Clang --add Microsoft.VisualStudio.Component.VC.tools.arm64 --wait --includeRecommended --quiet --norestart
       - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe
@@ -82,10 +86,19 @@ jobs:
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" toolchain install stable-aarch64-pc-windows-msvc'
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
       - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
-      - save_cache:
-          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
-          paths:
-            - ~/.cargo
+      # Install quality tools
+      - run: |
+          rustup component add clippy
+          rustup component add rustfmt
+          rustup component add miri
+          cargo install cargo-audit
+      # Run checks
+      - run: cargo clippy -- -D warnings
+      - run: cargo fmt -- --check
+      - run: cargo miri run
+      - run: cargo audit
+      - run: cargo test --release
+      - run: cargo build --release
   windows_arm_64_build:
     machine: true
     resource_class: openbas-platform/openbas-agent-windows-64bits-arm
@@ -120,24 +133,34 @@ jobs:
   linux_x86_64_compile:
     machine:
       image: ubuntu-2204:current
-    environment:
-      RUSTFLAGS: '-D warnings'
     steps:
       - checkout
       - restore_cache:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
-      - run: sudo apt-get update
-      - run: sudo apt-get -y install curl musl-tools
-      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
-      - run: . "$HOME/.cargo/env"; rustup target add x86_64-unknown-linux-musl
-      - run: . "$HOME/.cargo/env"; cargo build --target=x86_64-unknown-linux-musl --release
-      - run: strip ./target/x86_64-unknown-linux-musl/release/openbas-agent
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
+      - run: sudo apt-get update
+      - run: sudo apt-get -y install curl musl-tools
+      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: . "$HOME/.cargo/env"; rustup target add x86_64-unknown-linux-musl
+      # Install quality tools
+      - run: |
+          rustup component add clippy
+          rustup component add rustfmt
+          rustup component add miri
+          cargo install cargo-audit
+      # Run checks
+      - run: cargo clippy -- -D warnings
+      - run: cargo fmt -- --check
+      - run: cargo miri run
+      - run: cargo audit
+      - run: cargo test --release
+      - run: . "$HOME/.cargo/env"; cargo build --target=x86_64-unknown-linux-musl --release
+      - run: strip ./target/x86_64-unknown-linux-musl/release/openbas-agent
   linux_x86_64_build:
     machine:
       image: ubuntu-2204:current
@@ -168,24 +191,32 @@ jobs:
     machine:
       image: ubuntu-2204:current
     resource_class: arm.medium
-    environment:
-      RUSTFLAGS: '-D warnings'
     steps:
       - checkout
       - restore_cache:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
-      - run: sudo apt-get update
-      - run: sudo apt-get -y install curl musl-tools
-      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
-      - run: . "$HOME/.cargo/env"; rustup target add aarch64-unknown-linux-musl
-      - run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
-      - run: strip ./target/aarch64-unknown-linux-musl/release/openbas-agent
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
+      - run: sudo apt-get update
+      - run: sudo apt-get -y install curl musl-tools
+      - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      - run: . "$HOME/.cargo/env"; rustup target add aarch64-unknown-linux-musl
+      # Install quality tools for code analysis
+      - run: |
+          rustup component add clippy rustfmt miri
+          cargo install cargo-audit
+      # Run checks on the codebase
+      - run: cargo clippy -- -D warnings
+      - run: cargo fmt -- --check
+      - run: cargo miri run
+      - run: cargo audit
+      - run: cargo test --release
+      - run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
+      - run: strip ./target/aarch64-unknown-linux-musl/release/openbas-agent
   linux_arm_64_build:
     machine:
       image: ubuntu-2204:current
@@ -217,8 +248,6 @@ jobs:
     macos:
       xcode: 15.3.0
     resource_class: macos.m1.medium.gen1
-    environment:
-      RUSTFLAGS: '-D warnings'
     steps:
       - checkout
       - restore_cache:
@@ -226,12 +255,18 @@ jobs:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      # Install quality tools for code analysis
+      - run: |
+          rustup component add clippy rustfmt miri
+          cargo install cargo-audit
+      # Run checks on the codebase
+      - run: cargo clippy -- -D warnings
+      - run: cargo fmt -- --check
+      - run: cargo miri run
+      - run: cargo audit
+      - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --release
       - run: strip ./target/release/openbas-agent
-      - save_cache:
-          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
-          paths:
-            - ~/.cargo
   macos_arm_64_build:
     macos:
       xcode: 15.3.0
@@ -259,8 +294,6 @@ jobs:
   macos_x86_64_compile:
     machine: true
     resource_class: openbas-platform/openbas-agent-macos-64bits-x86
-    environment:
-      RUSTFLAGS: '-D warnings'
     steps:
       - checkout
       - restore_cache:
@@ -268,12 +301,18 @@ jobs:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      # Install quality tools for code analysis
+      - run: |
+          rustup component add clippy rustfmt miri
+          cargo install cargo-audit
+      # Run checks on the codebase
+      - run: cargo clippy -- -D warnings
+      - run: cargo fmt -- --check
+      - run: cargo miri run
+      - run: cargo audit
+      - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --release
       - run: strip ./target/release/openbas-agent
-      - save_cache:
-          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
-          paths:
-            - ~/.cargo
   macos_x86_64_build:
     machine: true
     resource_class: openbas-platform/openbas-agent-macos-64bits-x86
