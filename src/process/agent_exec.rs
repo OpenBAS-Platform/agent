@@ -10,7 +10,7 @@ use crate::common::error_model::Error;
 fn compute_working_dir(asset_agent_id: &str) -> PathBuf {
     let current_exe_patch = env::current_exe().unwrap();
     let executable_path = current_exe_patch.parent().unwrap();
-    return executable_path.join(format!("execution-{}", asset_agent_id));
+    executable_path.join(format!("execution-{}", asset_agent_id))
 }
 
 fn command_with_context(asset_agent_id: &str, command: &str) -> String {
@@ -22,7 +22,7 @@ fn command_with_context(asset_agent_id: &str, command: &str) -> String {
     if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
         return format!("cd \"{}\"; {}", working_dir.to_str().unwrap(), command_server_location);
     }
-    return String::from(command);
+    String::from(command)
 }
 
 #[cfg(target_os = "windows")]
@@ -56,7 +56,7 @@ pub fn command_execution(asset_agent_id: &str, raw_command: &str) -> Result<(), 
         file.write_all(child_execution.id().to_string().as_bytes())?;
     }
     info!(identifier:? = asset_agent_id; "Invoking result");
-    return Ok(())
+    Ok(())
 }
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]

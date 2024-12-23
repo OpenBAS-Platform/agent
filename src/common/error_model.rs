@@ -15,7 +15,7 @@ impl fmt::Display for Error {
             Error::Api(api_message) =>
                 write!(f, "{}", api_message),
             Error::Io(io) =>
-                write!(f, "{}", io.to_string())
+                write!(f, "{}", io)
         }
     }
 }

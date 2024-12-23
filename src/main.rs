@@ -32,8 +32,8 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
     let cleanup_thread = agent_cleanup::clean();
     // Don't stop the exec until the listening thread is done
     Ok(vec![
-        keep_alive_thread.unwrap(), 
-        agent_job_thread.unwrap(), 
+        keep_alive_thread.unwrap(),
+        agent_job_thread.unwrap(),
         cleanup_thread.unwrap()]
     )
 }

@@ -45,6 +45,6 @@ impl Client {
             Err(err) => {
                 Err(Error::Internal(err.to_string()))
             }
-        };
+        }
     }
 }

@@ -23,7 +23,7 @@ pub struct Settings {
 
 impl Settings {
     pub fn mode() -> String {
-        return env::var("env").unwrap_or_else(|_| ENV_PRODUCTION.into())
+        env::var("env").unwrap_or_else(|_| ENV_PRODUCTION.into())
     }
 
     pub fn new() -> Result<Self, ConfigError> {
