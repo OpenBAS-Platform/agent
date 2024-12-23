@@ -24,7 +24,7 @@ impl Client {
             .user_agent(format!("openbas-agent/{}", VERSION).as_str())
             .try_proxy_from_env(with_proxy);
         if unsecured_certificate {
-            let arc_crypto_provider = std::sync::Arc::new(rustls::crypto::ring::default_provider());
+            let arc_crypto_provider = Arc::new(rustls::crypto::ring::default_provider());
             let config = ClientConfig::builder_with_provider(arc_crypto_provider)
                 .with_safe_default_protocol_versions()
                 .unwrap()
