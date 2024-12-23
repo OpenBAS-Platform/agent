@@ -30,7 +30,7 @@ fn get_old_execution_directories(path: &str, since_minutes: u64) -> Result<Vec<D
             let old_minutes = now.duration_since(file_modified).unwrap().as_secs() / 60;
             return old_minutes > since_minutes
         }
-        return false;
+        false
     }).collect();
 }
 
@@ -68,10 +68,10 @@ pub fn clean() -> Result<JoinHandle<()>, Error> {
                 info!("[cleanup thread] Killing process for directory {}", dirname);
                 let escaped_dirname = format!("\"{}\"", dirname);
                 if cfg!(target_os = "windows") {
-                    Command::new("powershell").args(&["-ExecutionPolicy", "Bypass", "openbas_agent_kill.ps1", escaped_dirname.as_str()]).output().unwrap();
+                    Command::new("powershell").args(["-ExecutionPolicy", "Bypass", "openbas_agent_kill.ps1", escaped_dirname.as_str()]).output().unwrap();
                 }
                 if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
-                    Command::new("bash").args(&["openbas_agent_kill.sh", dirname]).output().unwrap();
+                    Command::new("bash").args(["openbas_agent_kill.sh", dirname]).output().unwrap();
                 }
                 // After kill, rename from execution to executed
                 fs::rename(dirname, dirname.replace("execution", "executed")).unwrap();

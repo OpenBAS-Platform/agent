@@ -49,15 +49,15 @@ impl Client {
 
     pub fn post(&self, route: &str) -> Request {
         let api_route = format!("{}{}", self.server_url, route);
-        let request = self.http_client.post(&api_route)
-            .set("Authorization", &format!("Bearer {}", self.token));
-        return request;
+        
+        self.http_client.post(&api_route)
+            .set("Authorization", &format!("Bearer {}", self.token))
     }
 
     pub fn get(&self, route: &str) -> Request {
         let api_route = format!("{}{}", self.server_url, route);
-        let request = self.http_client.get(&api_route)
-            .set("Authorization", &format!("Bearer {}", self.token));
-        return request;
+        
+        self.http_client.get(&api_route)
+            .set("Authorization", &format!("Bearer {}", self.token))
     }
 }

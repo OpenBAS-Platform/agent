@@ -25,7 +25,7 @@ pub mod service_stub {
     const SERVICE_TYPE: ServiceType = ServiceType::OWN_PROCESS;
 
     pub fn is_windows_service() -> bool {
-        return is_running_as_windows_service().unwrap_or(false)
+        is_running_as_windows_service().unwrap_or(false)
     }
 
     pub fn run() -> Result<()> {
