@@ -66,5 +66,3 @@ fn main() -> Result<(), Error> {
     // endregion
     Ok(())
 }
-
-

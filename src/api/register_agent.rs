@@ -30,7 +30,6 @@ pub fn get_arch() -> String {
 }
 
 pub fn get_operating_system() -> String {
-    
     match env::consts::OS {
         "macos" => String::from("MacOS"),
         other => capitalize(other),
