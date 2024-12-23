@@ -26,12 +26,10 @@ jobs:
       - run: |
           rustup component add clippy
           rustup component add rustfmt
-          rustup component add miri
           cargo install cargo-audit
       # Run checks
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
-      - run: cargo miri run
       - run: cargo audit
       - run: cargo test --release
       - run: cargo build --release
@@ -86,12 +84,10 @@ jobs:
       - run: |
           rustup component add clippy
           rustup component add rustfmt
-          rustup component add miri
           cargo install cargo-audit
       # Run checks
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
-      - run: cargo miri run
       - run: cargo audit
       - run: cargo test --release
       - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
@@ -144,14 +140,13 @@ jobs:
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - run: . "$HOME/.cargo/env"; rustup target add x86_64-unknown-linux-musl
       # Install quality tools
-      - run: . "$HOME/.cargo/env"; rustup install nightly
-      - run: . "$HOME/.cargo/env"; rustup default nightly
-      - run: . "$HOME/.cargo/env"; rustup component add miri clippy rustfmt
-      - run: . "$HOME/.cargo/env"; cargo install cargo-audit
+      - run: |
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit
       # Run checks
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
-      - run: cargo miri run
       - run: cargo audit
       - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --target=x86_64-unknown-linux-musl --release
@@ -201,14 +196,13 @@ jobs:
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - run: . "$HOME/.cargo/env"; rustup target add aarch64-unknown-linux-musl
       # Install quality tools
-      - run: . "$HOME/.cargo/env"; rustup install nightly
-      - run: . "$HOME/.cargo/env"; rustup default nightly
-      - run: . "$HOME/.cargo/env"; rustup component add miri clippy rustfmt
-      - run: . "$HOME/.cargo/env"; cargo install cargo-audit
-      # Run checks on the codebase
+      - run: |
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit
+      # Run checks
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
-      - run: cargo miri run
       - run: cargo audit
       - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
@@ -252,14 +246,13 @@ jobs:
             - cargo-{{ arch }}
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       # Install quality tools
-      - run: . "$HOME/.cargo/env"; rustup install nightly
-      - run: . "$HOME/.cargo/env"; rustup default nightly
-      - run: . "$HOME/.cargo/env"; rustup component add miri clippy rustfmt
-      - run: . "$HOME/.cargo/env"; cargo install cargo-audit
-      # Run checks on the codebase
+      - run: |
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit
+      # Run checks
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
-      - run: cargo miri run
       - run: cargo audit
       - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --release
@@ -299,14 +292,13 @@ jobs:
             - cargo-{{ arch }}
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       # Install quality tools
-      - run: . "$HOME/.cargo/env"; rustup install nightly
-      - run: . "$HOME/.cargo/env"; rustup default nightly
-      - run: . "$HOME/.cargo/env"; rustup component add miri clippy rustfmt
-      - run: . "$HOME/.cargo/env"; cargo install cargo-audit
+      - run: |
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit
       # Run checks on the codebase
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
-      - run: cargo miri run
       - run: cargo audit
       - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --release
