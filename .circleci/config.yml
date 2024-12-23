@@ -291,7 +291,7 @@ jobs:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
-      - # Install quality tools
+      # Install quality tools
       - run: |
           rustup component add clippy
           rustup component add rustfmt
