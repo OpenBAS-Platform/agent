@@ -255,11 +255,9 @@ jobs:
             - cargo-{{ arch }}
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       # Install quality tools
-      - run: |
-          rustup component add clippy
-          rustup component add rustfmt
-          rustup component add miri
-          cargo install cargo-audit
+      - run: . "$HOME/.cargo/env"; rustup install nightly
+      - run: . "$HOME/.cargo/env"; rustup default nightly
+      - run: . "$HOME/.cargo/env"; rustup component add miri clippy rustfmt cargo-audit
       # Run checks on the codebase
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
@@ -303,11 +301,9 @@ jobs:
             - cargo-{{ arch }}
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       # Install quality tools
-      - run: |
-          rustup component add clippy
-          rustup component add rustfmt
-          rustup component add miri
-          cargo install cargo-audit
+      - run: . "$HOME/.cargo/env"; rustup install nightly
+      - run: . "$HOME/.cargo/env"; rustup default nightly
+      - run: . "$HOME/.cargo/env"; rustup component add miri clippy rustfmt cargo-audit
       # Run checks on the codebase
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
