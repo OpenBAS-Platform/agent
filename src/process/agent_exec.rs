@@ -85,5 +85,5 @@ pub fn command_execution(asset_agent_id: &str, raw_command: &str) -> Result<(), 
         file.write_all(child_execution.id().to_string().as_bytes())?;
     }
     info!(identifier = asset_agent_id; "Revoking execution");
-    return Ok(())
+    Ok(())
 }
