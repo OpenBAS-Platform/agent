@@ -22,6 +22,7 @@ jobs:
       - run: ./rustup-init.exe -vy
       - run: rustup toolchain install stable-x86_64-pc-windows-msvc
       - run: rustup default stable-x86_64-pc-windows-msvc
+      - run: cargo clean
       # Install quality tools
       - run: |
           rustup component add clippy
@@ -80,6 +81,7 @@ jobs:
       - run: ./rustup-init.exe -vy
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" toolchain install stable-aarch64-pc-windows-msvc'
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
+      - run: cargo clean
        # Install quality tools
       - run: |
           rustup component add clippy
