@@ -75,6 +75,7 @@ jobs:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
             - ~/.cargo
+      - run: choco install -y llvm
       - run: curl.exe -SL --output vs_buildtools.exe --url https://aka.ms/vs/17/release/vs_buildtools.exe
       - run: ./vs_buildtools.exe --add Microsoft.VisualStudio.Component.Clang --add Microsoft.VisualStudio.Component.VC.tools.arm64 --wait --includeRecommended --quiet --norestart
       - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe
