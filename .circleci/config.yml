@@ -9,7 +9,6 @@ jobs:
     executor: win/default
     steps:
       - checkout
-      - run: cargo clean
       - restore_cache:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
@@ -68,7 +67,6 @@ jobs:
     shell: 'powershell.exe -ExecutionPolicy Bypass'
     steps:
       - checkout
-      - run: cargo clean
       - restore_cache:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
@@ -84,8 +82,8 @@ jobs:
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" toolchain install stable-aarch64-pc-windows-msvc'
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
       - run: |
-          clang --version
           $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH
+          clang --version
       # Install quality tools
       - run: |
           rustup component add clippy
@@ -98,7 +96,7 @@ jobs:
       - run: cargo audit --verbose
       - run: cargo test --release
       - run: |
-          $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
+          Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
   windows_arm_64_build:
     machine: true
     resource_class: openbas-platform/openbas-agent-windows-64bits-arm
