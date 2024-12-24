@@ -45,7 +45,8 @@ If any vulnerabilities are found, please resolve them before submitting your cod
 
 Unit tests and integration tests are run automatically on CI using the following command:
 
+- **How to Test Locally:**
   ```bash
-    cargo test --release
+    cargo test
 
 Make sure your code passes all tests before pushing.
