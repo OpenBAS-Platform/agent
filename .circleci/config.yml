@@ -27,10 +27,12 @@ jobs:
       - run: |
           rustup component add clippy
           rustup component add rustfmt
+          cargo install cargo-audit
       # Run checks
       - run: cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
+      - run: cargo audit
       - run: cargo test --release
       - run: cargo build --release
   windows_x86_64_build:
@@ -85,10 +87,12 @@ jobs:
       - run: |
           rustup component add clippy
           rustup component add rustfmt
+          cargo install cargo-audit
       # Run checks
       - run: cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
+      - run: cargo audit
       - run: cargo test --release
       - run: |
           $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
