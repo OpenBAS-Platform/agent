@@ -90,7 +90,7 @@ jobs:
       # Run checks
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
-      - run: cargo audit
+      - run: cargo audit --verbose
       - run: cargo test --release
       - run: |
           $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH
