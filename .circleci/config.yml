@@ -77,7 +77,7 @@ jobs:
             - ~/.cargo
       - run: curl.exe -SL --output vs_buildtools.exe --url https://aka.ms/vs/17/release/vs_buildtools.exe
       - run: ./vs_buildtools.exe --add Microsoft.VisualStudio.Component.Clang --add Microsoft.VisualStudio.Component.VC.tools.arm64 --wait --includeRecommended --quiet --norestart
-      - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-mscv/rustup-init.exe
+      - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe
       - run: ./rustup-init.exe -vy
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" toolchain install stable-aarch64-pc-windows-msvc'
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
