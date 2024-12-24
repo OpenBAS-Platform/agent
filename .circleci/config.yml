@@ -9,6 +9,7 @@ jobs:
     executor: win/default
     steps:
       - checkout
+      - run: cargo clean
       - restore_cache:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
@@ -67,6 +68,7 @@ jobs:
     shell: 'powershell.exe -ExecutionPolicy Bypass'
     steps:
       - checkout
+      - run: cargo clean
       - restore_cache:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
