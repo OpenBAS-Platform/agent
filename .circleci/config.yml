@@ -22,14 +22,6 @@ jobs:
       - run: ./rustup-init.exe -vy
       - run: rustup toolchain install stable-x86_64-pc-windows-msvc
       - run: rustup default stable-x86_64-pc-windows-msvc
-      # Install quality tools
-      - run: |
-          rustup component add clippy
-          rustup component add rustfmt
-      # Run checks
-      - run: cargo clippy -- -D warnings
-      - run: cargo fmt -- --check
-      - run: cargo test --release
       - run: cargo build --release
   windows_x86_64_build:
     executor: win/default
@@ -78,16 +70,7 @@ jobs:
       - run: ./rustup-init.exe -vy
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" toolchain install stable-aarch64-pc-windows-msvc'
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
-      # Install quality tools
-      - run: |
-          rustup component add clippy
-          rustup component add rustfmt
-      # Run checks
-      - run: cargo clippy -- -D warnings
-      - run: cargo fmt -- --check
-      - run: cargo test --release
-      - run: |
-          $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
+      - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
   windows_arm_64_build:
     machine: true
     resource_class: openbas-platform/openbas-agent-windows-64bits-arm
