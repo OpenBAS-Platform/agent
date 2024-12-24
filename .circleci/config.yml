@@ -77,7 +77,7 @@ jobs:
             - ~/.cargo
       - run: curl.exe -SL --output vs_buildtools.exe --url https://aka.ms/vs/17/release/vs_buildtools.exe
       - run: ./vs_buildtools.exe --add Microsoft.VisualStudio.Component.Clang --add Microsoft.VisualStudio.Component.VC.tools.arm64 --wait --includeRecommended --quiet --norestart
-      - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe
+      - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-gnu/rustup-init.exe
       - run: ./rustup-init.exe -vy
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" toolchain install stable-aarch64-pc-windows-msvc'
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
@@ -86,8 +86,8 @@ jobs:
           clang --version
       # Install quality tools
       - run: |
-          rustup component add clippy
-          rustup component add rustfmt
+          Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" component add clippy'
+          Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" component add rustfmt'
           cargo install cargo-audit
       # Run checks
       - run: cargo check
@@ -96,7 +96,7 @@ jobs:
       - run: cargo audit --verbose
       - run: cargo test --release
       - run: |
-          Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
+          $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
   windows_arm_64_build:
     machine: true
     resource_class: openbas-platform/openbas-agent-windows-64bits-arm
