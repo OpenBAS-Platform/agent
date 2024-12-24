@@ -28,6 +28,7 @@ jobs:
           rustup component add rustfmt
           cargo install cargo-audit
       # Run checks
+      - run: cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
@@ -86,6 +87,7 @@ jobs:
           rustup component add rustfmt
           cargo install cargo-audit
       # Run checks
+      - run: cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit --verbose
@@ -147,6 +149,7 @@ jobs:
           rustup component add rustfmt
           cargo install cargo-audit
       # Run checks
+      - run: cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
@@ -203,6 +206,7 @@ jobs:
           rustup component add rustfmt
           cargo install cargo-audit
       # Run checks
+      - run: cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
@@ -253,6 +257,7 @@ jobs:
           rustup component add rustfmt
           cargo install cargo-audit
       # Run checks
+      - run: cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
@@ -298,7 +303,8 @@ jobs:
           rustup component add clippy
           rustup component add rustfmt
           cargo install cargo-audit
-      # Run checks on the codebase
+      # Run checks
+      - run: cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
