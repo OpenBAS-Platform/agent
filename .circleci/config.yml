@@ -24,7 +24,6 @@ jobs:
       - run: rustup default stable-x86_64-pc-windows-msvc
       # Install quality tools
       - run: |
-          rustup update
           rustup component add clippy
           rustup component add rustfmt
           cargo install cargo-audit
@@ -83,7 +82,6 @@ jobs:
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
       # Install quality tools
       - run: |
-          rustup update
           rustup component add clippy
           rustup component add rustfmt
           cargo install cargo-audit
