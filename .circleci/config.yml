@@ -240,6 +240,10 @@ jobs:
       - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --release
       - run: strip ./target/release/openbas-agent
+      - save_cache:
+         key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+         paths:
+           - ~/.cargo
   macos_arm_64_build:
     macos:
       xcode: 15.3.0
@@ -287,6 +291,10 @@ jobs:
       - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --release
       - run: strip ./target/release/openbas-agent
+      - save_cache:
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
   macos_x86_64_build:
     machine: true
     resource_class: openbas-platform/openbas-agent-macos-64bits-x86
