@@ -84,6 +84,7 @@ jobs:
           rustup component add clippy
           rustup component add rustfmt
           cargo install cargo-audit
+      - run: cargo clean
       # Run checks
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
