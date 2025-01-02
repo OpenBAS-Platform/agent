@@ -27,6 +27,7 @@ jobs:
           rustup component add rustfmt
           cargo install cargo-audit
       - run: cargo clean
+      - run: cargo update
       # Run checks
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
@@ -86,6 +87,7 @@ jobs:
           rustup component add rustfmt
           cargo install cargo-audit
       - run: cargo clean
+      - run: cargo update
       # Run checks
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
