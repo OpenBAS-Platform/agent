@@ -21,6 +21,16 @@ jobs:
       - run: ./rustup-init.exe -vy
       - run: rustup toolchain install stable-x86_64-pc-windows-msvc
       - run: rustup default stable-x86_64-pc-windows-msvc
+      # Install quality tools
+      - run: |
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit
+      # Run checks
+      - run: cargo clippy -- -D warnings
+      - run: cargo fmt -- --check
+      - run: cargo audit
+      - run: cargo test --release
       - run: cargo build --release
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
