@@ -241,9 +241,9 @@ jobs:
       - run: . "$HOME/.cargo/env"; cargo build --release
       - run: strip ./target/release/openbas-agent
       - save_cache:
-         key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
-         paths:
-           - ~/.cargo
+          key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
+          paths:
+            - ~/.cargo
   macos_arm_64_build:
     macos:
       xcode: 15.3.0
