@@ -7,6 +7,9 @@ orbs:
 jobs:
   windows_x86_64_compile:
     executor: win/default
+    environment:
+      # Fail the build if there are warnings
+      RUSTFLAGS: '-D warnings'
     steps:
       - checkout
       - restore_cache:
