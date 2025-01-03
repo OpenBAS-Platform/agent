@@ -11,6 +11,7 @@ use log::info;
 use rolling_file::{BasicRollingFileAppender, RollingConditionBasic};
 
 use crate::common::error_model::Error;
+use crate::config::execution_details::ExecutionDetails;
 use crate::process::{agent_cleanup, keep_alive};
 use crate::process::agent_job;
 use crate::config::settings::Settings;
@@ -20,11 +21,13 @@ pub static THREADS_CONTROL: AtomicBool = AtomicBool::new(true);
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const PREFIX_LOG_NAME: &str = "openbas-agent.log";
 
-fn agent_start(settings_data: Settings) -> Result<Vec<JoinHandle<()>>, Error> {
+fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHandle<()>>, Error> {
     let url = settings_data.openbas.url;
     let token = settings_data.openbas.token;
     let unsecured_certificate = settings_data.openbas.unsecured_certificate;
     let with_proxy = settings_data.openbas.with_proxy;
+    let michel = ExecutionDetails::new().unwrap();
+    // TODO pass all settings to keep alive and agent job (let agent_details = ...)
     let keep_alive_thread = keep_alive::ping(url.clone(), token.clone(), unsecured_certificate.clone(), with_proxy.clone());
     // Starts the agent listening thread
     let agent_job_thread = agent_job::listen(url.clone(), token.clone(), unsecured_certificate.clone(), with_proxy.clone());
@@ -53,13 +56,15 @@ fn main() -> Result<(), Error> {
     let settings = Settings::new();
     let settings_data = settings.unwrap();
     if service_stub::is_windows_service() {
+        //settings_data.is_service = true;
         // Running as a Windows service
-        agent_start(settings_data).unwrap();
+        agent_start(settings_data, true).unwrap();
         // Service stub is a blocking thread managed by Windows service
         service_stub::run().unwrap();
     } else {
+        //settings_data.is_service = false;
         // Standalone execution
-        let agent_handle = agent_start(settings_data).unwrap();
+        let agent_handle = agent_start(settings_data, false).unwrap();
         // In this mode, we need to wait for end of threads execution
         agent_handle.into_iter().for_each(|handle| handle.join().unwrap());
     }
