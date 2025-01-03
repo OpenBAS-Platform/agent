@@ -95,7 +95,7 @@ jobs:
       - run: cargo fmt -- --check
       - run: cargo audit
       - run: cargo test --release
-      - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
+      - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
