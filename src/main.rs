@@ -26,7 +26,7 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
     let token = settings_data.openbas.token;
     let unsecured_certificate = settings_data.openbas.unsecured_certificate;
     let with_proxy = settings_data.openbas.with_proxy;
-    let michel = ExecutionDetails::new().unwrap();
+    let michel = ExecutionDetails::new(is_service).unwrap();
     // TODO pass all settings to keep alive and agent job (let agent_details = ...)
     let keep_alive_thread = keep_alive::ping(url.clone(), token.clone(), unsecured_certificate.clone(), with_proxy.clone());
     // Starts the agent listening thread
