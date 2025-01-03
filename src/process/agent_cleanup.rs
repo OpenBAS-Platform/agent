@@ -1,18 +1,18 @@
-use std::sync::atomic::{Ordering};
-use std::{env, fs, thread};
+use crate::THREADS_CONTROL;
+use log::info;
 use std::fs::{DirEntry, File};
 use std::io::{Error, Write};
-use std::process::{Command};
-use std::thread::{JoinHandle, sleep};
+use std::process::Command;
+use std::sync::atomic::Ordering;
+use std::thread::{sleep, JoinHandle};
 use std::time::{Duration, SystemTime};
-use log::{info};
-use crate::{THREADS_CONTROL};
+use std::{env, fs, thread};
 
 // The executing max time will prevent started process to remains active.
 // After X minutes define in this constant, all process under 'execution-' sub dirs will be killed
 static EXECUTING_MAX_TIME: u64 = 20; // 20 minutes
-// The storing directory max time will prevent too much disk space usage.
-// After X minutes define in this constant, all dir matching 'execution-' will be removed
+                                     // The storing directory max time will prevent too much disk space usage.
+                                     // After X minutes define in this constant, all dir matching 'execution-' will be removed
 static DIRECTORY_MAX_TIME: u64 = 2880; // 2 days
 
 fn get_old_execution_directories(path: &str, since_minutes: u64) -> Result<Vec<DirEntry>, Error> {
@@ -20,18 +20,21 @@ fn get_old_execution_directories(path: &str, since_minutes: u64) -> Result<Vec<D
     let current_exe_patch = env::current_exe().unwrap();
     let executable_path = current_exe_patch.parent().unwrap();
     let entries = fs::read_dir(executable_path).unwrap();
-    return entries.into_iter().filter(|entry| {
-        let file_entry = entry.as_ref().unwrap();
-        let file_name = file_entry.file_name();
-        let metadata = fs::metadata(file_entry.path()).unwrap();
-        let file_name_str = file_name.to_str().unwrap();
-        if metadata.is_dir() && String::from(file_name_str).contains(path) {
-            let file_modified = metadata.modified().unwrap();
-            let old_minutes = now.duration_since(file_modified).unwrap().as_secs() / 60;
-            return old_minutes > since_minutes
-        }
-        return false;
-    }).collect();
+    entries
+        .into_iter()
+        .filter(|entry| {
+            let file_entry = entry.as_ref().unwrap();
+            let file_name = file_entry.file_name();
+            let metadata = fs::metadata(file_entry.path()).unwrap();
+            let file_name_str = file_name.to_str().unwrap();
+            if metadata.is_dir() && String::from(file_name_str).contains(path) {
+                let file_modified = metadata.modified().unwrap();
+                let old_minutes = now.duration_since(file_modified).unwrap().as_secs() / 60;
+                return old_minutes > since_minutes;
+            }
+            false
+        })
+        .collect()
 }
 
 fn create_cleanup_scripts() {
@@ -60,7 +63,8 @@ pub fn clean() -> Result<JoinHandle<()>, Error> {
         create_cleanup_scripts();
         // While no stop signal received
         while THREADS_CONTROL.load(Ordering::Relaxed) {
-            let kill_directories = get_old_execution_directories("execution-", EXECUTING_MAX_TIME).unwrap();
+            let kill_directories =
+                get_old_execution_directories("execution-", EXECUTING_MAX_TIME).unwrap();
             // region Handle killing old execution- directories
             for dir in kill_directories {
                 let dir_path = dir.path();
@@ -68,17 +72,29 @@ pub fn clean() -> Result<JoinHandle<()>, Error> {
                 info!("[cleanup thread] Killing process for directory {}", dirname);
                 let escaped_dirname = format!("\"{}\"", dirname);
                 if cfg!(target_os = "windows") {
-                    Command::new("powershell").args(&["-ExecutionPolicy", "Bypass", "openbas_agent_kill.ps1", escaped_dirname.as_str()]).output().unwrap();
+                    Command::new("powershell")
+                        .args([
+                            "-ExecutionPolicy",
+                            "Bypass",
+                            "openbas_agent_kill.ps1",
+                            escaped_dirname.as_str(),
+                        ])
+                        .output()
+                        .unwrap();
                 }
                 if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
-                    Command::new("bash").args(&["openbas_agent_kill.sh", dirname]).output().unwrap();
+                    Command::new("bash")
+                        .args(["openbas_agent_kill.sh", dirname])
+                        .output()
+                        .unwrap();
                 }
                 // After kill, rename from execution to executed
                 fs::rename(dirname, dirname.replace("execution", "executed")).unwrap();
             }
             // endregion
             // region Handle remove of old executed- directories
-            let remove_directories = get_old_execution_directories("executed-", DIRECTORY_MAX_TIME).unwrap();
+            let remove_directories =
+                get_old_execution_directories("executed-", DIRECTORY_MAX_TIME).unwrap();
             for dir in remove_directories {
                 let dir_path = dir.path();
                 let dirname = dir_path.to_str().unwrap();

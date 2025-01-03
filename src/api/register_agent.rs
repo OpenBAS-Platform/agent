@@ -27,15 +27,14 @@ pub fn get_arch() -> String {
         "aarch64" => "arm64", // Mac still use the old nomenclature
         other => other,
     };
-    return String::from(arch);
+    String::from(arch)
 }
 
 pub fn get_operating_system() -> String {
-    let os = match env::consts::OS {
+    match env::consts::OS {
         "macos" => String::from("MacOS"),
         other => capitalize(other),
-    };
-    return os;
+    }
 }
 
 impl Client {
@@ -45,13 +44,11 @@ impl Client {
         let mac_addresses: Vec<String> = networks
             .iter()
             .map(|interface| &interface.mac_addr)
-            .filter(|mac_opts| mac_opts.is_some())
-            .map(|mac| mac.clone().unwrap())
+            .filter_map(|mac| mac.clone())
             .collect();
         let ip_addresses: Vec<String> = networks
             .iter()
-            .map(|interface| &interface.addr)
-            .flatten()
+            .flat_map(|interface| &interface.addr)
             .map(|addr| addr.ip().to_string())
             .collect();
         let post_data = ureq::json!({
@@ -66,12 +63,12 @@ impl Client {
         });
         // endregion
         // Post the input to the OpenBAS API
-        return match self.post("/api/endpoints/register").send_json(post_data) {
+        match self.post("/api/endpoints/register").send_json(post_data) {
             Ok(response) => Ok(response.into_json()?),
             Err(ureq::Error::Status(_, response)) => {
                 Err(Error::Api(response.into_string().unwrap()))
             }
             Err(err) => Err(Error::Internal(err.to_string())),
-        };
+        }
     }
 }

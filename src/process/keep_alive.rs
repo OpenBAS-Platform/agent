@@ -1,15 +1,20 @@
-use std::sync::atomic::{Ordering};
-use std::{thread};
-use std::io::Error;
-use std::thread::{JoinHandle, sleep};
-use std::time::Duration;
-use log::{error, info};
 use crate::api::Client;
-use crate::{THREADS_CONTROL};
+use crate::THREADS_CONTROL;
+use log::{error, info};
+use std::io::Error;
+use std::sync::atomic::Ordering;
+use std::thread;
+use std::thread::{sleep, JoinHandle};
+use std::time::Duration;
 
-pub fn ping(uri: String, token: String, unsecured_certificate: bool, with_proxy: bool) -> Result<JoinHandle<()>, Error> {
+pub fn ping(
+    uri: String,
+    token: String,
+    unsecured_certificate: bool,
+    with_proxy: bool,
+) -> Result<JoinHandle<()>, Error> {
     info!("Starting ping thread");
-    let api = Client::new(uri, token,unsecured_certificate, with_proxy);
+    let api = Client::new(uri, token, unsecured_certificate, with_proxy);
     let handle = thread::spawn(move || {
         // While no stop signal received
         while THREADS_CONTROL.load(Ordering::Relaxed) {

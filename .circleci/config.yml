@@ -7,17 +7,33 @@ orbs:
 jobs:
   windows_x86_64_compile:
     executor: win/default
+    environment:
+      # Fail the build if there are warnings
+      RUSTFLAGS: '-D warnings'
     steps:
       - checkout
       - restore_cache:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
-      - run: choco install -y mingw nsis
-      - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-gnu/rustup-init.exe
+      - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe
       - run: ./rustup-init.exe -vy
       - run: rustup toolchain install stable-x86_64-pc-windows-msvc
       - run: rustup default stable-x86_64-pc-windows-msvc
+      - run: choco uninstall rust
+      - run: choco install -y mingw nsis
+      # Install quality tools
+      - run: |
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit
+      - run: cargo clean
+      - run: cargo update
+      # Run checks
+      - run: cargo clippy -- -D warnings
+      - run: cargo fmt -- --check
+      - run: cargo audit
+      - run: cargo test --release
       - run: cargo build --release
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
@@ -66,6 +82,21 @@ jobs:
       - run: ./rustup-init.exe -vy
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" toolchain install stable-aarch64-pc-windows-msvc'
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
+      # Install quality tools
+      - run: |
+          $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH;
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit --force
+      - run: cargo clean
+      - run: cargo update
+      # Run checks
+      - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" clippy -- -D warnings'
+      - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" fmt -- --check'
+      - run: git config --global --unset url.ssh://git@github.com
+      - run: cargo audit
+      - run: git config --global --add url.ssh://git@github.com.insteadOf https://github.com
+      - run: cargo test --release
       - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
@@ -115,6 +146,17 @@ jobs:
       - run: sudo apt-get -y install curl musl-tools
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - run: . "$HOME/.cargo/env"; rustup target add x86_64-unknown-linux-musl
+      # Install quality tools
+      - run: |
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit
+      # Run checks
+      - run: cargo check
+      - run: cargo clippy -- -D warnings
+      - run: cargo fmt -- --check
+      - run: cargo audit
+      - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --target=x86_64-unknown-linux-musl --release
       - run: strip ./target/x86_64-unknown-linux-musl/release/openbas-agent
       - save_cache:
@@ -161,6 +203,17 @@ jobs:
       - run: sudo apt-get -y install curl musl-tools
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - run: . "$HOME/.cargo/env"; rustup target add aarch64-unknown-linux-musl
+      # Install quality tools
+      - run: |
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit
+      # Run checks
+      - run: cargo check
+      - run: cargo clippy -- -D warnings
+      - run: cargo fmt -- --check
+      - run: cargo audit
+      - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
       - run: strip ./target/aarch64-unknown-linux-musl/release/openbas-agent
       - save_cache:
@@ -205,6 +258,17 @@ jobs:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      # Install quality tools
+      - run: |
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit
+      # Run checks
+      - run: cargo check
+      - run: cargo clippy -- -D warnings
+      - run: cargo fmt -- --check
+      - run: cargo audit
+      - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --release
       - run: strip ./target/release/openbas-agent
       - save_cache:
@@ -245,6 +309,17 @@ jobs:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
       - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+      # Install quality tools
+      - run: |
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit
+      # Run checks
+      - run: cargo check
+      - run: cargo clippy -- -D warnings
+      - run: cargo fmt -- --check
+      - run: cargo audit
+      - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --release
       - run: strip ./target/release/openbas-agent
       - save_cache:
