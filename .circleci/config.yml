@@ -16,11 +16,11 @@ jobs:
           keys:
             - cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
             - cargo-{{ arch }}
-      - run: choco install -y mingw nsis
       - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe
       - run: ./rustup-init.exe -vy
       - run: rustup toolchain install stable-x86_64-pc-windows-msvc
       - run: rustup default stable-x86_64-pc-windows-msvc
+      - run: choco install -y mingw nsis
       # Install quality tools
       - run: |
           rustup component add clippy
@@ -79,9 +79,9 @@ jobs:
       - run: ./vs_buildtools.exe --add Microsoft.VisualStudio.Component.Clang --add Microsoft.VisualStudio.Component.VC.tools.arm64 --wait --includeRecommended --quiet --norestart
       - run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe
       - run: ./rustup-init.exe -vy
-      - run: choco install -y mingw
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" toolchain install stable-aarch64-pc-windows-msvc'
       - run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
+      - run: choco install -y mingw
       # Install quality tools
       - run: |
           rustup component add clippy
