@@ -70,6 +70,10 @@ jobs:
     machine: true
     resource_class: openbas-platform/openbas-agent-windows-64bits-arm
     shell: 'powershell.exe -ExecutionPolicy Bypass'
+    environment:
+      # Fail the build if there are warnings
+      RUSTFLAGS: '-D warnings'
+      CARGO_UNSTABLE_SPARSE_REGISTRY: true
     steps:
       - checkout
       - restore_cache:
@@ -93,9 +97,7 @@ jobs:
       # Run checks
       - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" clippy -- -D warnings'
       - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" fmt -- --check'
-      - run: git config --global --unset url.ssh://git@github.com
       - run: cargo audit
-      - run: git config --global --add url.ssh://git@github.com.insteadOf https://github.com
       - run: cargo test --release
       - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
       - save_cache:
