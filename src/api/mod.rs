@@ -27,7 +27,7 @@ impl Client {
             let arc_crypto_provider = Arc::new(rustls::crypto::ring::default_provider());
             let config = ClientConfig::builder_with_provider(arc_crypto_provider)
                 .with_safe_default_protocol_versions()
-                .unwrap()
+                .expect("Failed to create TLS config with crypto provider")
                 .with_platform_verifier()
                 .with_no_client_auth();
 
