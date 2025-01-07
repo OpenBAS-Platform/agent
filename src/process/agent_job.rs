@@ -5,16 +5,18 @@ use std::thread;
 use std::thread::{JoinHandle, sleep};
 use std::time::Duration;
 use crate::api::Client;
+use crate::config::execution_details::ExecutionDetails;
 use crate::process::agent_exec;
 use crate::THREADS_CONTROL;
 
-pub fn listen(uri: String, token: String, unsecured_certificate: bool, with_proxy: bool) -> Result<JoinHandle<()>, Error> {
+pub fn listen(uri: String, token: String, unsecured_certificate: bool, with_proxy: bool, is_service: bool) -> Result<JoinHandle<()>, Error> {
     info!("Starting listening jobs thread");
     let api = Client::new(uri, token, unsecured_certificate, with_proxy);
+    let execution_details = ExecutionDetails::new(is_service).unwrap();
     let handle = thread::spawn(move || {
         // While no stop signal received
         while THREADS_CONTROL.load(Ordering::Relaxed) {
-            let jobs = api.list_jobs();
+            let jobs = api.list_jobs(execution_details.is_service.clone(), execution_details.is_elevated.clone(), execution_details.executed_by_user.clone());
             if jobs.is_ok() {
                 jobs.unwrap().iter().for_each(|j| {
                     info!("Start handling inject: {:?}", j.asset_agent_inject);

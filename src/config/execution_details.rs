@@ -1,7 +1,6 @@
 use config::{ConfigError};
 use std::process::{Command, Output, Stdio};
 use serde::Deserialize;
-use crate::common::error_model::Error;
 
 #[derive(Debug, Deserialize)]
 #[allow(unused)]
@@ -44,12 +43,12 @@ impl ExecutionDetails {
             "-NoProfile",
             "-Command"]);
         let user_output = Self::invoke_command(executor, "whoami", args.as_slice());
-        let user = Self::decode_output(&user_output.unwrap().clone().stdout);
+        let user = Self::decode_output(&user_output.unwrap().clone().stdout).replace("\r\n", "");
         let is_elevated_output = Self::invoke_command(executor,
                                                       "([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator);", args.as_slice());
         let is_elevated = Self::decode_output(&is_elevated_output.unwrap().clone().stdout);
         Ok(ExecutionDetails {
-            is_elevated: is_elevated == "True",
+            is_elevated: is_elevated.contains("True"),
             is_service,
             executed_by_user: user,
         })
@@ -60,7 +59,7 @@ impl ExecutionDetails {
         let executor = "sh";
         let args = vec!["-c"];
         let user_output = Self::invoke_command(executor, "whoami", args.as_slice());
-        let user = Self::decode_output(&user_output.unwrap().clone().stdout);
+        let user = Self::decode_output(&user_output.unwrap().clone().stdout).replace("\n", "");
         if user == "root" {
             Ok(ExecutionDetails {
                 is_elevated: true,
@@ -85,7 +84,7 @@ impl ExecutionDetails {
         let executor = "sh";
         let args = vec!["-c"];
         let user_output = Self::invoke_command(executor, "whoami", args.as_slice());
-        let user = Self::decode_output(&user_output.unwrap().clone().stdout);
+        let user = Self::decode_output(&user_output.unwrap().clone().stdout).replace("\n", "");
         if user == "root" {
             Ok(ExecutionDetails {
                 is_elevated: true,

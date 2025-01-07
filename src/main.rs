@@ -11,7 +11,6 @@ use log::info;
 use rolling_file::{BasicRollingFileAppender, RollingConditionBasic};
 
 use crate::common::error_model::Error;
-use crate::config::execution_details::ExecutionDetails;
 use crate::process::{agent_cleanup, keep_alive};
 use crate::process::agent_job;
 use crate::config::settings::Settings;
@@ -26,15 +25,13 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
     let token = settings_data.openbas.token;
     let unsecured_certificate = settings_data.openbas.unsecured_certificate;
     let with_proxy = settings_data.openbas.with_proxy;
-    let michel = ExecutionDetails::new(is_service).unwrap();
-    // TODO pass all settings to keep alive and agent job (let agent_details = ...)
-    let keep_alive_thread = keep_alive::ping(url.clone(), token.clone(), unsecured_certificate.clone(), with_proxy.clone());
+    let keep_alive_thread = keep_alive::ping(url.clone(), token.clone(), unsecured_certificate.clone(), with_proxy.clone(), is_service.clone());
     // Starts the agent listening thread
-    let agent_job_thread = agent_job::listen(url.clone(), token.clone(), unsecured_certificate.clone(), with_proxy.clone());
+    let agent_job_thread = agent_job::listen(url.clone(), token.clone(), unsecured_certificate.clone(), with_proxy.clone(), is_service.clone());
     // Starts the cleanup thread
     let cleanup_thread = agent_cleanup::clean();
     // Don't stop the exec until the listening thread is done
-    return Ok(vec![
+    Ok(vec![
         keep_alive_thread.unwrap(), 
         agent_job_thread.unwrap(), 
         cleanup_thread.unwrap()]
@@ -56,20 +53,18 @@ fn main() -> Result<(), Error> {
     let settings = Settings::new();
     let settings_data = settings.unwrap();
     if service_stub::is_windows_service() {
-        //settings_data.is_service = true;
         // Running as a Windows service
         agent_start(settings_data, true).unwrap();
         // Service stub is a blocking thread managed by Windows service
         service_stub::run().unwrap();
     } else {
-        //settings_data.is_service = false;
         // Standalone execution
         let agent_handle = agent_start(settings_data, false).unwrap();
         // In this mode, we need to wait for end of threads execution
         agent_handle.into_iter().for_each(|handle| handle.join().unwrap());
     }
     // endregion
-    return Ok(())
+    Ok(())
 }
 
 
