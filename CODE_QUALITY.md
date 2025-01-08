@@ -6,7 +6,7 @@ This document outlines the tools and standards used to maintain code quality in 
 
 ### Clippy
 
-Clippy is a Rust linter that provides a collection of lints to catch common mistakes and improve code quality.
+[Clippy](https://doc.rust-lang.org/clippy/usage.html) is a Rust linter that provides a collection of lints to catch common mistakes and improve code quality.
 
 - **How to Run Clippy Locally:**
   To run Clippy, execute the following command:
@@ -19,7 +19,7 @@ Clippy on CI: Clippy is run automatically on CI as part of the build process. En
 
 ### Rustfmt
 
-Rustfmt automatically formats Rust code to conform to style guidelines.
+[Rustfmt](https://doc.rust-lang.org/clippy/development/adding_lints.html#running-rustfmt) automatically formats Rust code to conform to style guidelines.
 
 - **How to Run Rustfmt Locally:**
   To check if your code is formatted properly, run:
@@ -32,7 +32,7 @@ Rustfmt on CI: Rustfmt is run as part of the CI pipeline, and the build will fai
 
 ### Cargo Audit
 
-Cargo Audit checks for known vulnerabilities in the dependencies of your project.
+[Cargo Audit](https://docs.rs/cargo-audit/latest/cargo_audit/) checks for known vulnerabilities in the dependencies of your project.
 
 - **How to Run Cargo Audit Locally:**
   To check for security vulnerabilities, run:
