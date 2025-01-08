@@ -83,7 +83,7 @@ jobs:
           $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH;
           rustup component add clippy
           rustup component add rustfmt
-          cargo install cargo-audit
+          cargo install cargo-audit --force
       # Run checks
       - run: cargo check
       - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" clippy -- -D warnings'
