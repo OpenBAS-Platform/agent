@@ -7,9 +7,6 @@ orbs:
 jobs:
   windows_x86_64_compile:
     executor: win/default
-    environment:
-      # Fail the build if there are warnings
-      RUSTFLAGS: '-D warnings'
     steps:
       - checkout
       - restore_cache:
@@ -30,6 +27,7 @@ jobs:
       - run: cargo clean
       - run: cargo update
       # Run checks
+      - run: RUSTFLAGS=-D warnings cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
@@ -70,10 +68,6 @@ jobs:
     machine: true
     resource_class: openbas-platform/openbas-agent-windows-64bits-arm
     shell: 'powershell.exe -ExecutionPolicy Bypass'
-    environment:
-      # Fail the build if there are warnings
-      RUSTFLAGS: '-D warnings'
-      CARGO_UNSTABLE_SPARSE_REGISTRY: true
     steps:
       - checkout
       - restore_cache:
@@ -95,6 +89,7 @@ jobs:
       - run: cargo clean
       - run: cargo update
       # Run checks
+      - run: RUSTFLAGS=-D warnings cargo check
       - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" clippy -- -D warnings'
       - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" fmt -- --check'
       - run: cargo audit
@@ -154,7 +149,7 @@ jobs:
           rustup component add rustfmt
           cargo install cargo-audit
       # Run checks
-      - run: cargo check
+      - run: RUSTFLAGS=-D warnings cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
@@ -211,7 +206,7 @@ jobs:
           rustup component add rustfmt
           cargo install cargo-audit
       # Run checks
-      - run: cargo check
+      - run: RUSTFLAGS=-D warnings cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
@@ -266,7 +261,7 @@ jobs:
           rustup component add rustfmt
           cargo install cargo-audit
       # Run checks
-      - run: cargo check
+      - run: RUSTFLAGS=-D warnings cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
@@ -317,7 +312,7 @@ jobs:
           rustup component add rustfmt
           cargo install cargo-audit
       # Run checks
-      - run: cargo check
+      - run: RUSTFLAGS=-D warnings cargo check
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
