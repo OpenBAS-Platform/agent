@@ -3,7 +3,6 @@ use network_interface::NetworkInterface;
 use network_interface::NetworkInterfaceConfig;
 use serde::Deserialize;
 use std::env;
-
 use super::Client;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -39,7 +38,7 @@ pub fn get_operating_system() -> String {
 }
 
 impl Client {
-    pub fn register_agent(&self) -> Result<RegisterAgentResponse, Error> {
+    pub fn register_agent(&self, is_service: bool, is_elevated: bool, executed_by_user: String) -> Result<RegisterAgentResponse, Error> {
         // region Build the content to register
         let networks = NetworkInterface::show().unwrap();
         let mac_addresses: Vec<String> = networks
@@ -62,16 +61,19 @@ impl Client {
           "endpoint_platform": get_operating_system(),
           "endpoint_arch": get_arch(),
           "endpoint_mac_addresses": mac_addresses,
-          "endpoint_hostname": hostname::get()?.to_string_lossy()
+          "endpoint_hostname": hostname::get()?.to_string_lossy(),
+          "agent_is_service": is_service,
+          "agent_is_elevated": is_elevated,
+          "agent_executed_by_user": executed_by_user
         });
         // endregion
         // Post the input to the OpenBAS API
-        return match self.post("/api/endpoints/register").send_json(post_data) {
+        match self.post("/api/endpoints/register").send_json(post_data) {
             Ok(response) => Ok(response.into_json()?),
             Err(ureq::Error::Status(_, response)) => {
                 Err(Error::Api(response.into_string().unwrap()))
             }
             Err(err) => Err(Error::Internal(err.to_string())),
-        };
+        }
     }
 }
