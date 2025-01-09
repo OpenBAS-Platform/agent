@@ -1,6 +1,6 @@
-use config::{ConfigError};
-use std::process::{Command, Output, Stdio};
+use config::ConfigError;
 use serde::Deserialize;
+use std::process::{Command, Output, Stdio};
 
 #[derive(Debug, Deserialize)]
 #[allow(unused)]
@@ -11,8 +11,11 @@ pub struct ExecutionDetails {
 }
 
 impl ExecutionDetails {
-
-    pub fn invoke_command(executor: &str, cmd_expression:  &str, args: &[&str]) -> std::io::Result<Output> {
+    pub fn invoke_command(
+        executor: &str,
+        cmd_expression: &str,
+        args: &[&str],
+    ) -> std::io::Result<Output> {
         Command::new(executor)
             .args(args)
             .arg(cmd_expression)
@@ -41,7 +44,8 @@ impl ExecutionDetails {
             "Hidden",
             "-NonInteractive",
             "-NoProfile",
-            "-Command"]);
+            "-Command",
+        ]);
         let user_output = Self::invoke_command(executor, "whoami", args.as_slice());
         let user = Self::decode_output(&user_output.unwrap().clone().stdout).replace("\r\n", "");
         let is_elevated_output = Self::invoke_command(executor,
@@ -69,11 +73,16 @@ impl ExecutionDetails {
         } else {
             let is_elevated_output = Self::invoke_command(executor, "id", args.as_slice());
             let is_elevated = Self::decode_output(&is_elevated_output.unwrap().clone().stdout);
-            let is_service_output = Self::invoke_command(executor, "systemctl status $PPID", args.as_slice());
+            let is_service_output =
+                Self::invoke_command(executor, "systemctl status $PPID", args.as_slice());
             let is_service = Self::decode_output(&is_service_output.unwrap().clone().stdout);
             Ok(ExecutionDetails {
                 is_elevated: is_elevated.contains("(sudo)"),
-                is_service: is_service.split("\n").next().unwrap().contains("openbas-agent.service"),
+                is_service: is_service
+                    .split("\n")
+                    .next()
+                    .unwrap()
+                    .contains("openbas-agent.service"),
                 executed_by_user: user,
             })
         }
@@ -94,7 +103,8 @@ impl ExecutionDetails {
         } else {
             let is_elevated_output = Self::invoke_command(executor, "id", args.as_slice());
             let is_elevated = Self::decode_output(&is_elevated_output.unwrap().clone().stdout);
-            let is_service_output = Self::invoke_command(executor, "launchctl print openbas.agent", args.as_slice());
+            let is_service_output =
+                Self::invoke_command(executor, "launchctl print openbas.agent", args.as_slice());
             let is_service = Self::decode_output(&is_service_output.unwrap().clone().stderr);
             Ok(ExecutionDetails {
                 is_elevated: is_elevated.contains("(admin)"),

@@ -1,9 +1,9 @@
+use super::Client;
 use crate::common::error_model::Error;
 use network_interface::NetworkInterface;
 use network_interface::NetworkInterfaceConfig;
 use serde::Deserialize;
 use std::env;
-use super::Client;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -37,7 +37,12 @@ pub fn get_operating_system() -> String {
 }
 
 impl Client {
-    pub fn register_agent(&self, is_service: bool, is_elevated: bool, executed_by_user: String) -> Result<RegisterAgentResponse, Error> {
+    pub fn register_agent(
+        &self,
+        is_service: bool,
+        is_elevated: bool,
+        executed_by_user: String,
+    ) -> Result<RegisterAgentResponse, Error> {
         // region Build the content to register
         let networks = NetworkInterface::show().unwrap();
         let mac_addresses: Vec<String> = networks

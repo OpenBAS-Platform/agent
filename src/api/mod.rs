@@ -1,11 +1,11 @@
-use std::sync::Arc;
-use std::time::Duration;
 use rustls::ClientConfig;
 use rustls_platform_verifier::BuilderVerifierExt;
+use std::sync::Arc;
+use std::time::Duration;
 use ureq::{Agent, Request};
 
-mod register_agent;
 mod manage_jobs;
+mod register_agent;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -17,7 +17,12 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(server_url: String, token: String, unsecured_certificate: bool, with_proxy: bool) -> Client {
+    pub fn new(
+        server_url: String,
+        token: String,
+        unsecured_certificate: bool,
+        with_proxy: bool,
+    ) -> Client {
         let mut http_client = ureq::AgentBuilder::new()
             .timeout_connect(Duration::from_secs(2))
             .timeout(Duration::from_secs(5))
@@ -49,15 +54,15 @@ impl Client {
 
     pub fn post(&self, route: &str) -> Request {
         let api_route = format!("{}{}", self.server_url, route);
-        let request = self.http_client.post(&api_route)
-            .set("Authorization", &format!("Bearer {}", self.token));
-        request
+        self.http_client
+            .post(&api_route)
+            .set("Authorization", &format!("Bearer {}", self.token))
     }
 
     pub fn delete(&self, route: &str) -> Request {
         let api_route = format!("{}{}", self.server_url, route);
-        let request = self.http_client.delete(&api_route)
-            .set("Authorization", &format!("Bearer {}", self.token));
-        request
+        self.http_client
+            .delete(&api_route)
+            .set("Authorization", &format!("Bearer {}", self.token))
     }
 }
