@@ -28,8 +28,7 @@ pub fn listen(
                 execution_details.executed_by_user.clone(),
             );
             if jobs.is_ok() {
-                if let Ok(jobs) = jobs {
-                    jobs.iter().for_each(|j| {
+                    jobs.unwrap().iter().for_each(|j| {
                         info!("Start handling inject: {:?}", j.asset_agent_inject);
                         // 01. Remove the execution job
                         info!("Cleaning job: {:?}", j.asset_agent_id);
@@ -43,7 +42,6 @@ pub fn listen(
                         }
                         info!("Done handling inject: {:?}", j.asset_agent_inject);
                     });
-                }
             } else {
                 error!("Fail getting jobs {}", jobs.unwrap_err())
             }
