@@ -25,10 +25,13 @@ jobs:
           cargo install cargo-audit
       # Run checks
       - run: cargo check
+      - run: cargo clean
+      - run: cargo build
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
       - run: cargo test --release
+      - run: cargo clean
       - run: cargo build --release
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
