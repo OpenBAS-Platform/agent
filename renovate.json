@@ -2,5 +2,18 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "baseBranches": ["release/current", "main"],
+  "packageRules": [
+    {
+      "matchJsonata": ["$exists(isVulnerabilityAlert)"],
+      "matchBaseBranches": ["release/current"],
+      "enabled": false
+    },
+    {
+      "matchJsonata": ["$not($exists(isVulnerabilityAlert))"],
+      "matchBaseBranches": ["main"],
+      "enabled": false
+    }
   ]
 }
