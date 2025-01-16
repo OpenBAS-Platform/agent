@@ -26,7 +26,9 @@ try {
     rm -force ./openbas-installer.exe;
 	echo "OpenBAS agent has been successfully installed"
 } catch {
-  	throw "Installation failed : PowerShell 7 or higher is required for installation"
+    echo "Installation failed"
+  	if ((Get-Host).Version.Major -lt 7) { throw "PowerShell 7 or higher is required for installation" }
+  	else { echo $_ }
 } finally {
   	if ($location -like "*C:\Windows\System32*") { cd C:\Windows\System32 }
 }
