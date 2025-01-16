@@ -6,6 +6,10 @@
   "baseBranches": ["release/current", "main"],
   "packageRules": [
     {
+      "matchBaseBranches": ["release/current"],
+      "commitMessageSuffix": null
+    },
+    {
       "matchJsonata": ["$exists(isVulnerabilityAlert)"],
       "matchBaseBranches": ["release/current"],
       "enabled": false
