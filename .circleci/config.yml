@@ -29,8 +29,8 @@ jobs:
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
-      - run: cargo test --release
       - run: cargo build --release
+      - run: cargo test --release
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -91,8 +91,8 @@ jobs:
       - run: git config --global --unset url.ssh://git@github.com.insteadOf
       - run: cargo audit
       - run: git config --global url.ssh://git@github.com.insteadOf https://github.com/
-      - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" cargo test --release'
       - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
+      - run: $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH; Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" cargo test --release'
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -151,8 +151,8 @@ jobs:
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
-      - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --target=x86_64-unknown-linux-musl --release
+      - run: cargo test --release
       - run: strip ./target/x86_64-unknown-linux-musl/release/openbas-agent
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
@@ -208,8 +208,8 @@ jobs:
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
-      - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
+      - run: cargo test --release
       - run: strip ./target/aarch64-unknown-linux-musl/release/openbas-agent
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
@@ -263,8 +263,8 @@ jobs:
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
-      - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --release
+      - run: cargo test --release
       - run: strip ./target/release/openbas-agent
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
@@ -314,8 +314,8 @@ jobs:
       - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo audit
-      - run: cargo test --release
       - run: . "$HOME/.cargo/env"; cargo build --release
+      - run: cargo test --release
       - run: strip ./target/release/openbas-agent
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
