@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use crate::common::error_model::Error;
+use serde::Deserialize;
 
 use super::Client;
 
@@ -13,7 +13,12 @@ pub struct JobResponse {
 }
 
 impl Client {
-    pub fn list_jobs(&self, is_service: bool, is_elevated: bool, executed_by_user: String) -> Result<Vec<JobResponse>, Error> {
+    pub fn list_jobs(
+        &self,
+        is_service: bool,
+        is_elevated: bool,
+        executed_by_user: String,
+    ) -> Result<Vec<JobResponse>, Error> {
         // Post the input to the OpenBAS API
         let post_data = ureq::json!({
           "asset_external_reference": mid::get("openbas").unwrap(),
@@ -22,29 +27,24 @@ impl Client {
           "agent_executed_by_user": executed_by_user
         });
         match self.post("/api/endpoints/jobs").send_json(post_data) {
-            Ok(response) => {
-                Ok(response.into_json()?)
-            }
+            Ok(response) => Ok(response.into_json()?),
             Err(ureq::Error::Status(_, response)) => {
                 Err(Error::Api(response.into_string().unwrap()))
-            },
-            Err(err) => {
-                Err(Error::Internal(err.to_string()))
             }
+            Err(err) => Err(Error::Internal(err.to_string())),
         }
     }
     pub fn clean_job(&self, job_id: &str) -> Result<(), Error> {
         // Post the input to the OpenBAS API
-        return match self.delete(&format!("/api/endpoints/jobs/{}", job_id)).call() {
-            Ok(_) => {
-                Ok(())
-            }
+        match self
+            .delete(&format!("/api/endpoints/jobs/{}", job_id))
+            .call()
+        {
+            Ok(_) => Ok(()),
             Err(ureq::Error::Status(_, response)) => {
                 Err(Error::Api(response.into_string().unwrap()))
-            },
-            Err(err) => {
-                Err(Error::Internal(err.to_string()))
             }
-        };
+            Err(err) => Err(Error::Internal(err.to_string())),
+        }
     }
 }
