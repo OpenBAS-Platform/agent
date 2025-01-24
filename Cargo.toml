@@ -23,6 +23,3 @@ rustls-platform-verifier = "0.5.0"
 [target.'cfg(windows)'.dependencies]
 windows-service = "0.7.0"
 windows-service-detector = "0.1.0"
-
-[dev-dependencies]
-after-test = "0.1.4"

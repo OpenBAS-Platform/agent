@@ -1,9 +1,7 @@
-use after_test::cleanup;
-
 #[cfg(test)]
-#[cleanup(cleanup_after_tests)]
 mod tests {
     use crate::process::agent_exec::command_execution;
+    use std::panic;
     use std::env;
     use std::fs;
 
@@ -21,7 +19,10 @@ mod tests {
 
     #[test]
     fn test_simple_execution_no_panic() {
-        let result = command_execution(TEST_AGENT_ID, &"echo 'Hello World'");
-        assert!(result.is_ok());
+        let result = panic::catch_unwind(|| {
+            return command_execution(TEST_AGENT_ID, &"echo 'Hello World'");
+        });
+        cleanup_after_tests();
+        assert!(result.unwrap().is_ok());
     }
 }
