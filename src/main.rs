@@ -4,6 +4,9 @@ mod config;
 mod process;
 mod windows;
 
+#[cfg(test)]
+mod tests;
+
 use log::info;
 use rolling_file::{BasicRollingFileAppender, RollingConditionBasic};
 use std::env;
