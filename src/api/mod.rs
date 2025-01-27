@@ -1,9 +1,11 @@
+use rustls::ClientConfig;
+use rustls_platform_verifier::BuilderVerifierExt;
 use std::sync::Arc;
 use std::time::Duration;
 use ureq::{Agent, Request};
 
-mod register_agent;
 mod manage_jobs;
+mod register_agent;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -15,7 +17,12 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(server_url: String, token: String, unsecured_certificate: bool, with_proxy: bool) -> Client {
+    pub fn new(
+        server_url: String,
+        token: String,
+        unsecured_certificate: bool,
+        with_proxy: bool,
+    ) -> Client {
         let mut http_client = ureq::AgentBuilder::new()
             .timeout_connect(Duration::from_secs(2))
             .timeout(Duration::from_secs(5))
@@ -23,10 +30,15 @@ impl Client {
             .try_proxy_from_env(with_proxy);
         if unsecured_certificate {
             let arc_crypto_provider = Arc::new(rustls::crypto::ring::default_provider());
-            let config = rustls_platform_verifier::tls_config_with_provider(arc_crypto_provider)
-                .expect("Failed to create TLS config with crypto provider");
+            let config = ClientConfig::builder_with_provider(arc_crypto_provider)
+                .with_safe_default_protocol_versions()
+                .expect("Failed to create TLS config with crypto provider")
+                .with_platform_verifier()
+                .with_no_client_auth();
+
             http_client = http_client.tls_config(Arc::new(config));
         }
+
         // Remove trailing slash
         let mut url = server_url;
         if url.ends_with('/') {
@@ -42,15 +54,15 @@ impl Client {
 
     pub fn post(&self, route: &str) -> Request {
         let api_route = format!("{}{}", self.server_url, route);
-        let request = self.http_client.post(&api_route)
-            .set("Authorization", &format!("Bearer {}", self.token));
-        request
+        self.http_client
+            .post(&api_route)
+            .set("Authorization", &format!("Bearer {}", self.token))
     }
 
     pub fn delete(&self, route: &str) -> Request {
         let api_route = format!("{}{}", self.server_url, route);
-        let request = self.http_client.delete(&api_route)
-            .set("Authorization", &format!("Bearer {}", self.token));
-        request
+        self.http_client
+            .delete(&api_route)
+            .set("Authorization", &format!("Bearer {}", self.token))
     }
 }
