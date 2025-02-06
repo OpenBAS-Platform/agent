@@ -91,7 +91,7 @@ pub fn command_execution(asset_agent_id: &str, raw_command: &str) -> Result<(), 
     }
     // Prepare and execute the command
     let command_args = &[script_file_name.to_str().unwrap(), "&"];
-    let child_execution = Command::new("bash")
+    let mut child_execution = Command::new("bash")
         .args(command_args)
         .stderr(Stdio::null())
         .stdout(Stdio::null())
@@ -103,5 +103,14 @@ pub fn command_execution(asset_agent_id: &str, raw_command: &str) -> Result<(), 
         file.write_all(child_execution.id().to_string().as_bytes())?;
     }
     info!(identifier = asset_agent_id; "Revoking execution");
+
+    // start a fire-and-forget thread to wait for process termination
+    // so as to reap it and avoid zombies
+    // we purposefully ignore status codes since the implant reports
+    // it directly to the openbas C2 server
+    // note that hanging threads may prevent process shutdown that must then be killed
+    std::thread::spawn(move || {
+        child_execution.wait().expect("Process not running.");
+    });
     Ok(())
 }
