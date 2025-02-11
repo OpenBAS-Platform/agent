@@ -9,7 +9,7 @@ logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
 parser = argparse.ArgumentParser("release")
 parser.add_argument(
-    "branch_injectors", help="The new version number of the release.", type=str
+    "branch_agent", help="The new version number of the release.", type=str
 )
 parser.add_argument(
     "previous_version", help="The previous version number of the release.", type=str
@@ -24,7 +24,7 @@ args = parser.parse_args()
 
 previous_version = args.previous_version
 new_version = args.new_version
-branch_injectors = args.branch_injectors
+branch_agent = args.branch_agent
 
 github_token = os.environ["GREN_GITHUB_TOKEN"]
 
