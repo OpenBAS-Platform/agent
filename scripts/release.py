@@ -3,7 +3,7 @@ import logging
 import os
 
 import requests
-from OBAS_utils.release_utils import closeRelease
+from OBAS_utils.release_utils import closeRelease, check_release
 
 logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
@@ -57,6 +57,31 @@ os.system(
 
 logging.info("[agent] Tagging")
 os.system("git tag -f " + new_version + " && git push -f --tags > /dev/null 2>&1")
+
+check_release(
+    "https://filigran.jfrog.io/ui/native/openbas-agent/linux/x86_64/",
+    "openbas-agent-" + new_version,
+)
+check_release(
+    "https://filigran.jfrog.io/ui/native/openbas-agent/linux/arm64/",
+    "openbas-agent-" + new_version,
+)
+check_release(
+    "https://filigran.jfrog.io/ui/native/openbas-agent/macos/x86_64/",
+    "openbas-agent-" + new_version,
+)
+check_release(
+    "https://filigran.jfrog.io/ui/native/openbas-agent/macos/arm64/",
+    "openbas-agent-" + new_version,
+)
+check_release(
+    "https://filigran.jfrog.io/ui/native/openbas-agent/windows/x86_64/",
+    "openbas-agent-" + new_version,
+)
+check_release(
+    "https://filigran.jfrog.io/ui/native/openbas-agent/windows/arm64/",
+    "openbas-agent-" + new_version,
+)
 
 logging.info("[agent] Generating release")
 os.system("gren release > /dev/null 2>&1")
