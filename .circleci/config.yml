@@ -183,6 +183,10 @@ jobs:
             curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/x86_64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/linux/x86_64/openbas-agent-$version"
             curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-installer-$version.sh"
             curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-upgrade-$version.sh"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer-session-user.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-installer-session-user-$version.sh"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade-session-user.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-upgrade-session-user-$version.sh"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer-service-user.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-installer-service-user-$version.sh"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade-service-user.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-upgrade-service-user-$version.sh"
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
@@ -242,6 +246,10 @@ jobs:
             curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/aarch64-unknown-linux-musl/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/linux/arm64/openbas-agent-$version"
             curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-installer-$version.sh"
             curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-upgrade-$version.sh"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer-session-user.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-installer-session-user-$version.sh"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade-session-user.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-upgrade-session-user-$version.sh"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-installer-service-user.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-installer-service-user-$version.sh"
+            curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./installer/linux/agent-upgrade-service-user.sh "https://filigran.jfrog.io/artifactory/openbas-agent/linux/openbas-agent-upgrade-service-user-$version.sh"
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
           paths:
