@@ -3,7 +3,7 @@ import logging
 import os
 
 import requests
-from OBAS_utils.release_utils import closeRelease, check_release
+from OBAS_utils.release_utils import check_release, closeRelease
 
 logging.basicConfig(encoding="utf-8", level=logging.INFO)
 
