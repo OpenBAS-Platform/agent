@@ -32,7 +32,7 @@ EOF
 
 
     echo "03. Restarting the service"
-    systemctl s--user restart openbas-agent-session || echo "Fail restarting openbas-agent-session"
+    systemctl --user restart openbas-agent-session || echo "Fail restarting openbas-agent-session"
 
     echo "OpenBAS Agent Session User started."
 else
