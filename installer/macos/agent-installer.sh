@@ -57,7 +57,7 @@ EOF
 
             <!-- Increase the frequency of restarting the agent on failure, or post-update -->
             <key>ThrottleInterval</key>
-            <integer>3</integer>
+            <integer>60</integer>
 
             <!-- Wait for 10 minutes for the agent to shut down (the agent itself waits for tasks to complete) -->
             <key>ExitTimeOut</key>
