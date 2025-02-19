@@ -4,6 +4,7 @@ use crate::process::agent_exec;
 use crate::THREADS_CONTROL;
 use log::{error, info};
 use std::io::Error;
+use std::sync::{Arc, Mutex};
 use std::sync::atomic::Ordering;
 use std::thread;
 use std::thread::{sleep, JoinHandle};
@@ -14,18 +15,18 @@ pub fn listen(
     token: String,
     unsecured_certificate: bool,
     with_proxy: bool,
-    is_service: bool,
+    execution_details: Arc<Mutex<ExecutionDetails>>,
 ) -> Result<JoinHandle<()>, Error> {
     info!("Starting listening jobs thread");
     let api = Client::new(uri, token, unsecured_certificate, with_proxy);
-    let execution_details = ExecutionDetails::new(is_service).unwrap();
     let handle = thread::spawn(move || {
         // While no stop signal received
         while THREADS_CONTROL.load(Ordering::Relaxed) {
+            let execution_details_locked = execution_details.lock().unwrap();
             let jobs = api.list_jobs(
-                execution_details.is_service,
-                execution_details.is_elevated,
-                execution_details.executed_by_user.clone(),
+                execution_details_locked.is_service,
+                execution_details_locked.is_elevated,
+                execution_details_locked.executed_by_user.clone(),
             );
             if jobs.is_ok() {
                 if let Ok(jobs) = jobs {
