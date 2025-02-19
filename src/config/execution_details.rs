@@ -2,7 +2,7 @@ use config::ConfigError;
 use serde::Deserialize;
 use std::process::{Command, Output, Stdio};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(unused)]
 pub struct ExecutionDetails {
     pub is_elevated: bool,

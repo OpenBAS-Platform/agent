@@ -11,7 +11,6 @@ use log::info;
 use rolling_file::{BasicRollingFileAppender, RollingConditionBasic};
 use std::env;
 use std::sync::atomic::AtomicBool;
-use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 
 use crate::common::error_model::Error;
@@ -30,7 +29,7 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
     let token = settings_data.openbas.token;
     let unsecured_certificate = settings_data.openbas.unsecured_certificate;
     let with_proxy = settings_data.openbas.with_proxy;
-    let execution_details = Arc::new(Mutex::new(ExecutionDetails::new(is_service).unwrap()));
+    let execution_details = ExecutionDetails::new(is_service).unwrap();
     let keep_alive_thread = keep_alive::ping(
         url.clone(),
         token.clone(),
