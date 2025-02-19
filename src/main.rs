@@ -10,8 +10,8 @@ mod tests;
 use log::info;
 use rolling_file::{BasicRollingFileAppender, RollingConditionBasic};
 use std::env;
-use std::sync::{Arc, Mutex};
 use std::sync::atomic::AtomicBool;
+use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 
 use crate::common::error_model::Error;
@@ -36,7 +36,7 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
         token.clone(),
         unsecured_certificate,
         with_proxy,
-        execution_details.clone()
+        execution_details.clone(),
     );
     // Starts the agent listening thread
     let agent_job_thread = agent_job::listen(
@@ -44,7 +44,7 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
         token.clone(),
         unsecured_certificate,
         with_proxy,
-        execution_details.clone()
+        execution_details.clone(),
     );
     // Starts the cleanup thread
     let cleanup_thread = agent_cleanup::clean();
