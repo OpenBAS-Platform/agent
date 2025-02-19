@@ -30,7 +30,12 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
     let unsecured_certificate = settings_data.openbas.unsecured_certificate;
     let with_proxy = settings_data.openbas.with_proxy;
     let execution_details = ExecutionDetails::new(is_service).unwrap();
-    info!("ExecutionDetails : user {:?} -- is_elevated {:?} -- is_service {:?} ", execution_details.executed_by_user, execution_details.is_elevated, execution_details.is_service);
+    info!(
+        "ExecutionDetails : user {:?} -- is_elevated {:?} -- is_service {:?} ",
+        execution_details.executed_by_user,
+        execution_details.is_elevated,
+        execution_details.is_service
+    );
     let keep_alive_thread = keep_alive::ping(
         url.clone(),
         token.clone(),

@@ -1,7 +1,7 @@
 use config::ConfigError;
+use log::error;
 use serde::Deserialize;
 use std::process::{Command, Output, Stdio};
-use log::{error};
 
 #[derive(Debug, Deserialize, Clone)]
 #[allow(unused)]
@@ -40,7 +40,10 @@ impl ExecutionDetails {
         let user_result_output = user_output.unwrap().clone();
         let user_err = Self::decode_output(&user_result_output.stderr);
         if !user_err.is_empty() {
-            error!("User not returned with whoami command, try to restart the agent : {:?}", user_err);
+            error!(
+                "User not returned with whoami command, try to restart the agent : {:?}",
+                user_err
+            );
         }
         Self::decode_output(&user_result_output.stdout).replace(replace_str, "")
     }
