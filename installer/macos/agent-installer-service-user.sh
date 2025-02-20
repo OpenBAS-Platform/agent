@@ -130,7 +130,7 @@ EOF
     launchctl enable system/${user}.openbas.agent
     launchctl bootstrap system/ ~/Library/LaunchDaemons/${user}-openbas-agent.plist
 
-    echo "OpenBAS Agent started."
+    echo "OpenBAS Agent Service User started."
 else
     echo "Operating system $OSTYPE is not supported yet, please create a ticket in openbas github project"
     exit 1
