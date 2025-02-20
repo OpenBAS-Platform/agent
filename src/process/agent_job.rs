@@ -14,11 +14,10 @@ pub fn listen(
     token: String,
     unsecured_certificate: bool,
     with_proxy: bool,
-    is_service: bool,
+    execution_details: ExecutionDetails,
 ) -> Result<JoinHandle<()>, Error> {
     info!("Starting listening jobs thread");
     let api = Client::new(uri, token, unsecured_certificate, with_proxy);
-    let execution_details = ExecutionDetails::new(is_service).unwrap();
     let handle = thread::spawn(move || {
         // While no stop signal received
         while THREADS_CONTROL.load(Ordering::Relaxed) {

@@ -14,6 +14,7 @@ use std::sync::atomic::AtomicBool;
 use std::thread::JoinHandle;
 
 use crate::common::error_model::Error;
+use crate::config::execution_details::ExecutionDetails;
 use crate::config::settings::Settings;
 use crate::process::agent_job;
 use crate::process::{agent_cleanup, keep_alive};
@@ -28,12 +29,19 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
     let token = settings_data.openbas.token;
     let unsecured_certificate = settings_data.openbas.unsecured_certificate;
     let with_proxy = settings_data.openbas.with_proxy;
+    let execution_details = ExecutionDetails::new(is_service).unwrap();
+    info!(
+        "ExecutionDetails : user {:?} -- is_elevated {:?} -- is_service {:?} ",
+        execution_details.executed_by_user,
+        execution_details.is_elevated,
+        execution_details.is_service
+    );
     let keep_alive_thread = keep_alive::ping(
         url.clone(),
         token.clone(),
         unsecured_certificate,
         with_proxy,
-        is_service,
+        execution_details.clone(),
     );
     // Starts the agent listening thread
     let agent_job_thread = agent_job::listen(
@@ -41,7 +49,7 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
         token.clone(),
         unsecured_certificate,
         with_proxy,
-        is_service,
+        execution_details.clone(),
     );
     // Starts the cleanup thread
     let cleanup_thread = agent_cleanup::clean();

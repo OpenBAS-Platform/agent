@@ -1,8 +1,9 @@
 use config::ConfigError;
+use log::error;
 use serde::Deserialize;
 use std::process::{Command, Output, Stdio};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(unused)]
 pub struct ExecutionDetails {
     pub is_elevated: bool,
@@ -34,6 +35,19 @@ impl ExecutionDetails {
         String::from_utf8_lossy(raw_bytes).to_string()
     }
 
+    pub fn get_user_from_command(executor: &str, args: &[&str], replace_str: &str) -> String {
+        let user_output = Self::invoke_command(executor, "whoami", args);
+        let user_result_output = user_output.unwrap().clone();
+        let user_err = Self::decode_output(&user_result_output.stderr);
+        if !user_err.is_empty() {
+            error!(
+                "User not returned with whoami command, try to restart the agent : {:?}",
+                user_err
+            );
+        }
+        Self::decode_output(&user_result_output.stdout).replace(replace_str, "")
+    }
+
     #[cfg(target_os = "windows")]
     pub fn new(is_service: bool) -> Result<Self, ConfigError> {
         let executor = "powershell";
@@ -46,8 +60,7 @@ impl ExecutionDetails {
             "-NoProfile",
             "-Command",
         ]);
-        let user_output = Self::invoke_command(executor, "whoami", args.as_slice());
-        let user = Self::decode_output(&user_output.unwrap().clone().stdout).replace("\r\n", "");
+        let user = Self::get_user_from_command(executor, args.as_slice(), "\r\n");
         let is_elevated_output = Self::invoke_command(executor,
                                                       "([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator);", args.as_slice());
         let is_elevated = Self::decode_output(&is_elevated_output.unwrap().clone().stdout);
@@ -62,8 +75,7 @@ impl ExecutionDetails {
     pub fn new(_is_service: bool) -> Result<Self, ConfigError> {
         let executor = "sh";
         let args = vec!["-c"];
-        let user_output = Self::invoke_command(executor, "whoami", args.as_slice());
-        let user = Self::decode_output(&user_output.unwrap().clone().stdout).replace("\n", "");
+        let user = Self::get_user_from_command(executor, args.as_slice(), "\n");
         if user == "root" {
             Ok(ExecutionDetails {
                 is_elevated: true,
@@ -92,8 +104,7 @@ impl ExecutionDetails {
     pub fn new(_is_service: bool) -> Result<Self, ConfigError> {
         let executor = "sh";
         let args = vec!["-c"];
-        let user_output = Self::invoke_command(executor, "whoami", args.as_slice());
-        let user = Self::decode_output(&user_output.unwrap().clone().stdout).replace("\n", "");
+        let user = Self::get_user_from_command(executor, args.as_slice(), "\n");
         if user == "root" {
             Ok(ExecutionDetails {
                 is_elevated: true,
