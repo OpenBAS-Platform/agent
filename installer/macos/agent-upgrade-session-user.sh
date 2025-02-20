@@ -12,13 +12,13 @@ fi
 if [ "${os}" = "macos" ]; then
     echo "Starting upgrade script for ${os} | ${architecture}"
 
-    echo "01. Downloading OpenBAS Agent into ~/.local/openbas-agent-session..."
-    curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o ~/.local/openbas-agent-session/openbas-agent_upgrade
-    mv ~/.local/openbas-agent-session/openbas-agent_upgrade ~/.local/openbas-agent-session/openbas-agent
-    chmod +x ~/.local/openbas-agent-session/openbas-agent
+    echo "01. Downloading OpenBAS Agent into $HOME/.local/openbas-agent-session..."
+    curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o $HOME/.local/openbas-agent-session/openbas-agent_upgrade
+    mv $HOME/.local/openbas-agent-session/openbas-agent_upgrade $HOME/.local/openbas-agent-session/openbas-agent
+    chmod +x $HOME/.local/openbas-agent-session/openbas-agent
 
     echo "02. Updating OpenBAS configuration file"
-    cat > ~/.local/openbas-agent-session/openbas-agent-config.toml <<EOF
+    cat > $HOME/.local/openbas-agent-session/openbas-agent-config.toml <<EOF
 debug=false
 
 [openbas]

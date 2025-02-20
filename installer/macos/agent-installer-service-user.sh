@@ -68,7 +68,7 @@ if [ "${os}" = "macos" ]; then
     chmod +x /opt/openbas-agent-service-${user}/openbas-agent
 
     echo "03. Creating OpenBAS configuration file"
-    cat > /opt/penbas-agent-service-${user}/openbas-agent-config.toml <<EOF
+    cat > /opt/openbas-agent-service-${user}/openbas-agent-config.toml <<EOF
 debug=false
 
 [openbas]

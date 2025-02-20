@@ -15,13 +15,13 @@ if [ "${os}" = "macos" ]; then
     echo "01. Stopping existing openbas-agent-session..."
     launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/openbas-agent-session.plist || echo "openbas-agent already stopped"
 
-    echo "02. Downloading OpenBAS Agent into ~/.local/openbas-agent-session..."
-    (mkdir -p ~/.local/openbas-agent-session && touch ~/.local/openbas-agent-session >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to ~/.local\n" >&2 && exit 1)
-    curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o ~/.local/openbas-agent-session/openbas-agent
-    chmod +x ~/.local/openbas-agent-session/openbas-agent
+    echo "02. Downloading OpenBAS Agent into $HOME/.local/openbas-agent-session..."
+    (mkdir -p $HOME/.local/openbas-agent-session && touch $HOME/.local/openbas-agent-session >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to $HOME/.local\n" >&2 && exit 1)
+    curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o $HOME/.local/openbas-agent-session/openbas-agent
+    chmod +x $HOME/.local/openbas-agent-session/openbas-agent
 
     echo "03. Creating OpenBAS configuration file"
-    cat > ~/.local/openbas-agent-session/openbas-agent-config.toml <<EOF
+    cat > $HOME/.local/openbas-agent-session/openbas-agent-config.toml <<EOF
 debug=false
 
 [openbas]
