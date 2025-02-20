@@ -42,6 +42,8 @@ EOF
       Type=exec
       ExecStart=/opt/openbas-agent/openbas-agent
       StandardOutput=journal
+      Restart=always
+      RestartSec=60
       [Install]
       WantedBy=multi-user.target
 EOF
