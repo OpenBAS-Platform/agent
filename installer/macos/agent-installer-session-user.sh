@@ -75,7 +75,7 @@ EOF
     launchctl enable user/$(id -u)/~/Library/LaunchAgents/openbas-agent-session.plist
     launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/openbas-agent-session.plist
 
-    echo "OpenBAS Agent started."
+    echo "OpenBAS Agent Session User started."
 else
     echo "Operating system $OSTYPE is not supported yet, please create a ticket in openbas github project"
     exit 1
