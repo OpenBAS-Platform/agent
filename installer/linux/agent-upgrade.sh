@@ -33,7 +33,7 @@ with_proxy = "${OPENBAS_WITH_PROXY}"
 EOF
 
     echo "03. Restarting the service"
-    systemctl restart ${service_name} || echo "Fail restarting ${service_name}"
+    systemctl restart ${service_name} || (echo "Fail restarting ${service_name}" >&2 && exit 1)
 
     echo "OpenBAS Agent started."
 else
