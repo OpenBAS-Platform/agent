@@ -5,6 +5,9 @@ base_url=${OPENBAS_URL}
 architecture=$(uname -m)
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
+install_dir="$HOME/.local/openbas-agent-session"
+service_name="openbas-agent-session"
+
 
 if [ "${os}" = "linux" ]; then
     if ! [ -d /run/systemd/system ]; then
@@ -14,13 +17,13 @@ if [ "${os}" = "linux" ]; then
 
     echo "Starting upgrade script for ${os} | ${architecture}"
 
-    echo "01. Downloading OpenBAS Agent into $HOME/.local/openbas-agent-session..."
-    curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o $HOME/.local/openbas-agent-session/openbas-agent_upgrade
-    mv $HOME/.local/openbas-agent-session/openbas-agent_upgrade $HOME/.local/openbas-agent-session/openbas-agent
-    chmod +x $HOME/.local/openbas-agent-session/openbas-agent
+    echo "01. Downloading OpenBAS Agent into ${install_dir}..."
+    curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o ${install_dir}/openbas-agent_upgrade
+    mv ${install_dir}/openbas-agent_upgrade ${install_dir}/openbas-agent
+    chmod +x ${install_dir}/openbas-agent
 
     echo "02. Updating OpenBAS configuration file"
-    cat > $HOME/.local/openbas-agent-session/openbas-agent-config.toml <<EOF
+    cat > ${install_dir}/openbas-agent-config.toml <<EOF
 debug=false
 
 [openbas]
@@ -32,7 +35,7 @@ EOF
 
 
     echo "03. Restarting the service"
-    systemctl --user restart openbas-agent-session || echo "Fail restarting openbas-agent-session"
+    systemctl --user restart ${service_name} || echo "Fail restarting openbas-agent-session"
 
     echo "OpenBAS Agent Session User started."
 else

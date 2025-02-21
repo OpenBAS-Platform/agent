@@ -5,6 +5,8 @@ base_url=${OPENBAS_URL}
 architecture=$(uname -m)
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
+install_dir="/opt/openbas-agent"
+service_name="openbas-agent"
 
 if [ "${os}" = "linux" ]; then
     if ! [ -d /run/systemd/system ]; then
@@ -15,15 +17,15 @@ if [ "${os}" = "linux" ]; then
     echo "Starting install script for ${os} | ${architecture}"
 
     echo "01. Stopping existing openbas-agent..."
-    systemctl stop openbas-agent || echo "Fail stopping openbas-agent"
+    systemctl stop ${service_name} || echo "Fail stopping ${service_name}"
 
-    echo "02. Downloading OpenBAS Agent into /opt/openbas-agent..."
-    (mkdir -p /opt/openbas-agent && touch /opt/openbas-agent >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)
-    curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o /opt/openbas-agent/openbas-agent
-    chmod 755 /opt/openbas-agent/openbas-agent
+    echo "02. Downloading OpenBAS Agent into ${install_dir}..."
+    (mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)
+    curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o ${install_dir}/openbas-agent
+    chmod 755 ${install_dir}/openbas-agent
 
     echo "03. Creating OpenBAS configuration file"
-    cat > /opt/openbas-agent/openbas-agent-config.toml <<EOF
+    cat > ${install_dir}/openbas-agent-config.toml <<EOF
 debug=false
 
 [openbas]
@@ -34,13 +36,13 @@ with_proxy = "${OPENBAS_WITH_PROXY}"
 EOF
 
     echo "04. Writing agent service"
-    cat > /opt/openbas-agent/openbas-agent.service <<EOF
+    cat > ${install_dir}/${service_name}.service <<EOF
       [Unit]
       Description=OpenBAS Agent
       After=network.target
       [Service]
       Type=exec
-      ExecStart=/opt/openbas-agent/openbas-agent
+      ExecStart=${install_dir}/openbas-agent
       StandardOutput=journal
       Restart=always
       RestartSec=60
@@ -50,10 +52,10 @@ EOF
 
     echo "05. Starting agent service"
     (
-      ln -sf /opt/openbas-agent/openbas-agent.service /etc/systemd/system/openbas-agent.service
+      ln -sf ${install_dir}/${service_name}.service /etc/systemd/system/
       systemctl daemon-reload
-      systemctl enable openbas-agent
-      systemctl start openbas-agent
+      systemctl enable ${service_name}
+      systemctl start ${service_name}
     ) || (echo "Error while enabling OpenBAS Agent systemd unit file or starting the agent" >&2 && exit 1)
 
     echo "OpenBAS Agent started."

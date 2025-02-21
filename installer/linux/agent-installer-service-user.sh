@@ -52,6 +52,9 @@ user="$USER_ARG"
 group="$GROUP_ARG"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
+install_dir="/opt/openbas-agent-service-${user}"
+service_name="${user}-openbas-agent"
+
 
 if [ "${os}" = "linux" ]; then
     if ! [ -d /run/systemd/system ]; then
@@ -62,15 +65,15 @@ if [ "${os}" = "linux" ]; then
     echo "Starting install script for ${os} | ${architecture}"
 
     echo "01. Stopping existing openbas-agent-${user}..."
-    systemctl stop ${user}-openbas-agent || echo "Fail stopping ${user}-openbas-agent"
+    systemctl stop ${service_name} || echo "Fail stopping ${service_name}"
 
-    echo "02. Downloading OpenBAS Agent into /opt/openbas-agent-service-${user}..."
-    (mkdir -p /opt/openbas-agent-service-${user} && touch /opt/openbas-agent-service-${user} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)
-    curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o /opt/openbas-agent-service-${user}/openbas-agent
-    chmod +x /opt/openbas-agent-service-${user}/openbas-agent
+    echo "02. Downloading OpenBAS Agent into ${install_dir}..."
+    (mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to ${install_dir}\n" >&2 && exit 1)
+    curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o ${install_dir}/openbas-agent
+    chmod +x ${install_dir}/openbas-agent
 
     echo "03. Creating OpenBAS configuration file"
-    cat > /opt/openbas-agent-service-${user}/openbas-agent-config.toml <<EOF
+    cat > ${install_dir}/openbas-agent-config.toml <<EOF
 debug=false
 
 [openbas]
@@ -81,7 +84,7 @@ with_proxy = "${OPENBAS_WITH_PROXY}"
 EOF
 
     echo "04. Writing agent service"
-    cat > /opt/openbas-agent-service-${user}/${user}-openbas-agent.service <<EOF
+    cat > ${install_dir}/${service_name}.service <<EOF
       [Unit]
       Description=OpenBAS Agent Service ${user}
       After=network.target
@@ -89,7 +92,7 @@ EOF
       User=${user}
       Group=${group}
       Type=exec
-      ExecStart=/opt/openbas-agent-service-${user}/openbas-agent
+      ExecStart=${install_dir}/openbas-agent
       StandardOutput=journal
       Restart=always
       RestartSec=60
@@ -97,13 +100,13 @@ EOF
       WantedBy=multi-user.target
 EOF
 
-    chown -R ${user}:${group} /opt/openbas-agent-service-${user}
+    chown -R ${user}:${group} ${install_dir}
     echo "05. Starting agent service"
     (
-      ln -sf /opt/openbas-agent-service-${user}/${user}-openbas-agent.service /etc/systemd/system/${user}-openbas-agent.service
+      ln -sf ${install_dir}/${service_name}.service /etc/systemd/system/
       systemctl daemon-reload
-      systemctl enable ${user}-openbas-agent
-      systemctl start ${user}-openbas-agent
+      systemctl enable ${service_name}
+      systemctl start ${service_name}
     ) || (echo "Error while enabling OpenBAS Agent systemd unit file or starting the agent" >&2 && exit 1)
 
     echo "OpenBAS Agent started."
