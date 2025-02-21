@@ -13,8 +13,8 @@ if [ "${os}" != "linux" ]; then
   exit 1
 fi
 
-if ! [ -d /run/systemd/system ]; then
-  echo "Linux detected but without systemd, this installation is not supported"
+if ! systemctl is-system-running >/dev/null 2>&1; then
+  echo "Linux detected but systemd is not running. This installation is not supported."
   exit 1
 fi
 

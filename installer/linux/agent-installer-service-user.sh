@@ -61,8 +61,8 @@ if [ "${os}" != "linux" ]; then
   exit 1
 fi
 
-if ! [ -d /run/systemd/system ]; then
-  echo "Linux detected but without systemd, this installation is not supported"
+if ! systemctl is-system-running >/dev/null 2>&1; then
+  echo "Linux detected but systemd is not running. This installation is not supported."
   exit 1
 fi
 
@@ -87,21 +87,21 @@ unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
 with_proxy = "${OPENBAS_WITH_PROXY}"
 EOF
 
-    echo "04. Writing agent service"
-    cat > ${install_dir}/${service_name}.service <<EOF
-      [Unit]
-      Description=OpenBAS Agent Service ${user}
-      After=network.target
-      [Service]
-      User=${user}
-      Group=${group}
-      Type=exec
-      ExecStart=${install_dir}/openbas-agent
-      StandardOutput=journal
-      Restart=always
-      RestartSec=60
-      [Install]
-      WantedBy=multi-user.target
+echo "04. Writing agent service"
+cat > ${install_dir}/${service_name}.service <<EOF
+[Unit]
+Description=OpenBAS Agent Service ${user}
+After=network.target
+[Service]
+User=${user}
+Group=${group}
+Type=exec
+ExecStart=${install_dir}/openbas-agent
+StandardOutput=journal
+Restart=always
+RestartSec=60
+[Install]
+WantedBy=multi-user.target
 EOF
 
 chown -R ${user}:${group} ${install_dir}
