@@ -42,7 +42,7 @@ fi
 
 # --- Verify that the group exists ---
 if ! getent group "$GROUP_ARG" >/dev/null 2>&1; then
-  echo "Error: Group '$GROUP_ARG' does not exist."
+  echo "Error: Group '$GROUP_ARG' does not exist. You can find your groups with the command 'id'"
   exit 1
 fi
 
