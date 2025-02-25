@@ -3,13 +3,15 @@ set -e
 
 base_url=${OPENBAS_URL}
 architecture=$(uname -m)
+user="$(id -un)"
+group="$(id -gn)"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
-install_dir="/opt/openbas-agent"
-service_name="openbas-agent"
+install_dir="/opt/openbas-agent-service-${user}"
+service_name="${user}-openbas-agent"
 
 if [ "${os}" != "linux" ]; then
-  echo "Operating system ${os} is not supported yet, please create a ticket in openbas github project"
+  echo "Operating system $OSTYPE is not supported yet, please create a ticket in openbas github project"
   exit 1
 fi
 
@@ -20,14 +22,15 @@ fi
 
 echo "Starting upgrade script for ${os} | ${architecture}"
 
+
 echo "01. Downloading OpenBAS Agent into ${install_dir}..."
+(mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to ${install_dir}\n" >&2 && exit 1)
 curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o ${install_dir}/openbas-agent_upgrade
 mv ${install_dir}/openbas-agent_upgrade ${install_dir}/openbas-agent
-chmod 755 ${install_dir}/openbas-agent
+chmod +x ${install_dir}/openbas-agent
 
 echo "02. Updating OpenBAS configuration file"
 cat > ${install_dir}/openbas-agent-config.toml <<EOF
-
 debug=false
 
 [openbas]
@@ -37,7 +40,6 @@ unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
 with_proxy = "${OPENBAS_WITH_PROXY}"
 EOF
 
-echo "03. Restarting the service"
-systemctl restart ${service_name} || (echo "Fail restarting ${service_name}" >&2 && exit 1)
-
-echo "OpenBAS Agent started."
+echo "03. Kill the process of the existing service"
+(pkill -9 -f "${install_dir}/openbas-agent") || (echo "Error while killing the process of the openbas agent service" >&2 && exit 1)
+echo "The OpenBAS agent process was stopped, the service will automatically restart in 60 seconds"
