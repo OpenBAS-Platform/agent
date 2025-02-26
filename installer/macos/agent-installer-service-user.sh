@@ -42,7 +42,7 @@ fi
 
 # --- Verify that the group exists ---
 if ! dscl . read /Groups/"$GROUP_ARG" >/dev/null 2>&1; then
-  echo "Error: Group '$GROUP_ARG' does not exist."
+  echo "Error: Group '$GROUP_ARG' does not exist. You can find your groups with the command 'id'""
   exit 1
 fi
 
@@ -51,24 +51,31 @@ architecture=$(uname -m)
 user="$USER_ARG"
 group="$GROUP_ARG"
 
+install_dir="/opt/openbas-agent-service-${user}"
+service_name="${user}-openbas-agent"
+
 os=$(uname | tr '[:upper:]' '[:lower:]')
 if [ "${os}" = "darwin" ]; then
   os="macos"
 fi
 
-if [ "${os}" = "macos" ]; then
-    echo "Starting install script for ${os} | ${architecture}"
+if [ "${os}" != "macos" ]; then
+  echo "Operating system $OSTYPE is not supported yet, please create a ticket in openbas github project"
+  exit 1
+fi
 
-    echo "01. Stopping existing ${user}.openbas.agent..."
-    launchctl bootout system/ ~/Library/LaunchDaemons/${user}-openbas-agent.plist || echo "openbas-agent already stopped"
+echo "Starting install script for ${os} | ${architecture}"
 
-    echo "02. Downloading OpenBAS Agent into /opt/openbas-agent-service-${user}..."
-    (mkdir -p /opt/openbas-agent-service-${user} && touch /opt/openbas-agent-service-${user} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)
-    curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o /opt/openbas-agent-service-${user}/openbas-agent
-    chmod +x /opt/openbas-agent-service-${user}/openbas-agent
+echo "01. Stopping existing ${user}.openbas.agent..."
+launchctl bootout system/ ~/Library/LaunchDaemons/${service_name}.plist || echo "openbas-agent already stopped"
 
-    echo "03. Creating OpenBAS configuration file"
-    cat > /opt/openbas-agent-service-${user}/openbas-agent-config.toml <<EOF
+echo "02. Downloading OpenBAS Agent into ${install_dir}..."
+(mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)
+curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o ${install_dir}/openbas-agent
+chmod +x ${install_dir}/openbas-agent
+
+echo "03. Creating OpenBAS configuration file"
+cat > ${install_dir}/openbas-agent-config.toml <<EOF
 debug=false
 
 [openbas]
@@ -78,60 +85,56 @@ unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
 with_proxy = "${OPENBAS_WITH_PROXY}"
 EOF
 
-    echo "04. Writing agent service"
-    mkdir -p ~/Library/LaunchDaemons
-    cat > ~/Library/LaunchDaemons/${user}-openbas-agent.plist <<EOF
-    <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    <plist version="1.0">
-        <dict>
-            <key>Label</key>
-            <string>${user}.openbas.agent</string>
+echo "04. Writing agent service"
+mkdir -p ~/Library/LaunchDaemons
+cat > ~/Library/LaunchDaemons/${service_name}.plist <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>Label</key>
+        <string>${user}.openbas.agent</string>
 
-            <key>Program</key>
-            <string>/opt/openbas-agent-service-${user}/openbas-agent</string>
+        <key>Program</key>
+        <string>${install_dir}/openbas-agent</string>
 
-            <key>RunAtLoad</key>
-            <true/>
+        <key>RunAtLoad</key>
+        <true/>
 
-            <!-- The agent needs to run at all times -->
-            <key>KeepAlive</key>
-            <true/>
+        <!-- The agent needs to run at all times -->
+        <key>KeepAlive</key>
+        <true/>
 
-            <!-- This prevents macOS from limiting the resource usage of the agent -->
-            <key>ProcessType</key>
-            <string>Interactive</string>
+        <!-- This prevents macOS from limiting the resource usage of the agent -->
+        <key>ProcessType</key>
+        <string>Interactive</string>
 
-            <!-- Increase the frequency of restarting the agent on failure, or post-update -->
-            <key>ThrottleInterval</key>
-            <integer>60</integer>
+        <!-- Increase the frequency of restarting the agent on failure, or post-update -->
+        <key>ThrottleInterval</key>
+        <integer>60</integer>
 
-            <!-- Wait for 10 minutes for the agent to shut down (the agent itself waits for tasks to complete) -->
-            <key>ExitTimeOut</key>
-            <integer>600</integer>
+        <!-- Wait for 10 minutes for the agent to shut down (the agent itself waits for tasks to complete) -->
+        <key>ExitTimeOut</key>
+        <integer>600</integer>
 
-            <key>StandardOutPath</key>
-            <string>/opt/openbas-agent-service-${user}/runner.log</string>
-            <key>StandardErrorPath</key>
-            <string>/opt/openbas-agent-service-${user}/runner.log</string>
+        <key>StandardOutPath</key>
+        <string>${install_dir}/runner.log</string>
+        <key>StandardErrorPath</key>
+        <string>${install_dir}/runner.log</string>
 
-            <key>UserName</key>
-            <string>${user}</string>
-            <key>GroupName</key>
-            <string>${group}</string>
-            <key>InitGroups</key>
-            <true/>
-        </dict>
-    </plist>
+        <key>UserName</key>
+        <string>${user}</string>
+        <key>GroupName</key>
+        <string>${group}</string>
+        <key>InitGroups</key>
+        <true/>
+    </dict>
+</plist>
 EOF
 
-    chown -R ${user}:${group} /opt/openbas-agent-service-${user}
-    echo "05. Starting agent service"
-    launchctl enable system/${user}.openbas.agent
-    launchctl bootstrap system/ ~/Library/LaunchDaemons/${user}-openbas-agent.plist
+chown -R ${user}:${group} ${install_dir}
+echo "05. Starting agent service"
+launchctl enable system/${user}.openbas.agent
+launchctl bootstrap system/ ~/Library/LaunchDaemons/${service_name}.plist
 
-    echo "OpenBAS Agent Service User started."
-else
-    echo "Operating system $OSTYPE is not supported yet, please create a ticket in openbas github project"
-    exit 1
-fi
+echo "OpenBAS Agent Service User started."

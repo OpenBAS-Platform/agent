@@ -115,11 +115,11 @@ impl ExecutionDetails {
             let is_elevated_output = Self::invoke_command(executor, "id", args.as_slice());
             let is_elevated = Self::decode_output(&is_elevated_output.unwrap().clone().stdout);
             let is_service_output =
-                Self::invoke_command(executor, "launchctl print openbas.agent", args.as_slice());
-            let is_service = Self::decode_output(&is_service_output.unwrap().clone().stderr);
+                Self::invoke_command(executor, "launchctl print openbas.agent.session", args.as_slice());
+            let is_service = Self::decode_output(&is_service_output.unwrap().clone().stdout);
             Ok(ExecutionDetails {
                 is_elevated: is_elevated.contains("(admin)"),
-                is_service: is_service.contains("openbas.agent"),
+                is_service: !is_service.contains("openbas.agent.session"),
                 executed_by_user: user,
             })
         }
