@@ -4,6 +4,7 @@
 !include FileFunc.nsh
 !include StrFunc.nsh
 ${Using:StrFunc} StrRep
+${Using:StrFunc} StrCase
 
 !insertmacro GetParameters
 !insertmacro GetOptions
@@ -193,6 +194,10 @@ Function sanitizeUserName
   ${StrRep} $0 $0 "<" ""
   ${StrRep} $0 $0 ">" ""
   ${StrRep} $0 $0 "|" ""
+
+  ; Convert to lowercase
+  ${StrCase} $0 $0 "L"
+
   Exch $0
 FunctionEnd
 
