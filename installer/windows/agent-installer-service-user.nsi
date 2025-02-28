@@ -285,7 +285,7 @@ section "install"
   Pop $UserSID
 
   ; Get Existing permssion and Add permission for the user to stop/start the service
-  nsExec::ExecToStack "powershell.exe -NoProfile -Command  sc sdshow $ServiceName"
+  nsExec::ExecToStack "cmd /c sc sdshow $ServiceName"
   Pop $R0    ; Pop the exit code
   Pop $Perm  ; Pop the perm
 
