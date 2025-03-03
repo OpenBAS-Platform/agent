@@ -4,8 +4,8 @@ set -e
 base_url=${OPENBAS_URL}
 architecture=$(uname -m)
 
-install_dir="$HOME/.local/openbas-agent-session"
-service_name="openbas-agent-session"
+install_dir="/Users/$(id -un)/.local/openbas-agent-session"
+session_name="openbas-agent-session"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
 if [ "${os}" = "darwin" ]; then
@@ -19,8 +19,8 @@ fi
 
 echo "Starting install script for ${os} | ${architecture}"
 
-echo "01. Stopping existing openbas-agent-session..."
-launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/${service_name}.plist || echo "openbas-agent already stopped"
+echo "01. Stopping existing ${session_name}..."
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/${session_name}.plist || echo "${session_name} already stopped"
 
 echo "02. Downloading OpenBAS Agent into ${install_dir}..."
 (mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to $HOME/.local\n" >&2 && exit 1)
@@ -40,16 +40,16 @@ EOF
 
 echo "04. Writing agent service"
 mkdir -p ~/Library/LaunchAgents
-cat > ~/Library/LaunchAgents/${service_name}.plist <<EOF
+cat > ~/Library/LaunchAgents/${session_name}.plist <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
     <dict>
         <key>Label</key>
-        <string>openbas.agent.session</string>
+        <string>${session_name}</string>
 
         <key>Program</key>
-        <string>/Users/$(id -un)/.local/${service_name}/openbas-agent</string>
+        <string>${install_dir}/openbas-agent</string>
 
         <key>RunAtLoad</key>
         <true/>
@@ -71,15 +71,15 @@ cat > ~/Library/LaunchAgents/${service_name}.plist <<EOF
         <integer>600</integer>
 
         <key>StandardOutPath</key>
-        <string>/Users/$(id -un)/.local/${service_name}/runner.log</string>
+        <string>${install_dir}/runner.log</string>
         <key>StandardErrorPath</key>
-        <string>/Users/$(id -un)/.local/${service_name}/runner.log</string>
+        <string>${install_dir}/runner.log</string>
     </dict>
 </plist>
 EOF
 
 echo "05. Starting agent service"
-launchctl enable user/$(id -u)/~/Library/LaunchAgents/${service_name}.plist
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/${service_name}.plist
+launchctl enable user/$(id -u)/~/Library/LaunchAgents/${session_name}.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/${session_name}.plist
 
 echo "OpenBAS Agent Session User started."

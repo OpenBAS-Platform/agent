@@ -68,7 +68,7 @@ fi
 
 echo "Starting install script for ${os} | ${architecture}"
 
-echo "01. Stopping existing openbas-agent-${user}..."
+echo "01. Stopping existing ${service_name}..."
 systemctl stop ${service_name} || echo "Fail stopping ${service_name}"
 
 echo "02. Downloading OpenBAS Agent into ${install_dir}..."

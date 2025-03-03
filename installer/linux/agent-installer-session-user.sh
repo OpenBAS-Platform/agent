@@ -6,7 +6,7 @@ architecture=$(uname -m)
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
 install_dir="$HOME/.local/openbas-agent-session"
-service_name="openbas-agent-session"
+session_name="openbas-agent-session"
 
 if [ "${os}" != "linux" ]; then
   echo "Operating system $OSTYPE is not supported yet, please create a ticket in openbas github project"
@@ -20,8 +20,8 @@ fi
 
 echo "Starting install script for ${os} | ${architecture}"
 
-echo "01. Stopping existing openbas-agent-session..."
-systemctl --user stop ${service_name} || echo "Fail stopping ${service_name}"
+echo "01. Stopping existing ${session_name}..."
+systemctl --user stop ${session_name} || echo "Fail stopping ${session_name}"
 
 echo "02. Downloading OpenBAS Agent into ${install_dir}..."
 (mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to ${install_dir}\n" >&2 && exit 1)
@@ -40,7 +40,7 @@ with_proxy = "${OPENBAS_WITH_PROXY}"
 EOF
 
 echo "04. Writing agent service"
-cat > ${install_dir}/${service_name}.service <<EOF
+cat > ${install_dir}/${session_name}.service <<EOF
 [Unit]
 Description=OpenBAS Agent Session
 After=network.target
@@ -54,10 +54,10 @@ EOF
 
 echo "05. Starting agent service"
 (
-  ln -sf ${install_dir}/${service_name}.service $HOME/.config/systemd/user/
+  ln -sf ${install_dir}/${session_name}.service $HOME/.config/systemd/user/
   systemctl --user daemon-reload
-  systemctl --user enable ${service_name}
-  systemctl --user start ${service_name}
+  systemctl --user enable ${session_name}
+  systemctl --user start ${session_name}
 ) || (echo "Error while enabling OpenBAS Agent systemd unit file or starting the agent" >&2 && exit 1)
 
 echo "OpenBAS Agent started."

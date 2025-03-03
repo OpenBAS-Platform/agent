@@ -19,8 +19,8 @@ fi
 
 echo "Starting install script for ${os} | ${architecture}"
 
-echo "01. Stopping existing openbas-agent..."
-launchctl bootout system/ ~/Library/LaunchDaemons/${service_name}.plist || echo "openbas-agent already stopped"
+echo "01. Stopping existing ${service_name}..."
+launchctl bootout system/ ~/Library/LaunchDaemons/${service_name}.plist || echo "${service_name} already stopped"
 
 echo "02. Downloading OpenBAS Agent into ${install_dir}..."
 (mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)

@@ -5,7 +5,7 @@ base_url=${OPENBAS_URL}
 architecture=$(uname -m)
 
 install_dir="$HOME/.local/openbas-agent-session"
-service_name="openbas-agent-session"
+session_name="openbas-agent-session"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
 if [ "${os}" = "darwin" ]; then
@@ -36,7 +36,7 @@ with_proxy = "${OPENBAS_WITH_PROXY}"
 EOF
 
 echo "03. Starting agent service"
-launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/${service_name}.plist || (echo "Fail restarting ${service_name}" >&2 && exit 1)
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/${service_name}.plist
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/${session_name}.plist || (echo "Fail restarting ${session_name}" >&2 && exit 1)
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/${session_name}.plist
 
 echo "OpenBAS Agent Session User started."

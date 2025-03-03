@@ -66,8 +66,8 @@ fi
 
 echo "Starting install script for ${os} | ${architecture}"
 
-echo "01. Stopping existing ${user}.openbas.agent..."
-launchctl bootout system/ ~/Library/LaunchDaemons/${service_name}.plist || echo "openbas-agent already stopped"
+echo "01. Stopping existing ${service_name}..."
+launchctl bootout system/ ~/Library/LaunchDaemons/${service_name}.plist || echo "${service_name} already stopped"
 
 echo "02. Downloading OpenBAS Agent into ${install_dir}..."
 (mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)
@@ -93,7 +93,7 @@ cat > ~/Library/LaunchDaemons/${service_name}.plist <<EOF
 <plist version="1.0">
     <dict>
         <key>Label</key>
-        <string>${user}.openbas.agent</string>
+        <string>${service_name}</string>
 
         <key>Program</key>
         <string>${install_dir}/openbas-agent</string>
@@ -134,7 +134,7 @@ EOF
 
 chown -R ${user}:${group} ${install_dir}
 echo "05. Starting agent service"
-launchctl enable system/${user}.openbas.agent
+launchctl enable system/${service_name}
 launchctl bootstrap system/ ~/Library/LaunchDaemons/${service_name}.plist
 
 echo "OpenBAS Agent Service User started."

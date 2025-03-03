@@ -6,7 +6,7 @@ architecture=$(uname -m)
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
 install_dir="$HOME/.local/openbas-agent-session"
-service_name="openbas-agent-session"
+session_name="openbas-agent-session"
 
 
 if [ "${os}" != "linux" ]; then
@@ -38,6 +38,6 @@ with_proxy = "${OPENBAS_WITH_PROXY}"
 EOF
 
 echo "03. Restarting the service"
-systemctl --user restart ${service_name} || (echo "Fail restarting ${service_name}" >&2 && exit 1)
+systemctl --user restart ${session_name} || (echo "Fail restarting ${session_name}" >&2 && exit 1)
 
 echo "OpenBAS Agent Session User started."
