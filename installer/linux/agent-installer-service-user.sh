@@ -30,7 +30,7 @@ if [ -z "$USER_ARG" ]; then
 fi
 
 if [ -z "$GROUP_ARG" ]; then
-  echo "Error: --group argument is required and cannot be empty."
+  echo "Error: --group argument is required and cannot be empty. You can find your groups with the command 'id'."
   exit 1
 fi
 
@@ -42,7 +42,7 @@ fi
 
 # --- Verify that the group exists ---
 if ! getent group "$GROUP_ARG" >/dev/null 2>&1; then
-  echo "Error: Group '$GROUP_ARG' does not exist. You can find your groups with the command 'id'"
+  echo "Error: Group '$GROUP_ARG' does not exist. You can find your groups with the command 'id'."
   exit 1
 fi
 
@@ -68,7 +68,7 @@ fi
 
 echo "Starting install script for ${os} | ${architecture}"
 
-echo "01. Stopping existing openbas-agent-${user}..."
+echo "01. Stopping existing ${service_name}..."
 systemctl stop ${service_name} || echo "Fail stopping ${service_name}"
 
 echo "02. Downloading OpenBAS Agent into ${install_dir}..."

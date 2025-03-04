@@ -4,8 +4,8 @@ set -e
 base_url=${OPENBAS_URL}
 architecture=$(uname -m)
 
-install_dir="/opt/openbas-agent"
-service_name="openbas-agent"
+install_dir="/Users/$(id -un)/.local/openbas-agent-session"
+session_name="openbas-agent-session"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
 if [ "${os}" = "darwin" ]; then
@@ -19,13 +19,13 @@ fi
 
 echo "Starting install script for ${os} | ${architecture}"
 
-echo "01. Stopping existing ${service_name}..."
-launchctl bootout system/ ~/Library/LaunchDaemons/${service_name}.plist || echo "${service_name} already stopped"
+echo "01. Stopping existing ${session_name}..."
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/${session_name}.plist || echo "${session_name} already stopped"
 
 echo "02. Downloading OpenBAS Agent into ${install_dir}..."
-(mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)
+(mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to $HOME/.local\n" >&2 && exit 1)
 curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o ${install_dir}/openbas-agent
-chmod 755 ${install_dir}/openbas-agent
+chmod +x ${install_dir}/openbas-agent
 
 echo "03. Creating OpenBAS configuration file"
 cat > ${install_dir}/openbas-agent-config.toml <<EOF
@@ -39,17 +39,17 @@ with_proxy = "${OPENBAS_WITH_PROXY}"
 EOF
 
 echo "04. Writing agent service"
-mkdir -p ~/Library/LaunchDaemons
-cat > ~/Library/LaunchDaemons/${service_name}.plist <<EOF
+mkdir -p ~/Library/LaunchAgents
+cat > ~/Library/LaunchAgents/${session_name}.plist <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
     <dict>
         <key>Label</key>
-        <string>openbas.agent</string>
+        <string>${session_name}</string>
 
         <key>Program</key>
-        <string>${install_dir}/${service_name}</string>
+        <string>${install_dir}/openbas-agent</string>
 
         <key>RunAtLoad</key>
         <true/>
@@ -79,7 +79,7 @@ cat > ~/Library/LaunchDaemons/${service_name}.plist <<EOF
 EOF
 
 echo "05. Starting agent service"
-launchctl enable system/openbas.agent
-launchctl bootstrap system/ ~/Library/LaunchDaemons/${service_name}.plist
+launchctl enable user/$(id -u)/~/Library/LaunchAgents/${session_name}.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/${session_name}.plist
 
-echo "OpenBAS Agent started."
+echo "OpenBAS Agent Session User started."
