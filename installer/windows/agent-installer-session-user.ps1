@@ -1,7 +1,3 @@
-param(
-    [switch]$WithAdminPrivilege
-)
-
 # Can't install the OpenBAS agent in System32 location because NSIS 64 exe
 $location = Get-Location
 if ($location -like "*C:\Windows\System32*") { cd C:\ }
@@ -22,8 +18,7 @@ echo "Downloading and installing OpenBAS Agent..."
 try {
     Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/session-user" -OutFile "agent-installer-session-user.exe";
 
-    $withAdminPrivilegeParam = if ($WithAdminPrivilege.IsPresent) { '~WITH_ADMIN_PRIVILEGE=true' } else { '~WITH_ADMIN_PRIVILEGE=false' }
-    ./agent-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} $withAdminPrivilegeParam;
+    ./agent-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY};
     Start-Sleep -Seconds 3;
     rm -force ./agent-installer-session-user.exe;
 	echo "OpenBAS agent has been successfully installed"

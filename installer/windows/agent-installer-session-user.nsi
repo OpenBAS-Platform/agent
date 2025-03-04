@@ -48,7 +48,6 @@ Var LabelUnsecuredCertificate
 Var /GLOBAL ConfigUnsecuredCertificate
 Var LabelWithProxy
 Var /GLOBAL ConfigWithProxy
-Var LabelWithAdminPrivilege
 Var /GLOBAL ConfigWithAdminPrivilege
 Var /GLOBAL UserSanitized
 Var /GLOBAL AgentName
@@ -74,15 +73,10 @@ function verifyParam
 
   ${If} $ConfigWithProxy != "false"
   ${AndIf} $ConfigWithProxy != "true"
-    MessageBox MB_OK|MB_ICONEXCLAMATION "Missing false or true value for env with proxy"
+    MessageBox MB_OK|MB_ICONEXCLAMATION " Missing false or true value for env with proxy"
       Abort
   ${EndIf}
 
-  ${If} $ConfigWithAdminPrivilege != "false"
-  ${AndIf} $ConfigWithAdminPrivilege != "true"
-     MessageBox MB_OK|MB_ICONEXCLAMATION "Missing false or true value for admin privilege"
-     Abort
-  ${EndIf}
 functionEnd
 
 function .onInit
@@ -92,12 +86,14 @@ function .onInit
     ${GetOptions} $R0 ~ACCESS_TOKEN= $ConfigToken
     ${GetOptions} $R0 ~UNSECURED_CERTIFICATE= $ConfigUnsecuredCertificate
     ${GetOptions} $R0 ~WITH_PROXY= $ConfigWithProxy
-    ${GetOptions} $R0 ~WITH_ADMIN_PRIVILEGE= $ConfigWithAdminPrivilege
 
     ;get the user name and sanitize it
     UserInfo::GetName
     Call sanitizeUserName
     pop $UserSanitized
+
+    ;get the permission level
+    Call checkIfElevated
 
     ; If running silently, check params and update install path with user name
     ${If} ${Silent}
@@ -111,7 +107,18 @@ Var ConfigURLForm
 Var ConfigTokenForm
 Var ConfigUnsecuredCertificateForm
 Var ConfigWithProxyForm
-Var ConfigWithAdminPrivilegeForm
+
+Function checkIfElevated
+  ; Get the account type of the current process
+  UserInfo::GetAccountType
+  Pop $0
+
+  ${If} $0 == "admin"
+    StrCpy $ConfigWithAdminPrivilege "true"
+  ${Else}
+    StrCpy $ConfigWithAdminPrivilege "false"
+  ${EndIf}
+FunctionEnd
 
 Function nsDialogsConfig
 
@@ -138,20 +145,15 @@ Function nsDialogsConfig
 	Pop $LabelUnsecuredCertificate
 	${NSD_CreateText} 0 60u 100% 12u "false"
 	Pop $ConfigUnsecuredCertificateForm
-  ${NSD_CreateLabel} 0 72u 100% 12u "Env with proxy (true or false) *"
+  ${NSD_CreateLabel} 0 72u 100% 12u " Env with proxy (true or false) *"
 	Pop $LabelWithProxy
 	${NSD_CreateText} 0 84u 100% 12u "false"
 	Pop $ConfigWithProxyForm
-  ${NSD_CreateLabel} 0 96u 100% 12u "Install with admin privilege (true or false) *"
-	Pop $LabelWithAdminPrivilege
-	${NSD_CreateText} 0 108u 100% 12u "Standard"
-	Pop $ConfigWithAdminPrivilegeForm
 
   ${NSD_OnChange} $ConfigURLForm onFieldChange
   ${NSD_OnChange} $ConfigTokenForm onFieldChange
   ${NSD_OnChange} $ConfigUnsecuredCertificateForm onFieldChange
   ${NSD_OnChange} $ConfigWithProxyForm onFieldChange
-  ${NSD_OnChange} $ConfigWithAdminPrivilegeForm onFieldChange
 
   nsDialogs::Show
 
@@ -163,14 +165,12 @@ Function onFieldChange
   ${NSD_GetText} $ConfigTokenForm $ConfigToken
   ${NSD_GetText} $ConfigUnsecuredCertificateForm $ConfigUnsecuredCertificate
   ${NSD_GetText} $ConfigWithProxyForm $ConfigWithProxy
-  ${NSD_GetText} $ConfigWithAdminPrivilegeForm $ConfigWithAdminPrivilege
 
 
   ; enable next button if both defined 
   ${If} $ConfigURL != "" 
   ${AndIf} $ConfigToken != ""
   ${AndIf} $ConfigUnsecuredCertificate != ""
-  ${AndIf} $ConfigWithAdminPrivilege != ""
   ${AndIf} $ConfigWithProxy != ""
     GetDlgItem $0 $HWNDPARENT 1
     EnableWindow $0 1
@@ -234,31 +234,39 @@ section "install"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
-  ; Stop the scheduled task
-  ExecWait 'schtasks /End /TN "$AgentName"' $0
+  ; Stop the current agent
+  StrCpy $0 "$INSTDIR\openbas-agent.exe"
+  nsExec::ExecToStack 'powershell.exe -NoProfile -Command "Get-Process openbas-agent -ErrorAction SilentlyContinue | Where-Object { $$_.Path -eq \"$0\" } | Stop-Process -Force"'
 
-  ; Remove the existing scheduled task if it exists
-  ExecWait 'schtasks /Delete /TN "$AgentName" /F' $0
-
-  ; Create a scheduled task to run the agent
+  ; Remove the existing value in the registry
   ${If} $ConfigWithAdminPrivilege == "true"
-    ExecWait 'schtasks /Create /TN "$AgentName" /TR "$INSTDIR\openbas-agent.exe" /SC ONLOGON /RL HIGHEST' $0
-  ${Else}
-    ExecWait 'schtasks /Create /TN "$AgentName" /TR "$INSTDIR\openbas-agent.exe" /SC ONLOGON' $0
+    DeleteRegValue HKLM  "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe"
+  ${EndIf}
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName"
+
+  ; Request admin right for starting the agent
+  ${If} $ConfigWithAdminPrivilege == "true"
+    WriteRegStr HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" \
+      "$INSTDIR\openbas-agent.exe" "~ RUNASADMIN"
   ${EndIf}
 
-  ;start the task 
-  ExecWait 'schtasks /Run /TN "$AgentName"' $0
+  ;Write in the registry to start the agent at logon
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName" "$INSTDIR\openbas-agent.exe"
 
+  ;Start the agent
+  Exec '"$INSTDIR\openbas-agent.exe"'
 
   # Uninstaller - See function un.onInit and section "uninstall" for configuration
   writeUninstaller "$INSTDIR\uninstall.exe"
 
-
+  ; Request admin right for uninstall
+  ${If} $ConfigWithAdminPrivilege == "true"
+    WriteRegStr HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" \
+      "$INSTDIR\uninstall.exe" "~ RUNASADMIN"
+  ${EndIf}
 sectionEnd
  
 # Uninstaller
- 
 function un.onInit
 	SetShellVarContext all
  
@@ -270,14 +278,16 @@ functionEnd
  
 section "uninstall"
 
-  ;Get the directory name which is also the service name 
-  ${GetFileName} "$INSTDIR" $AgentName
+  ; Stop the current agent
+  StrCpy $0 "$INSTDIR\openbas-agent.exe"
+  nsExec::ExecToStack 'powershell.exe -NoProfile -Command "Get-Process openbas-agent -ErrorAction SilentlyContinue | Where-Object { $$_.Path -eq \"$0\" } | Stop-Process -Force"'
 
-  ; Stop the scheduled task
-  ExecWait 'schtasks /End /TN "$AgentName"' $0
+  ; Remove registry entry
+  DeleteRegValue HKCU "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName"
 
-  ; Remove the existing scheduled task
-  ExecWait 'schtasks /Delete /TN "$AgentName" /F' $0
+  ; Remove installed files
+  RMDir /r "$INSTDIR"
 
   ; Wait 1s to allow the task to fully end before deleting the exe
   Sleep 1000
