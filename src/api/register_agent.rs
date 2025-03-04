@@ -42,6 +42,7 @@ impl Client {
         is_service: bool,
         is_elevated: bool,
         executed_by_user: String,
+        &installation_mode: &String,
     ) -> Result<RegisterAgentResponse, Error> {
         // region Build the content to register
         let networks = NetworkInterface::show().unwrap();
@@ -66,7 +67,8 @@ impl Client {
           "endpoint_hostname": hostname::get()?.to_string_lossy(),
           "agent_is_service": is_service,
           "agent_is_elevated": is_elevated,
-          "agent_executed_by_user": executed_by_user
+          "agent_executed_by_user": executed_by_user,
+          "agent_installation_mode": installation_mode
         });
         // endregion
         // Post the input to the OpenBAS API
