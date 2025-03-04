@@ -42,7 +42,7 @@ impl Client {
         is_service: bool,
         is_elevated: bool,
         executed_by_user: String,
-        &installation_mode: &String,
+        installation_mode: String,
     ) -> Result<RegisterAgentResponse, Error> {
         // region Build the content to register
         let networks = NetworkInterface::show().unwrap();

@@ -42,7 +42,7 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
         token.clone(),
         unsecured_certificate,
         with_proxy,
-        installation_mode,
+        installation_mode.clone(),
         execution_details.clone(),
     );
     // Starts the agent listening thread
@@ -51,6 +51,7 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
         token.clone(),
         unsecured_certificate,
         with_proxy,
+        installation_mode.clone(),
         execution_details.clone(),
     );
     // Starts the cleanup thread
