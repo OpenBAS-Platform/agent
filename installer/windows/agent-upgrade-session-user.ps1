@@ -15,5 +15,5 @@ Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${archi
 
 ./agent-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY};
 
-Start-Sleep -Seconds 1.5;
+Start-Sleep -Seconds 5;
 rm -force ./agent-installer-session-user.exe;
