@@ -207,7 +207,6 @@ Function sanitizeUserName
   ${StrRep} $0 $0 ":" ""
   ${StrRep} $0 $0 "*" ""
   ${StrRep} $0 $0 "?" ""
-  ${StrRep} $0 $0 "\" ""
   ${StrRep} $0 $0 "<" ""
   ${StrRep} $0 $0 ">" ""
   ${StrRep} $0 $0 "|" ""
