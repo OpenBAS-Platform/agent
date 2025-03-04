@@ -26,7 +26,7 @@ pub fn ping(
                 execution_details.is_service,
                 execution_details.is_elevated,
                 execution_details.executed_by_user.clone(),
-                installation_mode.clone()
+                installation_mode.clone(),
             );
             if register.is_err() {
                 error!("Fail registering the agent {}", register.unwrap_err())
