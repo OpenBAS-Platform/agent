@@ -24,7 +24,7 @@ function Sanitize-UserName {
 if ([string]::IsNullOrEmpty($architecture)) { throw "Architecture $env:PROCESSOR_ARCHITECTURE is not supported yet, please create a ticket in openbas github project" }
 
 $BasePath = "C:\Filigran\";
-$User = "whoami";
+$User = whoami;
 $SanitizedUser =  Sanitize-UserName -UserName $user;
 $AgentName = "OBASAgent-Service-$SanitizedUser";
 $InstallDir = $BasePath + $AgentName;
