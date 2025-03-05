@@ -34,6 +34,7 @@ url = "${OPENBAS_URL}"
 token = "${OPENBAS_TOKEN}"
 unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
 with_proxy = "${OPENBAS_WITH_PROXY}"
+installation_mode = "service"
 EOF
 
 echo "03. Starting agent service"

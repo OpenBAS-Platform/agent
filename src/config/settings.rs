@@ -12,6 +12,7 @@ pub struct OpenBAS {
     pub token: String,
     pub unsecured_certificate: bool,
     pub with_proxy: bool,
+    pub installation_mode: String,
 }
 
 #[derive(Debug, Deserialize)]

@@ -35,6 +35,7 @@ url = "${OPENBAS_URL}"
 token = "${OPENBAS_TOKEN}"
 unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
 with_proxy = "${OPENBAS_WITH_PROXY}"
+installation_mode = "session-user"
 EOF
 
 echo "03. Restarting the service"
