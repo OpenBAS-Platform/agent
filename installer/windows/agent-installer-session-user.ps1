@@ -1,5 +1,3 @@
-$isElevatedPowershell = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if ($isElevatedPowershell -like "False") { throw "PowerShell 'Run as Administrator' is required for installation" }
 # Can't install the OpenBAS agent in System32 location because NSIS 64 exe
 $location = Get-Location
 if ($location -like "*C:\Windows\System32*") { cd C:\ }
@@ -16,13 +14,13 @@ switch ($env:PROCESSOR_ARCHITECTURE)
 	}
 }
 if ([string]::IsNullOrEmpty($architecture)) { throw "Architecture $env:PROCESSOR_ARCHITECTURE is not supported yet, please create a ticket in openbas github project" }
-
 echo "Downloading and installing OpenBAS Agent..."
 try {
-    Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}" -OutFile "openbas-installer.exe";
-    ./openbas-installer.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY};
+    Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/session-user" -OutFile "agent-installer-session-user.exe";
+
+    ./agent-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY};
     Start-Sleep -Seconds 5;
-    rm -force ./openbas-installer.exe;
+    rm -force ./agent-installer-session-user.exe;
 	echo "OpenBAS agent has been successfully installed"
 } catch {
     echo "Installation failed"
