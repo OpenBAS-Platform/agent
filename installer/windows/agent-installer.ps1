@@ -16,8 +16,7 @@ switch ($env:PROCESSOR_ARCHITECTURE)
 	}
 }
 if ([string]::IsNullOrEmpty($architecture)) { throw "Architecture $env:PROCESSOR_ARCHITECTURE is not supported yet, please create a ticket in openbas github project" }
-echo "Stopping existing openbas agent service..."
-Stop-Service -Force -Name "OBAS Agent Service";
+
 echo "Downloading and installing OpenBAS Agent..."
 try {
     Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}" -OutFile "openbas-installer.exe";
