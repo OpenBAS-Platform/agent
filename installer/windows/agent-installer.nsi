@@ -176,11 +176,17 @@ section "install"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
+  ;stopping existing service
+  ExecWait 'sc stop ${serviceName}' $0
+
+  ;deleting existing service
+  ExecWait 'sc delete ${serviceName}' $0
+
   ; register windows service
   ExecWait 'sc create ${serviceName} error="severe" displayname="${displayName}" type="own" start="auto" binpath="$INSTDIR\openbas-agent.exe"'
 
   ; configure restart in case of failure
-  ExecWait 'sc failure $ServiceName reset= 0 actions= restart/60000/restart/60000/restart/60000'
+  ExecWait 'sc failure ${serviceName} reset= 0 actions= restart/60000/restart/60000/restart/60000'
 
   ; start the service
   ExecWait 'sc start ${serviceName}'
