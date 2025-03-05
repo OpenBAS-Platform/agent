@@ -14,7 +14,6 @@ pub fn listen(
     token: String,
     unsecured_certificate: bool,
     with_proxy: bool,
-    installation_mode: String,
     execution_details: ExecutionDetails,
 ) -> Result<JoinHandle<()>, Error> {
     info!("Starting listening jobs thread");
@@ -26,7 +25,6 @@ pub fn listen(
                 execution_details.is_service,
                 execution_details.is_elevated,
                 execution_details.executed_by_user.clone(),
-                installation_mode.clone(),
             );
             if jobs.is_ok() {
                 if let Ok(jobs) = jobs {
