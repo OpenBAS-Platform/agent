@@ -11,7 +11,7 @@ if ($isElevatedPowershell -like "False") { throw "PowerShell 'Run as Administrat
 
 #Check that $User is in domain\username format
 if ($User -notmatch '^[^\\]+\\[^\\]+$') {
-    throw "User must be in the format 'DOMAIN\\Username'. Provided: '$User'"
+    throw "User must be in the format 'DOMAIN\Username'. Provided: '$User'"
 }
 # Disallow '.' as domain
 $parts  = $User -split '\\', 2
