@@ -18,15 +18,13 @@ impl Client {
         is_service: bool,
         is_elevated: bool,
         executed_by_user: String,
-        installation_mode: String,
     ) -> Result<Vec<JobResponse>, Error> {
         // Post the input to the OpenBAS API
         let post_data = ureq::json!({
           "asset_external_reference": mid::get("openbas").unwrap(),
           "agent_is_service": is_service,
           "agent_is_elevated": is_elevated,
-          "agent_executed_by_user": executed_by_user,
-          "agent_installation_mode": installation_mode
+          "agent_executed_by_user": executed_by_user
         });
         match self.post("/api/endpoints/jobs").send_json(post_data) {
             Ok(response) => Ok(response.into_json()?),
