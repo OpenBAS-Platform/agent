@@ -274,7 +274,7 @@ section "install"
   ;------ Add the permissions to start/stop service for the user
 
   ; Retrieve the SID for $ConfigUser using PowerShell
-  nsExec::ExecToStack "powershell.exe -NoProfile -Command (New-Object System.Security.Principal.NTAccount('$ConfigUser')).Translate([System.Security.Principal.SecurityIdentifier]).Value"
+  nsExec::ExecToStack "powershell.exe -NoProfile -WindowStyle Hidden -Command (New-Object System.Security.Principal.NTAccount('$ConfigUser')).Translate([System.Security.Principal.SecurityIdentifier]).Value"
   Pop $R0    ; Pop the exit code
   Pop $UserSID  ; Pop the SID string
 
