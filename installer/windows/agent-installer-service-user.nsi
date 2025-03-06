@@ -16,10 +16,6 @@ ${Using:StrFunc} StrCase
 !define HELPURL "https://filigran.io/" # "Support Information" link
 !define UPDATEURL "https://filigran.io/" # "Product Updates" link
 !define ABOUTURL "https://filigran.io/" # "Publisher" link
-!define PRIV_STANDARD "Standard"
-!define PRIV_ADMIN "Administrator"
-!define INST_SESSION "Session"
-!define INST_SERVICE "Service"
  
 RequestExecutionLevel admin
  

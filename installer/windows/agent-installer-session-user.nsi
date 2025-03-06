@@ -17,10 +17,6 @@ ${Using:StrFunc} StrCase
 !define HELPURL "https://filigran.io/" # "Support Information" link
 !define UPDATEURL "https://filigran.io/" # "Product Updates" link
 !define ABOUTURL "https://filigran.io/" # "Publisher" link
-!define PRIV_STANDARD "Standard"
-!define PRIV_ADMIN "Administrator"
-!define INST_SESSION "Session"
-!define INST_SERVICE "Service"
  
 RequestExecutionLevel user
  
@@ -233,9 +229,16 @@ section "install"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
+  ; write a script to kill the agent as we are not able to run the  command directly from the installer on some machine due to encoding
+  FileOpen $5 "$INSTDIR\kill_agent_from_this_directory.ps1" w
+    FileWrite $5 "$$currDir = Get-Location$\r$\n"
+    FileWrite $5 "$$exePath = Join-Path $$currDir $\"openbas-agent.exe$\"$\r$\n"
+    FileWrite $5 "Get-Process | Where-Object { $$_.Path -eq $\"$$exePath$\" } | Stop-Process -Force$\r$\n"
+  FileClose $5
+
   ; Stop the current agent
-  StrCpy $0 "$INSTDIR\openbas-agent.exe"
-  nsExec::ExecToStack 'powershell.exe -NoProfile -Command "Get-Process openbas-agent -ErrorAction SilentlyContinue | Where-Object { $$_.Path -eq \"$0\" } | Stop-Process -Force"'
+  ExecWait 'powershell.exe -WindowStyle Hidden -NoProfile -Command "$INSTDIR\kill_agent_from_this_directory.ps1"'
+
 
   ; Remove the existing value in the registry
   ${If} $ConfigWithAdminPrivilege == "true"
@@ -277,16 +280,16 @@ functionEnd
  
 section "uninstall"
 
-  ; Stop the current agent
-  StrCpy $0 "$INSTDIR\openbas-agent.exe"
-  nsExec::ExecToStack 'powershell.exe -NoProfile -Command "Get-Process openbas-agent -ErrorAction SilentlyContinue | Where-Object { $$_.Path -eq \"$0\" } | Stop-Process -Force"'
+  ;Get the directory name which is also the service name
+  ${GetFileName} "$INSTDIR" $AgentName
 
   ; Remove registry entry
-  DeleteRegValue HKCU "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe"
+  DeleteRegValue HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName"
+  DeleteRegValue HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\uninstall.exe"
 
-  ; Remove installed files
-  RMDir /r "$INSTDIR"
+  ; Stop the current agent
+  ExecWait 'powershell.exe -WindowStyle Hidden -NoProfile -Command "$INSTDIR\kill_agent_from_this_directory.ps1"'
 
   ; Wait 1s to allow the task to fully end before deleting the exe
   Sleep 1000
