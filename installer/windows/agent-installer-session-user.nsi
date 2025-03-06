@@ -117,7 +117,6 @@ Function checkIfElevated
 FunctionEnd
 
 Function nsDialogsConfig
-
   ; disable next button
   GetDlgItem $0 $HWNDPARENT 1
   EnableWindow $0 0
@@ -229,17 +228,6 @@ section "install"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
-  ; write a script to kill the agent as we are not able to run the  command directly from the installer on some machine due to encoding
-  FileOpen $5 "$INSTDIR\kill_agent_from_this_directory.ps1" w
-    FileWrite $5 "$$currDir = Get-Location$\r$\n"
-    FileWrite $5 "$$exePath = Join-Path $$currDir $\"openbas-agent.exe$\"$\r$\n"
-    FileWrite $5 "Get-Process | Where-Object { $$_.Path -eq $\"$$exePath$\" } | Stop-Process -Force$\r$\n"
-  FileClose $5
-
-  ; Stop the current agent
-  ExecWait 'powershell.exe -WindowStyle Hidden -NoProfile -Command "$INSTDIR\kill_agent_from_this_directory.ps1"'
-
-
   ; Remove the existing value in the registry
   ${If} $ConfigWithAdminPrivilege == "true"
     DeleteRegValue HKLM  "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe"
@@ -279,7 +267,6 @@ function un.onInit
 functionEnd
  
 section "uninstall"
-
   ;Get the directory name which is also the service name
   ${GetFileName} "$INSTDIR" $AgentName
 
@@ -287,9 +274,6 @@ section "uninstall"
   DeleteRegValue HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName"
   DeleteRegValue HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\uninstall.exe"
-
-  ; Stop the current agent
-  ExecWait 'powershell.exe -WindowStyle Hidden -NoProfile -Command "$INSTDIR\kill_agent_from_this_directory.ps1"'
 
   ; Wait 1s to allow the task to fully end before deleting the exe
   Sleep 1000
