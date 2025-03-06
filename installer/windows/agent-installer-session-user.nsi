@@ -84,9 +84,12 @@ function .onInit
     ${GetOptions} $R0 ~WITH_PROXY= $ConfigWithProxy
 
     ;get the user name and sanitize it
-    UserInfo::GetName
+git    nsExec::ExecToStack 'cmd /c whoami'
+    Pop $0
     Call sanitizeUserName
     pop $UserSanitized
+    nsExec::ExecToStack 'cmd /c whoami'
+
 
     ;get the permission level
     Call checkIfElevated
