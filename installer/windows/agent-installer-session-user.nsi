@@ -84,7 +84,7 @@ function .onInit
     ${GetOptions} $R0 ~WITH_PROXY= $ConfigWithProxy
 
     ;get the user name and sanitize it
-git    nsExec::ExecToStack 'cmd /c whoami'
+    nsExec::ExecToStack 'cmd /c whoami'
     Pop $0
     Call sanitizeUserName
     pop $UserSanitized
