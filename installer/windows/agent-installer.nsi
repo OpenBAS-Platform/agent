@@ -173,6 +173,7 @@ section "install"
     FileWrite $4 "token = $\"$ConfigToken$\"$\r$\n"
     FileWrite $4 "unsecured_certificate = $ConfigUnsecuredCertificate$\r$\n"
     FileWrite $4 "with_proxy = $ConfigWithProxy$\r$\n"
+    FileWrite $4 "installation_mode = $\"service$\"$\r$\n"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
