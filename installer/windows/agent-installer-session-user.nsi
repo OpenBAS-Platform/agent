@@ -281,8 +281,8 @@ section "install"
 
   ; Request admin right for starting the agent and uninstall
   ${If} $ConfigWithAdminPrivilege == "true"
-    WriteRegStr HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe" "~ RUNASADMIN"
-    WriteRegStr HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\uninstall.exe" "~ RUNASADMIN"
+    WriteRegStr HKCU "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe" "~ RUNASADMIN"
+    WriteRegStr HKCU "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\uninstall.exe" "~ RUNASADMIN"
   ${EndIf}
 sectionEnd
  
@@ -304,9 +304,9 @@ section "uninstall"
   ${GetFileName} "$INSTDIR" $AgentName
 
   ; Remove registry entry
-  DeleteRegValue HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe"
+  DeleteRegValue HKCU "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName"
-  DeleteRegValue HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\uninstall.exe"
+  DeleteRegValue HKCU "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\uninstall.exe"
 
 
   ; Wait 1s to allow the task to fully end before deleting the exe
