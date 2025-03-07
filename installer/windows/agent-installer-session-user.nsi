@@ -271,7 +271,7 @@ function un.onInit
 functionEnd
  
 section "uninstall"
-  ;Get the directory name which is also the service name
+  ;Get the directory name which is also the agent name
   ${GetFileName} "$INSTDIR" $AgentName
 
   ; Remove registry entry
