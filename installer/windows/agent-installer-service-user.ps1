@@ -17,7 +17,7 @@ if ($User -notmatch '^[^\\]+\\[^\\]+$') {
 $parts  = $User -split '\\', 2
 $domain = $parts[0]
 if ($domain -eq '.') {
- throw "Local user notation '.' is not allowed. Please specify a 'DOMAIN\\Username'."
+ throw "Local user notation '.' is not allowed. Please specify a 'DOMAIN\Username'."
 }
 #Verify the account actually exists by translating to a SID.
 try {
