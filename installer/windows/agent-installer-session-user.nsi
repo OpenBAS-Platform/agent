@@ -89,8 +89,6 @@ function .onInit
     Call sanitizeUserName
     Call trim
     pop $UserSanitized
-        MessageBox MB_OK|MB_ICONEXCLAMATION "User X$UserSanitizedX"
-
 
     ;get the permission level
     Call checkIfElevated
