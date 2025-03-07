@@ -87,8 +87,9 @@ function .onInit
     nsExec::ExecToStack 'cmd /c whoami'
     Pop $0
     Call sanitizeUserName
+    Call trim
     pop $UserSanitized
-    nsExec::ExecToStack 'cmd /c whoami'
+        MessageBox MB_OK|MB_ICONEXCLAMATION "User X$UserSanitizedX"
 
 
     ;get the permission level
@@ -180,6 +181,57 @@ Function onFieldChange
 FunctionEnd
 
 
+Function updateInstallDir
+  ${If} $ConfigWithAdminPrivilege == "true"
+    StrCpy $AgentName "OBASAgent-Session-Administrator-$UserSanitized"
+  ${Else}
+    StrCpy $AgentName "OBASAgent-Session-$UserSanitized"
+  ${EndIf}
+  StrCpy $INSTDIR "C:\${COMPANYNAME}\$AgentName"
+FunctionEnd
+
+Function nsDialogsPageLeave
+  Call verifyParam
+  Call updateInstallDir
+FunctionEnd
+
+; Trim
+;   Removes leading & trailing whitespace from a string
+; Usage:
+;   Push
+;   Call Trim
+;   Pop
+Function Trim
+  Exch $R1 ; Original string
+  Push $R2
+
+  Loop:
+    StrCpy $R2 "$R1" 1
+	StrCmp "$R2" " " TrimLeft
+	StrCmp "$R2" "$\r" TrimLeft
+	StrCmp "$R2" "$\n" TrimLeft
+	StrCmp "$R2" "$\t" TrimLeft
+	GoTo Loop2
+  TrimLeft:
+	StrCpy $R1 "$R1" "" 1
+	Goto Loop
+
+  Loop2:
+	StrCpy $R2 "$R1" 1 -1
+	StrCmp "$R2" " " TrimRight
+	StrCmp "$R2" "$\r" TrimRight
+	StrCmp "$R2" "$\n" TrimRight
+	StrCmp "$R2" "$\t" TrimRight
+	GoTo Done
+  TrimRight:
+	StrCpy $R1 "$R1" -1
+	Goto Loop2
+
+  Done:
+	Pop $R2
+	Exch $R1
+FunctionEnd
+
 Function sanitizeUserName
   Exch $0  ; get the username from the stack
   ; Replace  characters with an empty string
@@ -198,21 +250,9 @@ Function sanitizeUserName
   Exch $0
 FunctionEnd
 
-Function updateInstallDir
-  ${If} $ConfigWithAdminPrivilege == "true"
-    StrCpy $AgentName "OBASAgent-Session-Administrator-$UserSanitized"
-  ${Else}
-    StrCpy $AgentName "OBASAgent-Session-$UserSanitized"
-  ${EndIf}
-  StrCpy $INSTDIR "C:\${COMPANYNAME}\$AgentName"
-FunctionEnd
-
-Function nsDialogsPageLeave
-  Call verifyParam
-  Call updateInstallDir
-FunctionEnd
-
 section "install"
+  SetRegView 64
+
   # Files for the install directory - to build the installer, these should be in the same directory as the install script (this file)
   setOutPath $INSTDIR
   # Files added here should be removed by the uninstaller (see section "uninstall")
@@ -232,18 +272,6 @@ section "install"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
-  ; Remove the existing value in the registry
-  ${If} $ConfigWithAdminPrivilege == "true"
-    DeleteRegValue HKLM  "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe"
-  ${EndIf}
-  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName"
-
-  ; Request admin right for starting the agent
-  ${If} $ConfigWithAdminPrivilege == "true"
-    WriteRegStr HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" \
-      "$INSTDIR\openbas-agent.exe" "~ RUNASADMIN"
-  ${EndIf}
-
   ;Write in the registry to start the agent at logon
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName" "$INSTDIR\openbas-agent.exe"
 
@@ -253,10 +281,10 @@ section "install"
   # Uninstaller - See function un.onInit and section "uninstall" for configuration
   writeUninstaller "$INSTDIR\uninstall.exe"
 
-  ; Request admin right for uninstall
+  ; Request admin right for starting the agent and uninstall
   ${If} $ConfigWithAdminPrivilege == "true"
-    WriteRegStr HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" \
-      "$INSTDIR\uninstall.exe" "~ RUNASADMIN"
+    WriteRegStr HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe" "~ RUNASADMIN"
+    WriteRegStr HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\uninstall.exe" "~ RUNASADMIN"
   ${EndIf}
 sectionEnd
  
@@ -271,6 +299,9 @@ function un.onInit
 functionEnd
  
 section "uninstall"
+
+  SetRegView 64
+
   ;Get the directory name which is also the agent name
   ${GetFileName} "$INSTDIR" $AgentName
 
@@ -278,6 +309,7 @@ section "uninstall"
   DeleteRegValue HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe"
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName"
   DeleteRegValue HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\uninstall.exe"
+
 
   ; Wait 1s to allow the task to fully end before deleting the exe
   Sleep 1000
