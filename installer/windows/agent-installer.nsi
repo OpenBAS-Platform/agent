@@ -210,6 +210,9 @@ function un.onInit
 functionEnd
  
 section "uninstall"
+  ;stopping existing service
+  ExecWait 'sc stop ${serviceName}' $0
+
   ; unregister service
   ExecWait 'sc delete ${serviceName}'
 
