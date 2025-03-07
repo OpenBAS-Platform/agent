@@ -173,11 +173,22 @@ section "install"
     FileWrite $4 "token = $\"$ConfigToken$\"$\r$\n"
     FileWrite $4 "unsecured_certificate = $ConfigUnsecuredCertificate$\r$\n"
     FileWrite $4 "with_proxy = $ConfigWithProxy$\r$\n"
+    FileWrite $4 "installation_mode = $\"service$\"$\r$\n"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
+  ;stopping existing service
+  ExecWait 'sc stop ${serviceName}' $0
+
+  ;deleting existing service
+  ExecWait 'sc delete ${serviceName}' $0
+
   ; register windows service
   ExecWait 'sc create ${serviceName} error="severe" displayname="${displayName}" type="own" start="auto" binpath="$INSTDIR\openbas-agent.exe"'
+
+  ; configure restart in case of failure
+  ExecWait 'sc failure ${serviceName} reset= 0 actions= restart/60000/restart/60000/restart/60000'
+
   ; start the service
   ExecWait 'sc start ${serviceName}'
 
@@ -199,6 +210,9 @@ function un.onInit
 functionEnd
  
 section "uninstall"
+  ;stopping existing service
+  ExecWait 'sc stop ${serviceName}' $0
+
   ; unregister service
   ExecWait 'sc delete ${serviceName}'
 
