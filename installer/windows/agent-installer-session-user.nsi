@@ -12,6 +12,8 @@ ${Using:StrFunc} StrCase
 !define APPNAME "OBAS Agent"
 !define COMPANYNAME "Filigran"
 !define DESCRIPTION "Filigran's agent for OpenBAS"
+!define STANDARD_AGENT_PREFIX "OBASAgent-Session-Administrator"
+!define ADMIN_AGENT_PREFIX "OBASAgent-Session"
 # These will be displayed by the "Click here for support information" link in "Add/Remove Programs"
 # It is possible to use "mailto:" links in here to open the email client
 !define HELPURL "https://filigran.io/" # "Support Information" link
@@ -181,9 +183,9 @@ FunctionEnd
 
 Function updateInstallDir
   ${If} $ConfigWithAdminPrivilege == "true"
-    StrCpy $AgentName "OBASAgent-Session-Administrator-$UserSanitized"
+    StrCpy $AgentName "${STANDARD_AGENT_PREFIX}-$UserSanitized"
   ${Else}
-    StrCpy $AgentName "OBASAgent-Session-$UserSanitized"
+    StrCpy $AgentName "${ADMIN_AGENT_PREFIX}-$UserSanitized"
   ${EndIf}
   StrCpy $INSTDIR "C:\${COMPANYNAME}\$AgentName"
 FunctionEnd
@@ -310,12 +312,12 @@ section "uninstall"
   ${GetFileName} "$INSTDIR" $AgentName
 
   ; Get the length of admin agent name prefix
-  StrLen $R0 "OBASAgent-Session-Administrator"
+  StrLen $R0 "${ADMIN_AGENT_PREFIX}"
   ; Copy the first $R0 characters of $AgentName into $R1
   StrCpy $R1 "$AgentName" $R0
 
 
-   ${If} $R1 == "OBASAgent-Session-Administrator"
+   ${If} $R1 == ${ADMIN_AGENT_PREFIX}
      ; Stop the scheduled task
      ExecWait 'schtasks /End /TN "$AgentName"' $0
      ; Remove the existing scheduled task if it exists
