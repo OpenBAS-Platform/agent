@@ -270,20 +270,29 @@ section "install"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
-  ;Write in the registry to start the agent at logon
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName" "$INSTDIR\openbas-agent.exe"
+  ;admin -> use a scheduled task, non admin -> write in the registry to create a startup app
+  ${If} $ConfigWithAdminPrivilege == "true"
+    ; Stop the scheduled task
+    ExecWait 'schtasks /End /TN "$AgentName"' $0
 
-  ;Start the agent
-  Exec '"$INSTDIR\openbas-agent.exe"'
+    ; Remove the existing scheduled task if it exists
+    ExecWait 'schtasks /Delete /TN "$AgentName" /F' $0
+
+    ; Create the task
+    ExecWait 'schtasks /Create /TN "$AgentName" /TR "$INSTDIR\openbas-agent.exe" /SC ONLOGON /RL HIGHEST' $0
+
+    ;start the task
+    ExecWait 'schtasks /Run /TN "$AgentName"' $0
+  ${Else}
+    ;Write in the registry to start the agent at logon
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName" "$INSTDIR\openbas-agent.exe"
+
+    ;Start the agent
+    Exec '"$INSTDIR\openbas-agent.exe"'
+  ${EndIf}
 
   # Uninstaller - See function un.onInit and section "uninstall" for configuration
   writeUninstaller "$INSTDIR\uninstall.exe"
-
-  ; Request admin right for starting the agent and uninstall
-  ${If} $ConfigWithAdminPrivilege == "true"
-    WriteRegStr HKCU "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe" "~ RUNASADMIN"
-    WriteRegStr HKCU "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\uninstall.exe" "~ RUNASADMIN"
-  ${EndIf}
 sectionEnd
  
 # Uninstaller
@@ -297,17 +306,26 @@ function un.onInit
 functionEnd
  
 section "uninstall"
-
-  SetRegView 64
-
   ;Get the directory name which is also the agent name
-  ${GetFileName} "$INSTDIR" $AgentName
+  ${GetFileName} "$INSTDIR" $AgentNAme
 
-  ; Remove registry entry
-  DeleteRegValue HKCU "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\openbas-agent.exe"
-  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName"
-  DeleteRegValue HKCU "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\uninstall.exe"
+  ; Get the length of admin agent name prefix
+  StrLen $R0 "OBASAgent-Session-Administrator"
+  ; Copy the first $R0 characters of $AgentName into $R1
+  StrCpy $R1 "$AgentName" $R0
 
+
+   ${If} $R1 == "OBASAgent-Session-Administrator"
+     ; Stop the scheduled task
+     ExecWait 'schtasks /End /TN "$AgentName"' $0
+     ; Remove the existing scheduled task if it exists
+     ExecWait 'schtasks /Delete /TN "$AgentName" /F' $0
+   ${Else}
+     ;process kill is done in the powershell script
+
+     ; Remove registry entry
+     DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName"
+   ${EndIf}
 
   ; Wait 1s to allow the task to fully end before deleting the exe
   Sleep 1000
