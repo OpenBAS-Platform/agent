@@ -34,7 +34,7 @@ $AgentPath = $InstallDir + "\openbas-agent.exe";
 
 Get-Process | Where-Object { $_.Path -eq "$AgentPath" } | Stop-Process -Force;
 Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/session-user" -OutFile "openbas-installer-session-user.exe";
-./agent-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY};
+./openbas-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY};
 
 Start-Sleep -Seconds 5;
-rm -force ./agent-installer-session-user.exe;
+rm -force ./openbas-installer-session-user.exe;
