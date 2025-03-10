@@ -35,11 +35,11 @@ $AgentUpgradedPath = $InstallDir + "\openbas-agent_upgrade.exe";
 Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/executable/openbas/windows/${architecture}" -OutFile $AgentUpgradedPath;
 
 #Stop the service
-sc stop $AgentName
+sc.exe stop $AgentName;
 
 #Delete the current exe and replace it with the new one
-rm -force $AgentPath
-mv $AgentUpgradedPath $AgentPath
+rm -force $AgentPath;
+mv $AgentUpgradedPath $AgentPath;
 
 #Start the service
-sc start $AgentName
+sc.exe start $AgentName;
