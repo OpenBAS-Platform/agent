@@ -307,7 +307,7 @@ functionEnd
  
 section "uninstall"
   ;Get the directory name which is also the agent name
-  ${GetFileName} "$INSTDIR" $AgentNAme
+  ${GetFileName} "$INSTDIR" $AgentName
 
   ; Get the length of admin agent name prefix
   StrLen $R0 "OBASAgent-Session-Administrator"
