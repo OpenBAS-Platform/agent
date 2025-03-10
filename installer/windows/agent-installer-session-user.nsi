@@ -37,6 +37,16 @@ page directory
 Page custom nsDialogsConfig nsDialogsPageLeave
 Page instfiles
 
+!macro VerifyUserIsAdmin
+UserInfo::GetAccountType
+pop $0
+${If} $0 != "admin" ;Require admin rights on NT4+
+        messageBox mb_iconstop "Administrator rights required!"
+        setErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
+        quit
+${EndIf}
+!macroend
+
 Var Dialog
 Var LabelURL
 Var /GLOBAL ConfigURL
@@ -251,7 +261,6 @@ Function sanitizeUserName
 FunctionEnd
 
 section "install"
-  SetRegView 64
 
   # Files for the install directory - to build the installer, these should be in the same directory as the install script (this file)
   setOutPath $INSTDIR
@@ -286,6 +295,12 @@ section "install"
     ;start the task
     ExecWait 'schtasks /Run /TN "$AgentName"' $0
   ${Else}
+
+    SetRegView 64
+
+    ; Remove registry entry
+    DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName"
+
     ;Write in the registry to start the agent at logon
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName" "$INSTDIR\openbas-agent.exe"
 
@@ -318,6 +333,7 @@ section "uninstall"
 
 
    ${If} $R1 == ${ADMIN_AGENT_PREFIX}
+    !insertmacro VerifyUserIsAdmin
      ; Stop the scheduled task
      ExecWait 'schtasks /End /TN "$AgentName"' $0
      ; Remove the existing scheduled task if it exists
@@ -325,6 +341,7 @@ section "uninstall"
    ${Else}
      ;process kill is done in the powershell script
 
+     SetRegView 64
      ; Remove registry entry
      DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName"
    ${EndIf}
