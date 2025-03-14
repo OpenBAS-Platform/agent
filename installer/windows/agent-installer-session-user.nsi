@@ -281,6 +281,11 @@ section "install"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
+  ; write agent start file to launch the agent without a powershell window displayed
+  FileOpen $4 "$INSTDIR\openbas_agent_start.ps1" w
+    FileWrite $4 "Start-Process -FilePath '$INSTDIR\openbas-agent.exe' -WindowStyle Hidden"
+  FileClose $4
+
   ;admin -> use a scheduled task, non admin -> write in the registry and create a script to launch the agent to create a startup app
   ${If} $ConfigWithAdminPrivilege == "true"
     ; Stop the scheduled task
@@ -290,16 +295,11 @@ section "install"
     ExecWait 'schtasks /Delete /TN "$AgentName" /F' $0
 
     ; Create the task
-    ExecWait 'schtasks /Create /TN "$AgentName" /TR "$INSTDIR\openbas-agent.exe" /SC ONLOGON /RL HIGHEST' $0
+    ExecWait 'schtasks /Create /TN "$AgentName" /TR "powershell.exe -ExecutionPolicy Bypass -WindowStyle hidden -File $INSTDIR\openbas_agent_start.ps1" /SC ONLOGON /RL HIGHEST' $0
 
     ;start the task
     ExecWait 'schtasks /Run /TN "$AgentName"' $0
   ${Else}
-
-    ; write agent start file to launch the agent without a powershell window displayed
-    FileOpen $4 "$INSTDIR\openbas_agent_start.ps1" w
-      FileWrite $4 "Start-Process -FilePath '$INSTDIR\openbas-agent.exe' -WindowStyle Hidden"
-    FileClose $4
 
     SetRegView 64
 
