@@ -12,8 +12,8 @@ ${Using:StrFunc} StrCase
 !define APPNAME "OBAS Agent"
 !define COMPANYNAME "Filigran"
 !define DESCRIPTION "Filigran's agent for OpenBAS"
-!define STANDARD_AGENT_PREFIX "OBASAgent-Session-Administrator"
-!define ADMIN_AGENT_PREFIX "OBASAgent-Session"
+!define ADMIN_AGENT_PREFIX "OBASAgent-Session-Administrator"
+!define STANDARD_AGENT_PREFIX "OBASAgent-Session"
 # These will be displayed by the "Click here for support information" link in "Add/Remove Programs"
 # It is possible to use "mailto:" links in here to open the email client
 !define HELPURL "https://filigran.io/" # "Support Information" link
@@ -193,9 +193,9 @@ FunctionEnd
 
 Function updateInstallDir
   ${If} $ConfigWithAdminPrivilege == "true"
-    StrCpy $AgentName "${STANDARD_AGENT_PREFIX}-$UserSanitized"
-  ${Else}
     StrCpy $AgentName "${ADMIN_AGENT_PREFIX}-$UserSanitized"
+  ${Else}
+    StrCpy $AgentName "${STANDARD_AGENT_PREFIX}-$UserSanitized"
   ${EndIf}
   StrCpy $INSTDIR "C:\${COMPANYNAME}\$AgentName"
 FunctionEnd
@@ -281,7 +281,7 @@ section "install"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
-  ;admin -> use a scheduled task, non admin -> write in the registry to create a startup app
+  ;admin -> use a scheduled task, non admin -> write in the registry and create a script to launch the agent to create a startup app
   ${If} $ConfigWithAdminPrivilege == "true"
     ; Stop the scheduled task
     ExecWait 'schtasks /End /TN "$AgentName"' $0
@@ -296,16 +296,21 @@ section "install"
     ExecWait 'schtasks /Run /TN "$AgentName"' $0
   ${Else}
 
+    ; write agent start file to launch the agent without a powershell window displayed
+    FileOpen $4 "$INSTDIR\openbas_agent_start.ps1" w
+      FileWrite $4 "Start-Process -FilePath '$INSTDIR\openbas-agent.exe' -WindowStyle Hidden"
+    FileClose $4
+
     SetRegView 64
 
     ; Remove registry entry
     DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName"
 
     ;Write in the registry to start the agent at logon
-    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName" "$INSTDIR\openbas-agent.exe"
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "$AgentName" "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -WindowStyle hidden -File $INSTDIR\openbas_agent_start.ps1"
 
     ;Start the agent
-    Exec '"$INSTDIR\openbas-agent.exe"'
+    nsExec::ExecToStack "powershell.exe -ExecutionPolicy Bypass -WindowStyle hidden -File $INSTDIR\openbas_agent_start.ps1"
   ${EndIf}
 
   # Uninstaller - See function un.onInit and section "uninstall" for configuration
