@@ -406,7 +406,7 @@ jobs:
             export version=${CIRCLE_TAG:-$( [ "$CIRCLE_BRANCH" = "main" ] && echo "latest" || echo "prerelease" )}
             curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T ./target/release/openbas-agent "https://filigran.jfrog.io/artifactory/openbas-agent/macos/x86_64/openbas-agent-$version"
       - run: |
-          cargo install cargo-cache
+          cargo install --force cargo-cache
           cargo-cache -a clean-unref
       - save_cache:
           key: cargo-{{ arch }}-{{ checksum "Cargo.toml" }}
