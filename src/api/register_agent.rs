@@ -46,16 +46,21 @@ impl Client {
     ) -> Result<RegisterAgentResponse, Error> {
         // region Build the content to register
         let networks = NetworkInterface::show().unwrap();
-        let mac_addresses: Vec<String> = networks
+        let mut mac_addresses: Vec<String> = networks
             .iter()
             .map(|interface| &interface.mac_addr)
             .filter_map(|mac| mac.clone())
             .collect();
-        let ip_addresses: Vec<String> = networks
+        let mut ip_addresses: Vec<String> = networks
             .iter()
             .flat_map(|interface| &interface.addr)
             .map(|addr| addr.ip().to_string())
             .collect();
+        mac_addresses.retain(|mac| {
+            mac != "FF:FF:FF:FF:FF:FF" && mac != "00:00:00:00:00:00" && mac != "01:80:C2:00:00:00"
+        });
+        ip_addresses
+            .retain(|ip| ip != "::1" && !ip.starts_with("127.") && !ip.starts_with("169.254."));
         let post_data = ureq::json!({
           "asset_name": hostname::get()?.to_string_lossy(),
           "asset_external_reference": mid::get("openbas").unwrap(),
