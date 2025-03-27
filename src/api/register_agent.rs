@@ -6,6 +6,12 @@ use serde::Deserialize;
 use std::env;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+const MAC_ADDRESS_FILTERED_1: &str = "FF:FF:FF:FF:FF:FF";
+const MAC_ADDRESS_FILTERED_2: &str = "00:00:00:00:00:00";
+const MAC_ADDRESS_FILTERED_3: &str = "01:80:C2:00:00:00";
+const IP_ADDRESS_FILTERED_1: &str = "::1";
+const IP_ADDRESS_FILTERED_2: &str = "127.";
+const IP_ADDRESS_FILTERED_3: &str = "169.254.";
 
 #[derive(Debug, Deserialize)]
 pub struct RegisterAgentResponse {
@@ -57,10 +63,15 @@ impl Client {
             .map(|addr| addr.ip().to_string())
             .collect();
         mac_addresses.retain(|mac| {
-            mac != "FF:FF:FF:FF:FF:FF" && mac != "00:00:00:00:00:00" && mac != "01:80:C2:00:00:00"
+            mac != MAC_ADDRESS_FILTERED_1
+                && mac != MAC_ADDRESS_FILTERED_2
+                && mac != MAC_ADDRESS_FILTERED_3
         });
-        ip_addresses
-            .retain(|ip| ip != "::1" && !ip.starts_with("127.") && !ip.starts_with("169.254."));
+        ip_addresses.retain(|ip| {
+            ip != IP_ADDRESS_FILTERED_1
+                && !ip.starts_with(IP_ADDRESS_FILTERED_2)
+                && !ip.starts_with(IP_ADDRESS_FILTERED_3)
+        });
         let post_data = ureq::json!({
           "asset_name": hostname::get()?.to_string_lossy(),
           "asset_external_reference": mid::get("openbas").unwrap(),
