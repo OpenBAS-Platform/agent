@@ -6,6 +6,12 @@ use serde::Deserialize;
 use std::env;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+const MAC_ADDRESS_FILTERED_1: &str = "FF:FF:FF:FF:FF:FF";
+const MAC_ADDRESS_FILTERED_2: &str = "00:00:00:00:00:00";
+const MAC_ADDRESS_FILTERED_3: &str = "01:80:C2:00:00:00";
+const IP_ADDRESS_FILTERED_1: &str = "::1";
+const IP_ADDRESS_FILTERED_2: &str = "127.";
+const IP_ADDRESS_FILTERED_3: &str = "169.254.";
 
 #[derive(Debug, Deserialize)]
 pub struct RegisterAgentResponse {
@@ -46,16 +52,26 @@ impl Client {
     ) -> Result<RegisterAgentResponse, Error> {
         // region Build the content to register
         let networks = NetworkInterface::show().unwrap();
-        let mac_addresses: Vec<String> = networks
+        let mut mac_addresses: Vec<String> = networks
             .iter()
             .map(|interface| &interface.mac_addr)
             .filter_map(|mac| mac.clone())
             .collect();
-        let ip_addresses: Vec<String> = networks
+        let mut ip_addresses: Vec<String> = networks
             .iter()
             .flat_map(|interface| &interface.addr)
             .map(|addr| addr.ip().to_string())
             .collect();
+        mac_addresses.retain(|mac| {
+            mac != MAC_ADDRESS_FILTERED_1
+                && mac != MAC_ADDRESS_FILTERED_2
+                && mac != MAC_ADDRESS_FILTERED_3
+        });
+        ip_addresses.retain(|ip| {
+            ip != IP_ADDRESS_FILTERED_1
+                && !ip.starts_with(IP_ADDRESS_FILTERED_2)
+                && !ip.starts_with(IP_ADDRESS_FILTERED_3)
+        });
         let post_data = ureq::json!({
           "asset_name": hostname::get()?.to_string_lossy(),
           "asset_external_reference": mid::get("openbas").unwrap(),
