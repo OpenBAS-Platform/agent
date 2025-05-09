@@ -1,0 +1,63 @@
+const SERVER_URL: &str = "https://example.com";
+const TOKEN: &str = "token";
+
+#[cfg(test)]
+mod tests {
+    use crate::api::Client;
+    use crate::tests::api::client::{SERVER_URL, TOKEN};
+    use mockito;
+    use std::env;
+
+    #[test]
+    fn test_user_agent_header_set() {
+        // -- PREPARE
+        let mut server = mockito::Server::new();
+        let server_url = server.url();
+        server
+            .mock("POST", "/api/test")
+            .match_header(
+                "user-agent",
+                format!("openbas-agent/{}", crate::api::VERSION).as_str(),
+            )
+            .with_status(200)
+            .create();
+        let client = Client::new(server_url, TOKEN.to_string(), false, false);
+
+        // -- EXECUTE & ASSERT --
+        let res = client.post("/api/test").send();
+        assert!(res.is_ok(), "User-Agent should match expected format");
+    }
+
+    #[test]
+    fn test_client_removes_trailing_slash() {
+        let client = Client::new(SERVER_URL.to_string(), TOKEN.to_string(), false, false);
+        assert_eq!(client.server_url(), SERVER_URL);
+    }
+
+    #[test]
+    fn test_no_proxy_disables_http_proxy() {
+        // -- PREPARE --
+        env::set_var("HTTP_PROXY", "http://127.0.0.1:9999");
+
+        let mut server = mockito::Server::new();
+        let server_url = server.url();
+        server.mock("POST", "/api/test").with_status(200).create();
+        let client_without_proxy =
+            Client::new(server_url.clone(), "token".to_string(), false, false);
+        let client_with_proxy = Client::new(server_url.clone(), "token".to_string(), false, true);
+
+        // -- EXECUTE --
+        let res_without_proxy = client_without_proxy.post("/api/test").send();
+        let res_with_proxy = client_with_proxy.post("/api/test").send();
+
+        // -- ASSERT --
+        assert!(res_without_proxy.is_ok(), "Client should bypass the proxy");
+        assert!(
+            res_with_proxy.is_err(),
+            "Client should not bypass the proxy"
+        );
+
+        // -- CLEAN --
+        env::remove_var("HTTP_PROXY");
+    }
+}

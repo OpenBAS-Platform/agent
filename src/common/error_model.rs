@@ -10,9 +10,9 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::Internal(message) => write!(f, "{}", message),
-            Error::Api(api_message) => write!(f, "{}", api_message),
-            Error::Io(io) => write!(f, "{}", io),
+            Error::Internal(message) => write!(f, "{message}"),
+            Error::Api(api_message) => write!(f, "{api_message}"),
+            Error::Io(io) => write!(f, "{io}"),
         }
     }
 }

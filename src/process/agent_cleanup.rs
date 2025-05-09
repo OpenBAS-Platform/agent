@@ -69,8 +69,8 @@ pub fn clean() -> Result<JoinHandle<()>, Error> {
             for dir in kill_directories {
                 let dir_path = dir.path();
                 let dirname = dir_path.to_str().unwrap();
-                info!("[cleanup thread] Killing process for directory {}", dirname);
-                let escaped_dirname = format!("\"{}\"", dirname);
+                info!("[cleanup thread] Killing process for directory {dirname}");
+                let escaped_dirname = format!("\"{dirname}\"");
                 if cfg!(target_os = "windows") {
                     Command::new("powershell")
                         .args([
@@ -98,7 +98,7 @@ pub fn clean() -> Result<JoinHandle<()>, Error> {
             for dir in remove_directories {
                 let dir_path = dir.path();
                 let dirname = dir_path.to_str().unwrap();
-                info!("[cleanup thread] Removing directory {}", dirname);
+                info!("[cleanup thread] Removing directory {dirname}");
                 fs::remove_dir_all(dir_path).unwrap()
             }
             // endregion
