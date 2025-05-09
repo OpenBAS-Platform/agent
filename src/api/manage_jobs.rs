@@ -45,7 +45,7 @@ impl Client {
     pub fn clean_job(&self, job_id: &str) -> Result<(), Error> {
         // Post the input to the OpenBAS API
         match self
-            .delete(&format!("/api/endpoints/jobs/{}", job_id))
+            .delete(&format!("/api/endpoints/jobs/{job_id}"))
             .send()
         {
             Ok(response) => {

@@ -22,7 +22,7 @@ impl Client {
         let mut http_client = reqwest::blocking::Client::builder()
             .connect_timeout(Duration::from_secs(2))
             .timeout(Duration::from_secs(5))
-            .user_agent(format!("openbas-agent/{}", VERSION));
+            .user_agent(format!("openbas-agent/{VERSION}"));
         if !with_proxy {
             http_client = http_client.no_proxy();
         }
@@ -42,6 +42,8 @@ impl Client {
             token,
         }
     }
+
+    #[cfg(test)]
     pub fn server_url(&self) -> &str {
         &self.server_url
     }
@@ -50,13 +52,13 @@ impl Client {
         let api_route = format!("{}{}", self.server_url, route);
         self.http_client
             .post(&api_route)
-            .bearer_auth(&format!("Bearer {}", self.token))
+            .bearer_auth(format!("Bearer {}", self.token))
     }
 
     pub fn delete(&self, route: &str) -> reqwest::blocking::RequestBuilder {
         let api_route = format!("{}{}", self.server_url, route);
         self.http_client
             .delete(&api_route)
-            .bearer_auth(&format!("Bearer {}", self.token))
+            .bearer_auth(format!("Bearer {}", self.token))
     }
 }
