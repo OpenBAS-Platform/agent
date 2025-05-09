@@ -3,8 +3,8 @@ use crate::common::error_model::Error;
 use network_interface::NetworkInterface;
 use network_interface::NetworkInterfaceConfig;
 use serde::Deserialize;
-use std::env;
 use serde_json::json;
+use std::env;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const MAC_ADDRESS_FILTERED_1: &str = "FF:FF:FF:FF:FF:FF";
