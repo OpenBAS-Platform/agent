@@ -4,7 +4,7 @@ version = "1.16.0"
 edition = "2021"
 
 [dependencies]
-ureq = { version = "3.0.11", features = ["json"] }
+ureq = { version = "3.0.11" }
 config = "0.15.0"
 serde = { version = "1.0.203", features = ["derive"] }
 log = { version = "0.4.22", features = ["kv"] }
