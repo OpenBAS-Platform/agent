@@ -56,6 +56,15 @@ To run one test (unit and integration):
 cargo test test_name
 ```
 
+### Code Coverage
+
+To generate a code coverage report (requires [`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov)):
+
+```bash
+cargo install cargo-llvm-cov
+cargo llvm-cov --html
+```
+
 ## About
 
 OpenCTI is a product designed and developed by the company [Filigran](https://filigran.io).
