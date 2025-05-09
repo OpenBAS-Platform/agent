@@ -23,6 +23,39 @@ An elevated powershell is required.
 
 `iex (iwr "http://[OPENBAS_URI]/api/agent/installer/openbas/windows").Content`
 
+
+## Development
+
+The OpenBAS agent is written in [Rust](https://www.rust-lang.org/). If you're new to Rust, we recommend starting with [The Rust Book](https://doc.rust-lang.org/book/).
+
+### Requirements
+
+- [Rust](https://rustup.rs/) (latest stable)
+- [Cargo](https://doc.rust-lang.org/cargo/)
+- Linux, macOS or Windows
+
+### Build
+
+To build the agent:
+
+```bash
+cargo build
+```
+
+## Running Tests
+
+To run all tests (unit and integration):
+
+```bash
+cargo test
+```
+
+To run one test (unit and integration):
+
+```bash
+cargo test test_name
+```
+
 ## About
 
 OpenCTI is a product designed and developed by the company [Filigran](https://filigran.io).

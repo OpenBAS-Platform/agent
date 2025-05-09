@@ -1,17 +1,13 @@
-use rustls::ClientConfig;
-use rustls_platform_verifier::BuilderVerifierExt;
-use std::sync::Arc;
 use std::time::Duration;
-use ureq::{Agent, Request};
 
 mod manage_jobs;
 mod register_agent;
 
-const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug)]
 pub struct Client {
-    http_client: Agent,
+    http_client: reqwest::blocking::Client,
     server_url: String,
     token: String,
 }
@@ -23,20 +19,15 @@ impl Client {
         unsecured_certificate: bool,
         with_proxy: bool,
     ) -> Client {
-        let mut http_client = ureq::AgentBuilder::new()
-            .timeout_connect(Duration::from_secs(2))
+        let mut http_client = reqwest::blocking::Client::builder()
+            .connect_timeout(Duration::from_secs(2))
             .timeout(Duration::from_secs(5))
-            .user_agent(format!("openbas-agent/{}", VERSION).as_str())
-            .try_proxy_from_env(with_proxy);
+            .user_agent(format!("openbas-agent/{}", VERSION));
+        if !with_proxy {
+            http_client = http_client.no_proxy();
+        }
         if unsecured_certificate {
-            let arc_crypto_provider = Arc::new(rustls::crypto::ring::default_provider());
-            let config = ClientConfig::builder_with_provider(arc_crypto_provider)
-                .with_safe_default_protocol_versions()
-                .expect("Failed to create TLS config with crypto provider")
-                .with_platform_verifier()
-                .with_no_client_auth();
-
-            http_client = http_client.tls_config(Arc::new(config));
+            http_client = http_client.danger_accept_invalid_certs(true);
         }
 
         // Remove trailing slash
@@ -46,23 +37,26 @@ impl Client {
         }
         // Initiate client
         Client {
-            http_client: http_client.build(),
+            http_client: http_client.build().unwrap(),
             server_url: url,
             token,
         }
     }
+    pub fn server_url(&self) -> &str {
+        &self.server_url
+    }
 
-    pub fn post(&self, route: &str) -> Request {
+    pub fn post(&self, route: &str) -> reqwest::blocking::RequestBuilder {
         let api_route = format!("{}{}", self.server_url, route);
         self.http_client
             .post(&api_route)
-            .set("Authorization", &format!("Bearer {}", self.token))
+            .bearer_auth(&format!("Bearer {}", self.token))
     }
 
-    pub fn delete(&self, route: &str) -> Request {
+    pub fn delete(&self, route: &str) -> reqwest::blocking::RequestBuilder {
         let api_route = format!("{}{}", self.server_url, route);
         self.http_client
             .delete(&api_route)
-            .set("Authorization", &format!("Bearer {}", self.token))
+            .bearer_auth(&format!("Bearer {}", self.token))
     }
 }
