@@ -1,8 +1,7 @@
+use super::Client;
 use crate::common::error_model::Error;
 use serde::Deserialize;
 use serde_json::json;
-
-use super::Client;
 
 #[derive(Debug, Deserialize)]
 pub struct JobResponse {
@@ -27,10 +26,18 @@ impl Client {
           "agent_is_elevated": is_elevated,
           "agent_executed_by_user": executed_by_user
         });
-        match self.post("/api/endpoints/jobs").send_json(post_data) {
-            Ok(response) => Ok(response.into_json()?),
-            Err(ureq::Error::Status(_, response)) => {
-                Err(Error::Api(response.into_string().unwrap()))
+        match self.post("/api/endpoints/jobs").json(&post_data).send() {
+            Ok(response) => {
+                if response.status().is_success() {
+                    response
+                        .json::<Vec<JobResponse>>()
+                        .map_err(|e| Error::Internal(e.to_string()))
+                } else {
+                    let msg = response
+                        .text()
+                        .unwrap_or_else(|_| "Unknown error".to_string());
+                    Err(Error::Api(msg))
+                }
             }
             Err(err) => Err(Error::Internal(err.to_string())),
         }
@@ -39,11 +46,17 @@ impl Client {
         // Post the input to the OpenBAS API
         match self
             .delete(&format!("/api/endpoints/jobs/{}", job_id))
-            .call()
+            .send()
         {
-            Ok(_) => Ok(()),
-            Err(ureq::Error::Status(_, response)) => {
-                Err(Error::Api(response.into_string().unwrap()))
+            Ok(response) => {
+                if response.status().is_success() {
+                    Ok(())
+                } else {
+                    let msg = response
+                        .text()
+                        .unwrap_or_else(|_| "Unknown error".to_string());
+                    Err(Error::Api(msg))
+                }
             }
             Err(err) => Err(Error::Internal(err.to_string())),
         }
