@@ -1,5 +1,6 @@
 use crate::common::error_model::Error;
 use serde::Deserialize;
+use serde_json::json;
 
 use super::Client;
 
@@ -20,7 +21,7 @@ impl Client {
         executed_by_user: String,
     ) -> Result<Vec<JobResponse>, Error> {
         // Post the input to the OpenBAS API
-        let post_data = ureq::json!({
+        let post_data = json!({
           "asset_external_reference": mid::get("openbas").unwrap(),
           "agent_is_service": is_service,
           "agent_is_elevated": is_elevated,
