@@ -48,6 +48,14 @@ impl Client {
         &self.server_url
     }
 
+    #[cfg(test)]
+    pub fn get(&self, route: &str) -> reqwest::blocking::RequestBuilder {
+        let api_route = format!("{}{}", self.server_url, route);
+        self.http_client
+            .get(&api_route)
+            .bearer_auth(format!("Bearer {}", self.token))
+    }
+
     pub fn post(&self, route: &str) -> reqwest::blocking::RequestBuilder {
         let api_route = format!("{}{}", self.server_url, route);
         self.http_client

@@ -35,16 +35,15 @@ mod tests {
     }
 
     #[test]
-    fn test_no_proxy_disables_http_proxy() {
+    fn test_with_proxy_disables_http_proxy() {
         // -- PREPARE --
         env::set_var("HTTP_PROXY", "http://127.0.0.1:9999");
 
         let mut server = mockito::Server::new();
         let server_url = server.url();
         server.mock("POST", "/api/test").with_status(200).create();
-        let client_without_proxy =
-            Client::new(server_url.clone(), "token".to_string(), false, false);
-        let client_with_proxy = Client::new(server_url.clone(), "token".to_string(), false, true);
+        let client_without_proxy = Client::new(server_url.clone(), TOKEN.to_string(), false, false);
+        let client_with_proxy = Client::new(server_url.clone(), TOKEN.to_string(), false, true);
 
         // -- EXECUTE --
         let res_without_proxy = client_without_proxy.post("/api/test").send();
@@ -59,5 +58,22 @@ mod tests {
 
         // -- CLEAN --
         env::remove_var("HTTP_PROXY");
+    }
+
+    #[test]
+    fn test_unsecured_certificate_acceptance() {
+        // -- PREPARE --
+        let bad_ssl_url = "https://self-signed.badssl.com/";
+
+        let client_without_unsecured_certificate = Client::new(bad_ssl_url.to_string(), TOKEN.to_string(), false, false);
+        let client_with_unsecured_certificate = Client::new(bad_ssl_url.to_string(), TOKEN.to_string(), true, true);
+
+        // -- EXECUTE --
+        let res_without_unsecured_certificate = client_without_unsecured_certificate.get("").send();
+        let res_with_unsecured_certificate = client_with_unsecured_certificate.get("").send();
+
+        // -- ASSERT --
+        assert!(res_without_unsecured_certificate.is_err(), "Client should not bypass the bad ssl");
+        assert!(res_with_unsecured_certificate.is_ok(), "Client should bypass the bad ssl");
     }
 }
