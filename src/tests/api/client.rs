@@ -65,15 +65,23 @@ mod tests {
         // -- PREPARE --
         let bad_ssl_url = "https://self-signed.badssl.com/";
 
-        let client_without_unsecured_certificate = Client::new(bad_ssl_url.to_string(), TOKEN.to_string(), false, false);
-        let client_with_unsecured_certificate = Client::new(bad_ssl_url.to_string(), TOKEN.to_string(), true, true);
+        let client_without_unsecured_certificate =
+            Client::new(bad_ssl_url.to_string(), TOKEN.to_string(), false, false);
+        let client_with_unsecured_certificate =
+            Client::new(bad_ssl_url.to_string(), TOKEN.to_string(), true, true);
 
         // -- EXECUTE --
         let res_without_unsecured_certificate = client_without_unsecured_certificate.get("").send();
         let res_with_unsecured_certificate = client_with_unsecured_certificate.get("").send();
 
         // -- ASSERT --
-        assert!(res_without_unsecured_certificate.is_err(), "Client should not bypass the bad ssl");
-        assert!(res_with_unsecured_certificate.is_ok(), "Client should bypass the bad ssl");
+        assert!(
+            res_without_unsecured_certificate.is_err(),
+            "Client should not bypass the bad ssl"
+        );
+        assert!(
+            res_with_unsecured_certificate.is_ok(),
+            "Client should bypass the bad ssl"
+        );
     }
 }
