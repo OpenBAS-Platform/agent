@@ -3,7 +3,7 @@ const TOKEN: &str = "token";
 #[cfg(test)]
 mod tests {
     use crate::api::{Client, AUTHORIZATION_HEADER};
-    use crate::tests::api::client::{TOKEN};
+    use crate::tests::api::client::TOKEN;
     use mockito;
     use std::env;
 
