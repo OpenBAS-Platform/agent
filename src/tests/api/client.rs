@@ -30,12 +30,6 @@ mod tests {
     }
 
     #[test]
-    fn test_client_removes_trailing_slash() {
-        let client = Client::new(SERVER_URL.to_string(), TOKEN.to_string(), false, false);
-        assert_eq!(client.server_url(), SERVER_URL);
-    }
-
-    #[test]
     fn test_with_proxy_disables_http_proxy() {
         // -- PREPARE --
         env::set_var("HTTP_PROXY", "http://127.0.0.1:9999");

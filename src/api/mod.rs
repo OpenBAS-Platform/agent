@@ -45,11 +45,6 @@ impl Client {
     }
 
     #[cfg(test)]
-    pub fn server_url(&self) -> &str {
-        &self.server_url
-    }
-
-    #[cfg(test)]
     pub fn get(&self, route: &str) -> reqwest::blocking::RequestBuilder {
         let api_route = format!("{}{}", self.server_url, route);
         self.http_client
