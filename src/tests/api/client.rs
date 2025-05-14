@@ -19,10 +19,7 @@ mod tests {
                 "user-agent",
                 format!("openbas-agent/{}", crate::api::VERSION).as_str(),
             )
-            .match_header(
-                AUTHORIZATION_HEADER,
-                format!("Bearer {}", TOKEN).as_str(),
-            )
+            .match_header(AUTHORIZATION_HEADER, format!("Bearer {}", TOKEN).as_str())
             .with_status(200)
             .create();
         let client = Client::new(server_url, TOKEN.to_string(), false, false);
