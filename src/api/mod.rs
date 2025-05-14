@@ -12,6 +12,8 @@ pub struct Client {
     token: String,
 }
 
+pub const AUTHORIZATION_HEADER: &'static str = "Authorization";
+
 impl Client {
     pub fn new(
         server_url: String,
@@ -53,20 +55,20 @@ impl Client {
         let api_route = format!("{}{}", self.server_url, route);
         self.http_client
             .get(&api_route)
-            .bearer_auth(format!("Bearer {}", self.token))
+            .header(AUTHORIZATION_HEADER, &format!("Bearer {}", self.token))
     }
 
     pub fn post(&self, route: &str) -> reqwest::blocking::RequestBuilder {
         let api_route = format!("{}{}", self.server_url, route);
         self.http_client
             .post(&api_route)
-            .bearer_auth(format!("Bearer {}", self.token))
+            .header(AUTHORIZATION_HEADER, &format!("Bearer {}", self.token))
     }
 
     pub fn delete(&self, route: &str) -> reqwest::blocking::RequestBuilder {
         let api_route = format!("{}{}", self.server_url, route);
         self.http_client
             .delete(&api_route)
-            .bearer_auth(format!("Bearer {}", self.token))
+            .header(AUTHORIZATION_HEADER, &format!("Bearer {}", self.token))
     }
 }

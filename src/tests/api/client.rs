@@ -3,13 +3,13 @@ const TOKEN: &str = "token";
 
 #[cfg(test)]
 mod tests {
-    use crate::api::Client;
+    use crate::api::{Client, AUTHORIZATION_HEADER};
     use crate::tests::api::client::{SERVER_URL, TOKEN};
     use mockito;
     use std::env;
 
     #[test]
-    fn test_user_agent_header_set() {
+    fn test_client_headers() {
         // -- PREPARE
         let mut server = mockito::Server::new();
         let server_url = server.url();
@@ -18,6 +18,10 @@ mod tests {
             .match_header(
                 "user-agent",
                 format!("openbas-agent/{}", crate::api::VERSION).as_str(),
+            )
+            .match_header(
+                AUTHORIZATION_HEADER,
+                format!("Bearer {}", TOKEN).as_str(),
             )
             .with_status(200)
             .create();
