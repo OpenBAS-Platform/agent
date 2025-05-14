@@ -4,6 +4,7 @@ mod manage_jobs;
 mod register_agent;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const AUTHORIZATION_HEADER: &str= "Authorization";
 
 #[derive(Debug)]
 pub struct Client {
@@ -11,8 +12,6 @@ pub struct Client {
     server_url: String,
     token: String,
 }
-
-pub const AUTHORIZATION_HEADER: &'static str = "Authorization";
 
 impl Client {
     pub fn new(
