@@ -13,21 +13,7 @@ The following repository is used to store the OpenBAS agent for the platform. Fo
 
 Agent installation is fully managed by the OpenBAS platform.
 
-### Linux
-Run as **root** or with **sudo**:
-
-```bash
-curl -s http://[OPENBAS_URI]/api/agent/installer/openbas/linux | sudo sh
-```
-
-### Windows
-Run in an **elevated PowerShell**:
-
-```powershell
-iex (iwr "http://[OPENBAS_URI]/api/agent/installer/openbas/windows").Content
-```
-
----
+You can find more information on the [official documentation](https://docs.openbas.io/latest/usage/openbas-agent/?h=agent).
 
 ## 🛠 Development
 
