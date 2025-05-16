@@ -44,7 +44,7 @@ impl Settings {
         } else {
             config
                 .add_source(File::with_name("config/default"))
-                .add_source(File::with_name(&format!("config/{}", run_mode)).required(false))
+                .add_source(File::with_name(&format!("config/{run_mode}")).required(false))
                 .build()?
                 .try_deserialize()
         }

@@ -3,6 +3,7 @@ use crate::common::error_model::Error;
 use network_interface::NetworkInterface;
 use network_interface::NetworkInterfaceConfig;
 use serde::Deserialize;
+use serde_json::json;
 use std::env;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -72,7 +73,7 @@ impl Client {
                 && !ip.starts_with(IP_ADDRESS_FILTERED_2)
                 && !ip.starts_with(IP_ADDRESS_FILTERED_3)
         });
-        let post_data = ureq::json!({
+        let post_data = json!({
           "asset_name": hostname::get()?.to_string_lossy(),
           "asset_external_reference": mid::get("openbas").unwrap(),
           "endpoint_agent_version": VERSION,
@@ -88,10 +89,18 @@ impl Client {
         });
         // endregion
         // Post the input to the OpenBAS API
-        match self.post("/api/endpoints/register").send_json(post_data) {
-            Ok(response) => Ok(response.into_json()?),
-            Err(ureq::Error::Status(_, response)) => {
-                Err(Error::Api(response.into_string().unwrap()))
+        match self.post("/api/endpoints/register").json(&post_data).send() {
+            Ok(response) => {
+                if response.status().is_success() {
+                    response
+                        .json::<RegisterAgentResponse>()
+                        .map_err(|e| Error::Internal(e.to_string()))
+                } else {
+                    let msg = response
+                        .text()
+                        .unwrap_or_else(|_| "Unknown error".to_string());
+                    Err(Error::Api(msg))
+                }
             }
             Err(err) => Err(Error::Internal(err.to_string())),
         }

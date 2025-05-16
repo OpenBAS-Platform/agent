@@ -41,8 +41,7 @@ impl ExecutionDetails {
         let user_err = Self::decode_output(&user_result_output.stderr);
         if !user_err.is_empty() {
             error!(
-                "User not returned with whoami command, try to restart the agent : {:?}",
-                user_err
+                "User not returned with whoami command, try to restart the agent : {user_err:?}"
             );
         }
         Self::decode_output(&user_result_output.stdout).replace(replace_str, "")

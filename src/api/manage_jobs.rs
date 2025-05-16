@@ -1,7 +1,7 @@
+use super::Client;
 use crate::common::error_model::Error;
 use serde::Deserialize;
-
-use super::Client;
+use serde_json::json;
 
 #[derive(Debug, Deserialize)]
 pub struct JobResponse {
@@ -20,29 +20,40 @@ impl Client {
         executed_by_user: String,
     ) -> Result<Vec<JobResponse>, Error> {
         // Post the input to the OpenBAS API
-        let post_data = ureq::json!({
+        let post_data = json!({
           "asset_external_reference": mid::get("openbas").unwrap(),
           "agent_is_service": is_service,
           "agent_is_elevated": is_elevated,
           "agent_executed_by_user": executed_by_user
         });
-        match self.post("/api/endpoints/jobs").send_json(post_data) {
-            Ok(response) => Ok(response.into_json()?),
-            Err(ureq::Error::Status(_, response)) => {
-                Err(Error::Api(response.into_string().unwrap()))
+        match self.post("/api/endpoints/jobs").json(&post_data).send() {
+            Ok(response) => {
+                if response.status().is_success() {
+                    response
+                        .json::<Vec<JobResponse>>()
+                        .map_err(|e| Error::Internal(e.to_string()))
+                } else {
+                    let msg = response
+                        .text()
+                        .unwrap_or_else(|_| "Unknown error".to_string());
+                    Err(Error::Api(msg))
+                }
             }
             Err(err) => Err(Error::Internal(err.to_string())),
         }
     }
     pub fn clean_job(&self, job_id: &str) -> Result<(), Error> {
         // Post the input to the OpenBAS API
-        match self
-            .delete(&format!("/api/endpoints/jobs/{}", job_id))
-            .call()
-        {
-            Ok(_) => Ok(()),
-            Err(ureq::Error::Status(_, response)) => {
-                Err(Error::Api(response.into_string().unwrap()))
+        match self.delete(&format!("/api/endpoints/jobs/{job_id}")).send() {
+            Ok(response) => {
+                if response.status().is_success() {
+                    Ok(())
+                } else {
+                    let msg = response
+                        .text()
+                        .unwrap_or_else(|_| "Unknown error".to_string());
+                    Err(Error::Api(msg))
+                }
             }
             Err(err) => Err(Error::Internal(err.to_string())),
         }
