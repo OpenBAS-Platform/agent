@@ -21,6 +21,7 @@ impl Client {
         with_proxy: bool,
     ) -> Client {
         let mut http_client = reqwest::blocking::Client::builder()
+            .use_rustls_tls()
             .connect_timeout(Duration::from_secs(2))
             .timeout(Duration::from_secs(5))
             .user_agent(format!("openbas-agent/{VERSION}"));
