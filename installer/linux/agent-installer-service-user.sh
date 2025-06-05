@@ -52,7 +52,7 @@ user="$USER_ARG"
 group="$GROUP_ARG"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
-status=$(systemctl is-system-running)
+systemd_status=$(systemctl is-system-running)
 install_dir="/opt/openbas-agent-service-${user}"
 service_name="${user}-openbas-agent"
 
@@ -62,11 +62,11 @@ if [ "${os}" != "linux" ]; then
   exit 1
 fi
 
-if [ "$status" != "running" ] && [ "$status" != "degraded" ]; then
-  echo "Systemd is in unexpected state: $status. Installation is not supported."
+if [ "$systemd_status" != "running" ] && [ "$systemd_status" != "degraded" ]; then
+  echo "Systemd is in unexpected state: $systemd_status. Installation is not supported."
   exit 1
 else
-  echo "Systemd is in acceptable state: $status"
+  echo "Systemd is in acceptable state: $systemd_status"
 fi
 
 echo "Starting install script for ${os} | ${architecture}"
