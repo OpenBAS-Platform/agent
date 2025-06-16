@@ -8,7 +8,6 @@ on:
 
 jobs:
   poc_windows_x86_64_compile:
-    name: poc_windows_x86_64_compile
     runs-on: windows-latest
 
     steps:
@@ -74,7 +73,6 @@ jobs:
         
 
   poc_windows_arm_64_compile:
-    name: poc_windows_arm_64_compile
     runs-on: windows-11-arm
 
     steps:
@@ -139,9 +137,11 @@ jobs:
         Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" test --release'
       shell: powershell
 
-  poc_linux_arm_64_compile:
-    name: poc_linux_arm_64_compile
-    runs-on: ubuntu-24.04-arm
+  poc_linux_compile:
+    strategy:
+      matrix:
+        runner-type: [ ubuntu-24.04, ubuntu-24.04-arm ]
+    runs-on: ${{ matrix.runner-type }}
 
     steps:
       - name: Checkout repository
@@ -156,7 +156,12 @@ jobs:
         run: curl https://sh.rustup.rs -sSf | sh -s -- -y
 
       - name: Add ARM Target
+        if: ${{ matrix.runner-type }} == 'ubuntu-24.04-arm'
         run: . "$HOME/.cargo/env"; rustup target add aarch64-unknown-linux-musl
+
+      - name: Add x86 Target
+        if: ${{ matrix.runner-type }} == 'ubuntu-24.04'
+        run: . "$HOME/.cargo/env"; rustup target add x86_64-unknown-linux-musl
 
       - name: Install Quality Tools
         run: |
@@ -173,14 +178,24 @@ jobs:
           cargo fmt -- --check
           cargo audit
 
-      - name: Build ARM Target
+      - name: Cargo build ARM Target
+        if: ${{ matrix.runner-type }} == 'ubuntu-24.04-arm'
         run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
 
-      - name: Test ARM Target
+      - name: Cargo build x86 Target
+        if: ${{ matrix.runner-type }} == 'ubuntu-24.04'
+        run: . "$HOME/.cargo/env"; cargo build  --target=x86_64-unknown-linux-musl --release
+
+      - name: Cargo test
         run: . "$HOME/.cargo/env"; cargo test --release
 
-      - name: Strip Binary
+      - name: Strip Binary ARM Target
+        if: ${{ matrix.runner-type }} == 'ubuntu-24.04-arm'
         run: strip ./target/aarch64-unknown-linux-musl/release/openbas-agent
+
+      - name: Strip Binary x86 Target
+        if: ${{ matrix.runner-type }} == 'ubuntu-24.04'
+        run: strip ./target/x86_64-unknown-linux-musl/release/openbas-agent
 
 
 
