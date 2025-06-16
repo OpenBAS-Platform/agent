@@ -31,6 +31,8 @@ jobs:
 
     - name: Install Rust Toolchain
       run: |
+        $env:PATH = "$env:USERPROFILE\.cargo\bin;" + $env:PATH
+        $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH
         rustup toolchain install stable-x86_64-pc-windows-msvc
         rustup default stable-x86_64-pc-windows-msvc
 
@@ -65,8 +67,7 @@ jobs:
     - name: Cargo Test
       run: cargo test --release
 
-
-    - name: Cargo Test
+    - name: Clean cargo cache
       run: |
           cargo install cargo-cache
           cargo-cache -a clean-unref
