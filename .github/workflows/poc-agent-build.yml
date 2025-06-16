@@ -127,16 +127,6 @@ jobs:
         Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" fmt -- --check'
       shell: powershell
 
-    - name: Config Git for HTTPS
-      shell: pwsh
-      run: |
-        $configValue = git config --global --get url.ssh://git@github.com.insteadOf
-        if ($null -ne $configValue) {
-          git config --global --unset url.ssh://git@github.com.insteadOf
-        } else {
-          Write-Host "Configuration not set, no need to unset."
-        }
-
     - name: Run Cargo Audit
       run: cargo audit
 
