@@ -25,15 +25,11 @@ jobs:
         rustup toolchain install stable-x86_64-pc-windows-msvc
         rustup default stable-x86_64-pc-windows-msvc
 
-    - name: Uninstall Rust with Chocolatey
+    - name: Get rust version
       shell: pwsh
       run: |
-        if (Get-Command rustc -ErrorAction SilentlyContinue) {
           rustc --version
           choco uninstall -y rust
-        } else {
-          Write-Host "Rust is not installed."
-        }
 
     - name: Install MinGW and NSIS with Chocolatey
       run: choco install -y mingw nsis
