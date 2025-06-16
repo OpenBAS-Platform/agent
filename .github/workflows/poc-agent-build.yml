@@ -15,13 +15,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Cache cargo
-      uses: actions/cache@v4
-      with:
-        path: ~/.cargo
-        key: ${{ runner.arch }}-${{ runner.os }}-cargo-cache-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.arch }}-${{ runner.os }}-cargo-cache-
+#    - name: Cache cargo
+#      uses: actions/cache@v4
+#      with:
+#        path: ~/.cargo
+#        key: ${{ runner.arch }}-${{ runner.os }}-cargo-cache-${{ hashFiles('**/Cargo.lock') }}
+#        restore-keys: |
+#          ${{ runner.arch }}-${{ runner.os }}-cargo-cache-
 
     - name: Download rustup-init
       run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe
@@ -67,10 +67,10 @@ jobs:
     - name: Cargo Test
       run: cargo test --release
 
-    - name: Clean cargo cache
-      run: |
-          cargo install cargo-cache
-          cargo-cache -a clean-unref
+#    - name: Clean cargo cache
+#      run: |
+#          cargo install cargo-cache
+#          cargo-cache -a clean-unref
         
 
   poc_windows_arm_64_compile:
@@ -111,8 +111,9 @@ jobs:
       shell: powershell
 
     - name: Install Quality Tools
-      run: |
-        $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH;
+      run:  |
+        $env:PATH = "$env:USERPROFILE\.cargo\bin;" + $env:PATH
+        $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH
         rustup component add clippy
         rustup component add rustfmt
         cargo install cargo-audit
