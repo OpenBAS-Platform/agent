@@ -128,7 +128,7 @@ jobs:
       shell: powershell
 
     - name: Config Git for HTTPS
-      run: git config --global --unset url.ssh://git@github.com.insteadOf
+      run: git config --global --unset url.ssh://git@github.com.insteadOf || Write-Host "Configuration not set, no need to unset."
 
     - name: Run Cargo Audit
       run: cargo audit
@@ -152,3 +152,48 @@ jobs:
       run: |
         cargo install cargo-cache
         cargo-cache -a clean-unref
+        
+        
+
+  poc_linux_arm_64_compile:
+    name: poc_linux_arm_64_compile
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Update APT and Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install curl musl-tools
+
+      - name: Install Rust with rustup
+        run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+      - name: Add ARM Target
+        run: . "$HOME/.cargo/env"; rustup target add aarch64-unknown-linux-musl
+
+      - name: Install Quality Tools
+        run: |
+          . "$HOME/.cargo/env"
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit
+
+      - name: Run Cargo Checks
+        run: |
+          . "$HOME/.cargo/env"
+          cargo check
+          cargo clippy -- -D warnings
+          cargo fmt -- --check
+          cargo audit
+
+      - name: Build ARM Target
+        run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
+
+      - name: Test ARM Target
+        run: . "$HOME/.cargo/env"; cargo test --release
+
+      - name: Strip Binary
+        run: strip ./target/aarch64-unknown-linux-musl/release/openbas-agent
