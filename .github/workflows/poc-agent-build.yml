@@ -69,4 +69,84 @@ jobs:
     - name: Cargo Test
       run: |
           cargo install cargo-cache
-          cargo-cache -a clean-unref      
+          cargo-cache -a clean-unref
+        
+
+  poc_windows_arm_64_compile:
+    name: poc_windows_arm_64_compile
+    runs-on: windows-11-arm
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Cache cargo
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo
+        key: ${{ runner.arch }}-${{ runner.os }}-cargo-cache-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.arch }}-${{ runner.os }}-cargo-cache-
+
+    - name: Download VS Build Tools
+      run: curl.exe -SL --output vs_buildtools.exe --url https://aka.ms/vs/17/release/vs_buildtools.exe
+
+    - name: Install VS Components
+      run: .\vs_buildtools.exe --add Microsoft.VisualStudio.Component.Clang --add Microsoft.VisualStudio.Component.VC.tools.arm64 --wait --includeRecommended --quiet --norestart
+      shell: powershell
+
+    - name: Download Rustup-init
+      run: curl.exe --output rustup-init.exe --url https://static.rust-lang.org/rustup/dist/aarch64-pc-windows-msvc/rustup-init.exe
+
+    - name: Install Rustup
+      run: .\rustup-init.exe -vy
+
+    - name: Install Rust Toolchain
+      run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" toolchain install stable-aarch64-pc-windows-msvc'
+      shell: powershell
+
+    - name: Set Default Rust Toolchain
+      run: Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\rustup" default stable-aarch64-pc-windows-msvc'
+      shell: powershell
+
+    - name: Install Quality Tools
+      run: |
+        $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH;
+        rustup component add clippy
+        rustup component add rustfmt
+        cargo install cargo-audit
+      shell: powershell
+
+    - name: Run Cargo Checks
+      run: |
+        $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH;
+        Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" check'
+        Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" clippy -- -D warnings'
+        Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" fmt -- --check'
+      shell: powershell
+
+    - name: Config Git for HTTPS
+      run: git config --global --unset url.ssh://git@github.com.insteadOf
+
+    - name: Run Cargo Audit
+      run: cargo audit
+
+    - name: Reset Git Config
+      run: git config --global url.ssh://git@github.com.insteadOf https://github.com/
+
+    - name: Cargo Build
+      run: |
+        $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH;
+        Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" build --release'
+      shell: powershell
+
+    - name: Cargo Test
+      run: |
+        $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH;
+        Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" test --release'
+      shell: powershell
+
+    - name: Clean Unreferenced Cargo
+      run: |
+        cargo install cargo-cache
+        cargo-cache -a clean-unref
