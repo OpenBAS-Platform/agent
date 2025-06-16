@@ -1,6 +1,7 @@
 name: Rust Build on Windows
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - cicd-test
