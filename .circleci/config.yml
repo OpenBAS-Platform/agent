@@ -593,9 +593,7 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              ignore:
-                - main
-                - release/current
+              ignore: /.*/
       - windows_x86_64_build:
           filters:
             tags:
@@ -609,9 +607,7 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              ignore:
-                - main
-                - release/current
+              ignore: /.*/
       - windows_arm_64_build:
           filters:
             tags:
@@ -625,9 +621,7 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              ignore:
-                - main
-                - release/current
+              ignore: /.*/
       - linux_x86_64_build:
           filters:
             tags:
@@ -641,9 +635,7 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              ignore:
-                - main
-                - release/current
+              ignore: /.*/
       - linux_arm_64_build:
           filters:
             tags:
@@ -657,9 +649,7 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              ignore:
-                - main
-                - release/current
+              ignore: /.*/
       - macos_arm_64_build:
           filters:
             tags:
@@ -673,9 +663,7 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              ignore:
-                - main
-                - release/current
+              ignore: /.*/
       - macos_x86_64_build:
           filters:
             tags:
