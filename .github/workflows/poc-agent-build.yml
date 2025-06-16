@@ -26,7 +26,13 @@ jobs:
         rustup default stable-x86_64-pc-windows-msvc
 
     - name: Uninstall Rust with Chocolatey
-      run: choco uninstall rust
+      run: |
+        if command -v rustc > /dev/null; then
+          rustc --version
+          choco uninstall -y rust
+        else
+          echo "Rust is not installed."
+        fi
 
     - name: Install MinGW and NSIS with Chocolatey
       run: choco install -y mingw nsis
