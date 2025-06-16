@@ -156,11 +156,11 @@ jobs:
         run: curl https://sh.rustup.rs -sSf | sh -s -- -y
 
       - name: Add ARM Target
-        if: ${{ matrix.runner-type }} == 'ubuntu-24.04-arm'
+        if: matrix.runner-type == 'ubuntu-24.04-arm'
         run: . "$HOME/.cargo/env"; rustup target add aarch64-unknown-linux-musl
 
       - name: Add x86 Target
-        if: ${{ matrix.runner-type }} == 'ubuntu-24.04'
+        if: matrix.runner-type == 'ubuntu-24.04'
         run: . "$HOME/.cargo/env"; rustup target add x86_64-unknown-linux-musl
 
       - name: Install Quality Tools
@@ -179,22 +179,22 @@ jobs:
           cargo audit
 
       - name: Cargo build ARM Target
-        if: ${{ matrix.runner-type }} == 'ubuntu-24.04-arm'
+        if: matrix.runner-type == 'ubuntu-24.04-arm'
         run: . "$HOME/.cargo/env"; cargo build --target=aarch64-unknown-linux-musl --release
 
       - name: Cargo build x86 Target
-        if: ${{ matrix.runner-type }} == 'ubuntu-24.04'
+        if: matrix.runner-type == 'ubuntu-24.04'
         run: . "$HOME/.cargo/env"; cargo build  --target=x86_64-unknown-linux-musl --release
 
       - name: Cargo test
         run: . "$HOME/.cargo/env"; cargo test --release
 
       - name: Strip Binary ARM Target
-        if: ${{ matrix.runner-type }} == 'ubuntu-24.04-arm'
+        if: matrix.runner-type == 'ubuntu-24.04-arm'
         run: strip ./target/aarch64-unknown-linux-musl/release/openbas-agent
 
       - name: Strip Binary x86 Target
-        if: ${{ matrix.runner-type }} == 'ubuntu-24.04'
+        if: matrix.runner-type == 'ubuntu-24.04'
         run: strip ./target/x86_64-unknown-linux-musl/release/openbas-agent
 
 
