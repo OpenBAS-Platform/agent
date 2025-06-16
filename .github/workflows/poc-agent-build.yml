@@ -128,7 +128,14 @@ jobs:
       shell: powershell
 
     - name: Config Git for HTTPS
-      run: git config --global --unset url.ssh://git@github.com.insteadOf || Write-Host "Configuration not set, no need to unset."
+      shell: pwsh
+      run: |
+        try {
+          git config --global --unset url.ssh://git@github.com.insteadOf
+        }
+        catch {
+          Write-Host "Configuration not set, no need to unset."
+        }
 
     - name: Run Cargo Audit
       run: cargo audit
@@ -197,3 +204,51 @@ jobs:
 
       - name: Strip Binary
         run: strip ./target/aarch64-unknown-linux-musl/release/openbas-agent
+
+
+
+  poc_macos_arm_64_compile:
+    name: poc_macos_arm_64_compile
+    strategy:
+      matrix:
+        runner-type: [macos-15, macos-13]
+    runs-on: ${{ matrix.runner-type }}
+
+    steps:
+      - name: Print system information
+        run: |
+            echo Hostname: $(hostname)
+            echo Number of CPUs: $(sysctl -n hw.ncpu)
+            echo Architecture: $(uname -m)
+            echo RAM: $(system_profiler SPHardwareDataType | grep "Memory")
+            echo OS Version: $(sw_vers -productVersion)
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Rust with rustup
+        run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+      - name: Install Quality Tools
+        run: |
+          . "$HOME/.cargo/env"
+          rustup component add clippy
+          rustup component add rustfmt
+          cargo install cargo-audit
+
+      - name: Run Cargo Checks
+        run: |
+          . "$HOME/.cargo/env"
+          cargo check
+          cargo clippy -- -D warnings
+          cargo fmt -- --check
+          cargo audit
+
+      - name: Build ARM Target
+        run: . "$HOME/.cargo/env"; cargo build --release
+
+      - name: Test ARM Target
+        run: . "$HOME/.cargo/env"; cargo test --release
+
+      - name: Strip Binary
+        run: strip ./target/release/openbas-agent
