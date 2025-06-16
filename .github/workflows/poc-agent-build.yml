@@ -64,3 +64,9 @@ jobs:
 
     - name: Cargo Test
       run: cargo test --release
+
+
+    - name: Cargo Test
+      run: |
+          cargo install cargo-cache
+          cargo-cache -a clean-unref      
