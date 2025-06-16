@@ -27,9 +27,7 @@ jobs:
 
     - name: Get rust version
       shell: pwsh
-      run: |
-          rustc --version
-          choco uninstall -y rust
+      run: rustc --version
 
     - name: Install MinGW and NSIS with Chocolatey
       run: choco install -y mingw nsis
