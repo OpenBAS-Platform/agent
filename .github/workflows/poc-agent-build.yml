@@ -81,14 +81,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Cache cargo
-      uses: actions/cache@v4
-      with:
-        path: ~/.cargo
-        key: ${{ runner.arch }}-${{ runner.os }}-cargo-cache-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: |
-          ${{ runner.arch }}-${{ runner.os }}-cargo-cache-
-
     - name: Download VS Build Tools
       run: curl.exe -SL --output vs_buildtools.exe --url https://aka.ms/vs/17/release/vs_buildtools.exe
 
@@ -128,7 +120,9 @@ jobs:
       shell: powershell
 
     - name: Run Cargo Audit
-      run: cargo audit
+      run: |
+        $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH;
+        Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" audit'
 
     - name: Reset Git Config
       run: git config --global url.ssh://git@github.com.insteadOf https://github.com/
@@ -144,13 +138,6 @@ jobs:
         $env:PATH = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\Llvm\ARM64\bin;" + $env:PATH;
         Invoke-Expression '& "$env:USERPROFILE\.cargo\bin\cargo" test --release'
       shell: powershell
-
-    - name: Clean Unreferenced Cargo
-      run: |
-        cargo install cargo-cache
-        cargo-cache -a clean-unref
-        
-        
 
   poc_linux_arm_64_compile:
     name: poc_linux_arm_64_compile
