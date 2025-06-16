@@ -130,12 +130,7 @@ jobs:
     - name: Config Git for HTTPS
       shell: pwsh
       run: |
-        try {
-          git config --global --unset url.ssh://git@github.com.insteadOf
-        }
-        catch {
-          Write-Host "Configuration not set, no need to unset."
-        }
+        git config --global --unset url.ssh://git@github.com.insteadOf -ErrorAction SilentlyContinue
 
     - name: Run Cargo Audit
       run: cargo audit
@@ -207,8 +202,8 @@ jobs:
 
 
 
-  poc_macos_arm_64_compile:
-    name: poc_macos_arm_64_compile
+  poc_macos_matrix_compile:
+    name: poc_macos_compile
     strategy:
       matrix:
         runner-type: [macos-15, macos-13]
