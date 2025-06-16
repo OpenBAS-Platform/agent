@@ -130,7 +130,12 @@ jobs:
     - name: Config Git for HTTPS
       shell: pwsh
       run: |
-        git config --global --unset url.ssh://git@github.com.insteadOf -ErrorAction SilentlyContinue
+        $configValue = git config --global --get url.ssh://git@github.com.insteadOf
+        if ($null -ne $configValue) {
+          git config --global --unset url.ssh://git@github.com.insteadOf
+        } else {
+          Write-Host "Configuration not set, no need to unset."
+        }
 
     - name: Run Cargo Audit
       run: cargo audit
