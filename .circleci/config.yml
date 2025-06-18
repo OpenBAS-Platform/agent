@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   win: circleci/windows@5.1.0
-  macos: circleci/macos@2.5.3
+  macos: circleci/macos@2.5.4
 
 jobs:
   windows_x86_64_compile:
