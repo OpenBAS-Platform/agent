@@ -6,6 +6,7 @@ param(
     [string]$Password
 )
 
+[Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12;
 $isElevatedPowershell = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if ($isElevatedPowershell -like "False") { throw "PowerShell 'Run as Administrator' is required for installation" }
 
@@ -46,14 +47,13 @@ if ([string]::IsNullOrEmpty($architecture)) { throw "Architecture $env:PROCESSOR
 echo "Downloading and installing OpenBAS Agent..."
 try {
     Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/service-user" -OutFile "agent-installer-service-user.exe";
-    ./agent-installer-service-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~USER="$User" ~PASSWORD="$Password";
-    Start-Sleep -Seconds 5;
-    rm -force ./agent-installer-service-user.exe;
+    ./agent-installer-service-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~USER="$User" ~PASSWORD="$Password" | Out-Null;
 	echo "OpenBAS agent has been successfully installed"
 } catch {
     echo "Installation failed"
   	if ((Get-Host).Version.Major -lt 7) { throw "PowerShell 7 or higher is required for installation" }
   	else { echo $_ }
 } finally {
+    rm -force ./agent-installer-service-user.exe;
   	if ($location -like "*C:\Windows\System32*") { cd C:\Windows\System32 }
 }
