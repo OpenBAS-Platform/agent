@@ -1,3 +1,4 @@
+[Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12;
 switch ($env:PROCESSOR_ARCHITECTURE)
 {
 	"AMD64" {$architecture = "x86_64"; Break}

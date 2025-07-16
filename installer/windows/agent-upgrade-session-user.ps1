@@ -1,3 +1,4 @@
+[Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12;
 switch ($env:PROCESSOR_ARCHITECTURE)
 {
 	"AMD64" {$architecture = "x86_64"; Break}
@@ -34,7 +35,6 @@ $AgentPath = $InstallDir + "\openbas-agent.exe";
 
 Get-Process | Where-Object { $_.Path -eq "$AgentPath" } | Stop-Process -Force;
 Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/session-user" -OutFile "openbas-installer-session-user.exe";
-./openbas-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY};
+./openbas-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} | Out-Null;
 
-Start-Sleep -Seconds 5;
 rm -force ./openbas-installer-session-user.exe;
