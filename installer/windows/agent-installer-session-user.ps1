@@ -1,3 +1,4 @@
+[Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12;
 # Can't install the OpenBAS agent in System32 location because NSIS 64 exe
 $location = Get-Location
 if ($location -like "*C:\Windows\System32*") { cd C:\ }
@@ -42,14 +43,13 @@ try {
 
     echo "Downloading and installing OpenBAS Agent...";
     Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/session-user" -OutFile "agent-installer-session-user.exe";
-    ./agent-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY};
-    Start-Sleep -Seconds 5;
-    rm -force ./agent-installer-session-user.exe;
+    ./agent-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} | Out-Null;
 	echo "OpenBAS agent has been successfully installed"
 } catch {
     echo "Installation failed"
   	if ((Get-Host).Version.Major -lt 7) { throw "PowerShell 7 or higher is required for installation" }
   	else { echo $_ }
 } finally {
+    rm -force ./agent-installer-session-user.exe;
   	if ($location -like "*C:\Windows\System32*") { cd C:\Windows\System32 }
 }
