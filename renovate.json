@@ -18,6 +18,10 @@
       "matchJsonata": ["$not($exists(isVulnerabilityAlert))"],
       "matchBaseBranches": ["main"],
       "enabled": false
+    },
+    {
+      "matchPackageNames": ["mid"],
+      "enabled": false
     }
   ]
 }
