@@ -47,10 +47,7 @@ pub fn set_error_hook() {
                 .unwrap_or("<cause unknown>")
         });
 
-        error!(
-            "An error occurred in file {:?} line {:?}: {:?}",
-            filename, line, cause
-        );
+        error!("An error occurred in file {filename:?} line {line:?}: {cause:?}");
     }));
 }
 
