@@ -7,9 +7,11 @@ mod windows;
 #[cfg(test)]
 mod tests;
 
-use log::info;
+use log::{error, info};
 use rolling_file::{BasicRollingFileAppender, RollingConditionBasic};
 use std::env;
+use std::ops::Deref;
+use std::panic;
 use std::sync::atomic::AtomicBool;
 use std::thread::JoinHandle;
 
@@ -23,6 +25,34 @@ use crate::windows::service::service_stub;
 pub static THREADS_CONTROL: AtomicBool = AtomicBool::new(true);
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const PREFIX_LOG_NAME: &str = "openbas-agent.log";
+
+// Get and log all errors from the agent execution
+pub fn set_error_hook() {
+    panic::set_hook(Box::new(|panic_info| {
+        let (filename, line) = panic_info
+            .location()
+            .map(|loc| (loc.file(), loc.line()))
+            .unwrap_or(("<unknown>", 0));
+
+        let cause = panic_info
+            .payload()
+            .downcast_ref::<String>()
+            .map(String::deref);
+
+        let cause = cause.unwrap_or_else(|| {
+            panic_info
+                .payload()
+                .downcast_ref::<&str>()
+                .copied()
+                .unwrap_or("<cause unknown>")
+        });
+
+        error!(
+            "An error occurred in file {:?} line {:?}: {:?}",
+            filename, line, cause
+        );
+    }));
+}
 
 fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHandle<()>>, Error> {
     let url = settings_data.openbas.url;
@@ -64,6 +94,7 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
 }
 
 fn main() -> Result<(), Error> {
+    set_error_hook();
     // region Init logger
     let current_exe_patch = env::current_exe().unwrap();
     let parent_path = current_exe_patch.parent().unwrap();
