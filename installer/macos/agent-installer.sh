@@ -4,7 +4,7 @@ set -e
 base_url=${OPENBAS_URL}
 architecture=$(uname -m)
 
-install_dir="/opt/openbas-agent"
+install_dir="${OPENBAS_INSTALL_DIR}"
 service_name="openbas-agent"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')

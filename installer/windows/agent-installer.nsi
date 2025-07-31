@@ -20,8 +20,8 @@
 !define serviceName "OBASAgentService"
  
 RequestExecutionLevel admin ;Require admin rights on NT6+ (When UAC is turned on)
- 
-InstallDir "$PROGRAMFILES\${COMPANYNAME}\${APPNAME}"
+
+# InstallDir "$PROGRAMFILES\${COMPANYNAME}\${APPNAME}"
  
 # rtf or txt file - remember if it is txt, it must be in the DOS text format (\r\n)
 LicenseData "license.txt"
@@ -55,6 +55,8 @@ Var LabelUnsecuredCertificate
 Var /GLOBAL ConfigUnsecuredCertificate
 Var LabelWithProxy
 Var /GLOBAL ConfigWithProxy
+Var LabelInstallDir
+Var /GLOBAL InstallDir
 
 function .onInit
 	setShellVarContext all
@@ -64,6 +66,10 @@ function .onInit
     ${GetOptions} $R0 ~ACCESS_TOKEN= $ConfigToken
     ${GetOptions} $R0 ~UNSECURED_CERTIFICATE= $ConfigUnsecuredCertificate
     ${GetOptions} $R0 ~WITH_PROXY= $ConfigWithProxy
+    ${GetOptions} $R0 ~INSTALL_DIR= $ConfigInstallDir
+    ${If} $ConfigInstallDir == ""
+        StrCpy $ConfigInstallDir "$PROGRAMFILES\${COMPANYNAME}\${APPNAME}"
+    ${EndIf}
 functionEnd
 
 
@@ -100,12 +106,16 @@ Function nsDialogsConfig
     Pop $LabelWithProxy
     ${NSD_CreateText} 0 97u 100% 12u "false"
     Pop $ConfigWithProxyForm
-
+  ${NSD_CreateLabel} 0 110u 100% 12u "Install directory *"
+    Pop $LabelInstallDir
+    ${NSD_CreateText} 0 125u 100% 12u "$ConfigInstallDir"
+    Pop $ConfigInstallDirForm
 
   ${NSD_OnChange} $ConfigURLForm onFieldChange
   ${NSD_OnChange} $ConfigTokenForm onFieldChange
   ${NSD_OnChange} $ConfigUnsecuredCertificateForm onFieldChange
   ${NSD_OnChange} $ConfigWithProxyForm onFieldChange
+  ${NSD_OnChange} $ConfigInstallDirForm onFieldChange
 
 	nsDialogs::Show
 FunctionEnd
@@ -116,12 +126,14 @@ Function onFieldChange
   ${NSD_GetText} $ConfigTokenForm $ConfigToken
   ${NSD_GetText} $ConfigUnsecuredCertificateForm $ConfigUnsecuredCertificate
   ${NSD_GetText} $ConfigWithProxyForm $ConfigWithProxy
+  ${NSD_GetText} $ConfigInstallDirForm $ConfigInstallDir
 
   ; enable next button if both defined 
   ${If} $ConfigURL != "" 
   ${AndIf} $ConfigToken != ""
   ${AndIf} $ConfigUnsecuredCertificate != ""
   ${AndIf} $ConfigWithProxy != ""
+  ${AndIf} $ConfigInstallDir != ""
     GetDlgItem $0 $HWNDPARENT 1
     EnableWindow $0 1
   ${Else}
@@ -155,6 +167,11 @@ Function nsDialogsPageLeave
       Abort
   ${EndIf}
 
+  ${If} $ConfigInstallDir == ""
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Missing installation directory"
+      Abort
+  ${EndIf}
+
 FunctionEnd
 
 section "install"
@@ -173,6 +190,7 @@ section "install"
     FileWrite $4 "token = $\"$ConfigToken$\"$\r$\n"
     FileWrite $4 "unsecured_certificate = $ConfigUnsecuredCertificate$\r$\n"
     FileWrite $4 "with_proxy = $ConfigWithProxy$\r$\n"
+    FileWrite $4 "installation_directory = $\"$ConfigInstallDir$\"$\r$\n"
     FileWrite $4 "installation_mode = $\"service$\"$\r$\n"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4

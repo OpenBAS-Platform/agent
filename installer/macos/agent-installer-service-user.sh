@@ -51,7 +51,7 @@ architecture=$(uname -m)
 user="$USER_ARG"
 group="$GROUP_ARG"
 
-install_dir="/opt/openbas-agent-service-${user}"
+install_dir="${OPENBAS_INSTALL_DIR}-${user}"
 service_name="${user}-openbas-agent"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')

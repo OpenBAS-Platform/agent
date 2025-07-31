@@ -6,7 +6,7 @@ architecture=$(uname -m)
 user="$(id -un)"
 group="$(id -gn)"
 
-install_dir="/opt/openbas-agent-service-${user}"
+install_dir="${OPENBAS_INSTALL_DIR}-${user}"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
 if [ "${os}" = "darwin" ]; then

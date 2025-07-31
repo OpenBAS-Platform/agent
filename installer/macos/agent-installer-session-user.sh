@@ -4,7 +4,7 @@ set -e
 base_url=${OPENBAS_URL}
 architecture=$(uname -m)
 
-install_dir="/Users/$(id -un)/.local/openbas-agent-session"
+install_dir="/Users/$(id -un)/${OPENBAS_INSTALL_DIR}"
 session_name="openbas-agent-session"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')

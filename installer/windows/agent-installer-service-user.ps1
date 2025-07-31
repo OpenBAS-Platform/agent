@@ -18,7 +18,7 @@ $parts  = $User -split '\\', 2
 $domain = $parts[0]
 if ($domain -eq '.') {
  throw "Local user notation '.' is not allowed. Please specify a 'DOMAIN\Username'."
-}
+}²
 #Verify the account actually exists by translating to a SID.
 try {
   $null = ([System.Security.Principal.NTAccount] $User).Translate([System.Security.Principal.SecurityIdentifier])
@@ -46,7 +46,7 @@ if ([string]::IsNullOrEmpty($architecture)) { throw "Architecture $env:PROCESSOR
 echo "Downloading and installing OpenBAS Agent..."
 try {
     Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/service-user" -OutFile "agent-installer-service-user.exe";
-    ./agent-installer-service-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~USER="$User" ~PASSWORD="$Password";
+    ./agent-installer-service-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~INSTALL_DIR="${OPENBAS_INSTALL_DIR}" ~USER="$User" ~PASSWORD="$Password";
     Start-Sleep -Seconds 5;
     rm -force ./agent-installer-service-user.exe;
 	echo "OpenBAS agent has been successfully installed"

@@ -7,7 +7,7 @@ user="$(id -un)"
 group="$(id -gn)"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
-install_dir="/opt/openbas-agent-service-${user}"
+install_dir="${OPENBAS_INSTALL_DIR}-${user}"
 service_name="${user}-openbas-agent"
 
 if [ "${os}" != "linux" ]; then
