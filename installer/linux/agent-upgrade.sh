@@ -5,7 +5,7 @@ base_url=${OPENBAS_URL}
 architecture=$(uname -m)
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
-install_dir="/opt/openbas-agent"
+install_dir="${OPENBAS_INSTALL_DIR}"
 service_name="openbas-agent"
 
 if [ "${os}" != "linux" ]; then

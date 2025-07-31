@@ -5,7 +5,7 @@ base_url=${OPENBAS_URL}
 architecture=$(uname -m)
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
-install_dir="$HOME/.local/openbas-agent-session"
+install_dir="$HOME/${OPENBAS_INSTALL_DIR}"
 session_name="openbas-agent-session"
 
 if [ "${os}" != "linux" ]; then

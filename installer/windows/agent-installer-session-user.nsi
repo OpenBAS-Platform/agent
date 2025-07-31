@@ -22,7 +22,7 @@ ${Using:StrFunc} StrCase
  
 RequestExecutionLevel user
  
-InstallDir "C:\${COMPANYNAME}\${APPNAME}"
+# InstallDir "C:\${COMPANYNAME}\${APPNAME}"
  
 # rtf or txt file - remember if it is txt, it must be in the DOS text format (\r\n)
 LicenseData "license.txt"
@@ -56,6 +56,8 @@ Var LabelUnsecuredCertificate
 Var /GLOBAL ConfigUnsecuredCertificate
 Var LabelWithProxy
 Var /GLOBAL ConfigWithProxy
+Var LabelInstallDir
+Var /GLOBAL ConfigInstallDir
 Var /GLOBAL ConfigWithAdminPrivilege
 Var /GLOBAL UserSanitized
 Var /GLOBAL AgentName
@@ -85,6 +87,11 @@ function verifyParam
       Abort
   ${EndIf}
 
+  ${If} $ConfigInstallDir == ""
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Missing installation directory"
+      Abort
+  ${EndIf}
+
 functionEnd
 
 function .onInit
@@ -94,6 +101,10 @@ function .onInit
     ${GetOptions} $R0 ~ACCESS_TOKEN= $ConfigToken
     ${GetOptions} $R0 ~UNSECURED_CERTIFICATE= $ConfigUnsecuredCertificate
     ${GetOptions} $R0 ~WITH_PROXY= $ConfigWithProxy
+    ${GetOptions} $R0 ~INSTALL_DIR= $ConfigInstallDir
+    ${If} $ConfigInstallDir == ""
+        StrCpy $ConfigInstallDir "C:\${COMPANYNAME}"
+    ${EndIf}
 
     ;get the user name and sanitize it
     nsExec::ExecToStack 'cmd /c whoami'
@@ -117,6 +128,7 @@ Var ConfigURLForm
 Var ConfigTokenForm
 Var ConfigUnsecuredCertificateForm
 Var ConfigWithProxyForm
+Var ConfigInstallDirForm
 
 Function checkIfElevated
   ; Get the account type of the current process
@@ -158,12 +170,16 @@ Function nsDialogsConfig
 	Pop $LabelWithProxy
 	${NSD_CreateText} 0 84u 100% 12u "false"
 	Pop $ConfigWithProxyForm
+  ${NSD_CreateLabel} 0 80u 100% 12u "Install directory *"
+    Pop $LabelInstallDir
+    ${NSD_CreateText} 0 90u 100% 12u "$ConfigInstallDir"
+    Pop $ConfigInstallDirForm
 
   ${NSD_OnChange} $ConfigURLForm onFieldChange
   ${NSD_OnChange} $ConfigTokenForm onFieldChange
   ${NSD_OnChange} $ConfigUnsecuredCertificateForm onFieldChange
   ${NSD_OnChange} $ConfigWithProxyForm onFieldChange
-
+  ${NSD_OnChange} $ConfigInstallDirForm onFieldChange
   nsDialogs::Show
 
 FunctionEnd
@@ -174,13 +190,14 @@ Function onFieldChange
   ${NSD_GetText} $ConfigTokenForm $ConfigToken
   ${NSD_GetText} $ConfigUnsecuredCertificateForm $ConfigUnsecuredCertificate
   ${NSD_GetText} $ConfigWithProxyForm $ConfigWithProxy
-
+  ${NSD_GetText} $ConfigInstallDirForm $ConfigInstallDir
 
   ; enable next button if both defined 
   ${If} $ConfigURL != "" 
   ${AndIf} $ConfigToken != ""
   ${AndIf} $ConfigUnsecuredCertificate != ""
   ${AndIf} $ConfigWithProxy != ""
+  ${AndIf} $ConfigInstallDir != ""
     GetDlgItem $0 $HWNDPARENT 1
     EnableWindow $0 1
   ${Else}
@@ -197,7 +214,8 @@ Function updateInstallDir
   ${Else}
     StrCpy $AgentName "${STANDARD_AGENT_PREFIX}-$UserSanitized"
   ${EndIf}
-  StrCpy $INSTDIR "C:\${COMPANYNAME}\$AgentName"
+
+  StrCpy $INSTDIR "$ConfigInstallDir\$AgentName"
 FunctionEnd
 
 Function nsDialogsPageLeave

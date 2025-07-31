@@ -19,7 +19,7 @@ ${Using:StrFunc} StrCase
  
 RequestExecutionLevel admin
  
-InstallDir "C:\${COMPANYNAME}\${APPNAME}"
+# InstallDir "C:\${COMPANYNAME}\${APPNAME}"
  
 # rtf or txt file - remember if it is txt, it must be in the DOS text format (\r\n)
 LicenseData "license.txt"
@@ -53,6 +53,8 @@ Var LabelUnsecuredCertificate
 Var /GLOBAL ConfigUnsecuredCertificate
 Var LabelWithProxy
 Var /GLOBAL ConfigWithProxy
+Var LabelInstallDir
+Var /GLOBAL InstallDir
 Var LabelUser
 Var /GLOBAL ConfigUser
 Var LabelPassword
@@ -88,6 +90,10 @@ Function verifyParam
       Abort
   ${EndIf}
 
+  ${If} $ConfigInstallDir == ""
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Missing installation directory"
+      Abort
+  ${EndIf}
 
   ${If} $ConfigUser == ""
        MessageBox MB_OK|MB_ICONEXCLAMATION "Missing User"
@@ -108,6 +114,10 @@ Function .onInit
     ${GetOptions} $R0 ~ACCESS_TOKEN= $ConfigToken
     ${GetOptions} $R0 ~UNSECURED_CERTIFICATE= $ConfigUnsecuredCertificate
     ${GetOptions} $R0 ~WITH_PROXY= $ConfigWithProxy
+    ${GetOptions} $R0 ~INSTALL_DIR= $ConfigInstallDir
+    ${If} $ConfigInstallDir == ""
+        StrCpy $ConfigInstallDir "C:\${COMPANYNAME}"
+    ${EndIf}
     ${GetOptions} $R0 ~USER= $ConfigUser
     ${GetOptions} $R0 ~PASSWORD= $ConfigPassword
 
@@ -122,6 +132,7 @@ Var ConfigURLForm
 Var ConfigTokenForm
 Var ConfigUnsecuredCertificateForm
 Var ConfigWithProxyForm
+Var ConfigInstallDirForm
 Var ConfigUserForm
 Var ConfigPasswordForm
 
@@ -153,19 +164,24 @@ Function nsDialogsConfig
 	Pop $LabelWithProxy
 	${NSD_CreateText} 0 70u 100% 10u "false"
 	Pop $ConfigWithProxyForm
-  ${NSD_CreateLabel} 0 80u 100% 10u "User *"
+  ${NSD_CreateLabel} 0 80u 100% 12u "Install directory *"
+    Pop $LabelInstallDir
+    ${NSD_CreateText} 0 90u 100% 12u "$ConfigInstallDir"
+    Pop $ConfigInstallDirForm
+  ${NSD_CreateLabel} 0 90u 100% 10u "User *"
 	Pop $LabelUser
-	${NSD_CreateText} 0 90u 100% 10u ""
+	${NSD_CreateText} 0 100u 100% 10u ""
 	Pop $ConfigUserForm
-  ${NSD_CreateLabel} 0 100u 100% 10u "Password *"
+  ${NSD_CreateLabel} 0 110u 100% 10u "Password *"
 	Pop $LabelPassword
-	${NSD_CreatePassword} 0 110u 100% 10u ""
+	${NSD_CreatePassword} 0 120u 100% 10u ""
 	Pop $ConfigPasswordForm
 
   ${NSD_OnChange} $ConfigURLForm onFieldChange
   ${NSD_OnChange} $ConfigTokenForm onFieldChange
   ${NSD_OnChange} $ConfigUnsecuredCertificateForm onFieldChange
   ${NSD_OnChange} $ConfigWithProxyForm onFieldChange
+  ${NSD_OnChange} $ConfigInstallDirForm onFieldChange
   ${NSD_OnChange} $ConfigUserForm onFieldChange
 
   nsDialogs::Show
@@ -177,6 +193,7 @@ Function onFieldChange
   ${NSD_GetText} $ConfigTokenForm $ConfigToken
   ${NSD_GetText} $ConfigUnsecuredCertificateForm $ConfigUnsecuredCertificate
   ${NSD_GetText} $ConfigWithProxyForm $ConfigWithProxy
+  ${NSD_GetText} $ConfigInstallDirForm $ConfigInstallDir
   ${NSD_GetText} $ConfigUserForm $ConfigUser
 
   ; enable next button if both defined 
@@ -185,6 +202,7 @@ Function onFieldChange
   ${AndIf} $ConfigUnsecuredCertificate != ""
   ${AndIf} $ConfigUser != ""
   ${AndIf} $ConfigWithProxy != ""
+  ${AndIf} $ConfigInstallDir != ""
     GetDlgItem $0 $HWNDPARENT 1
     EnableWindow $0 1
   ${Else}
@@ -223,7 +241,7 @@ Function updateDirAndServiceName
     StrCpy $AgentName "OBASAgent-Service-$UserSanitized"
     
     ;update the instalation directory
-    StrCpy $INSTDIR "C:\${COMPANYNAME}\$AgentName"
+    StrCpy $INSTDIR "$ConfigInstallDir\$AgentName"
 
     ; update service information
     StrCpy $DisplayName "OBAS Agent Service $UserSanitized"
