@@ -326,7 +326,7 @@ sectionEnd
  
 # Uninstaller
 Function un.ReadServiceNameFromToml
-    StrCpy $serviceName "" ; Reset
+    StrCpy $AgentName "" ; Reset
     FileOpen $0 "$INSTDIR\openbas-agent-config.toml" r
 
 read_loop:
