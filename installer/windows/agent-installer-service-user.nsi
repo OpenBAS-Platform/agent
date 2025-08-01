@@ -344,7 +344,7 @@ trim_spaces:
 
 after_trim:
     ; See if this is the service_full_name line
-    StrCpy $2 $1 12
+    StrCpy $2 $1 17
     StrCmp $2 "service_full_name" match
     Goto read_loop
 

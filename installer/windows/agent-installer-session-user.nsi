@@ -341,9 +341,6 @@ read_loop:
     ; Skip empty lines
     StrCmp $1 "" read_loop
 
-    ; Debug: Show every cleaned line being read (optional - can be removed)
-    ; MessageBox MB_OK "Line: '$1'"
-
     ; Trim leading spaces
 trim_spaces:
     StrCpy $2 $1 1
@@ -352,12 +349,10 @@ trim_spaces:
     Goto trim_spaces
 
 after_trim:
-    ; See if this is the service_full_name line
-    StrCpy $2 $1 12
-    StrCmp $2 "service_full_name" match
-    Goto read_loop
+    ; Check if this line starts with "service_full_name"
+    StrCpy $2 $1 17  ; Get first 17 characters
+    StrCmp $2 "service_full_name" 0 read_loop
 
-match:
     ; Now, extract value after '='
     StrCpy $3 $1
     StrCpy $4 0
@@ -396,7 +391,6 @@ check_end_quote:
 
 skip_quote:
     StrCpy $AgentName $6
-    ; MessageBox MB_OK "Extracted aAgentName: '$AgentName'"
     Goto close_file
 
 close_file:
@@ -427,17 +421,18 @@ done:
     Exch $0
 FunctionEnd
 
-function un.onInit
-	SetShellVarContext all
+Function un.onInit
+    SetShellVarContext all
 
-   # Get ServiceName
-   Call un.ReadServiceNameFromToml
+    # Get ServiceName
+    Call un.ReadServiceNameFromToml
 
-	#Verify the uninstaller - last chance to back out
-	MessageBox MB_OKCANCEL "Permanently remove ${APPNAME}?" IDOK continue
-		Abort
-	continue:
-functionEnd
+    #Verify the uninstaller - last chance to back out
+    MessageBox MB_OKCANCEL "Permanently remove ${APPNAME}?" IDOK continue
+    Abort
+
+continue:
+FunctionEnd
 
 Function un.StrContains
    Exch $R1  ; Substring to search for
@@ -490,6 +485,7 @@ section "uninstall"
      ExecWait 'schtasks /Delete /TN "$AgentName" /F' $0
    ${Else}
      ;process kill is done in the powershell script
+     ExecWait 'powershell.exe -ExecutionPolicy Bypass -WindowStyle hidden -File "$INSTDIR\openbas_agent_kill.ps1" -location "$INSTDIR"'
 
      SetRegView 64
      ; Remove registry entry
