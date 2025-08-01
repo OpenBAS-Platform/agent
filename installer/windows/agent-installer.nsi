@@ -54,7 +54,7 @@ Var LabelWithProxy
 Var /GLOBAL ConfigWithProxy
 Var /GLOBAL ConfigInstallDir
 Var /GLOBAL ConfigServiceName
-var /GLOBAL serviceName
+var /GLOBAL ServiceName
 
 function .onInit
 	setShellVarContext all
@@ -72,7 +72,7 @@ function .onInit
     ${If} $ConfigInstallDir == ""
         StrCpy $ConfigInstallDir "$PROGRAMFILES\${COMPANYNAME}\${APPNAME}"
     ${EndIf}
-    StrCpy $serviceName $ConfigServiceName
+    StrCpy $ServiceName $ConfigServiceName
     StrCpy $INSTDIR $ConfigInstallDir
 functionEnd
 
@@ -175,7 +175,6 @@ section "install"
   ; write agent config file
   FileOpen $4 "$INSTDIR\openbas-agent-config.toml" w
     FileWrite $4 "debug=false$\r$\n"
-    FileWrite $4 "$\r$\n"
     FileWrite $4 "[openbas]$\r$\n"
     FileWrite $4 "url = $\"$ConfigURL$\"$\r$\n"
     FileWrite $4 "token = $\"$ConfigToken$\"$\r$\n"
@@ -183,23 +182,24 @@ section "install"
     FileWrite $4 "with_proxy = $ConfigWithProxy$\r$\n"
     FileWrite $4 "installation_mode = $\"service$\"$\r$\n"
     FileWrite $4 "service_name = $\"$ConfigServiceName$\"$\r$\n"
+    FileWrite $4 "service_full_name = $\"$ServiceName$\"$\r$\n"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
   ;stopping existing service
-  ExecWait 'sc stop $serviceName' $0
+  ExecWait 'sc stop $ServiceName' $0
 
   ;deleting existing service
-  ExecWait 'sc delete $serviceName' $0
+  ExecWait 'sc delete $ServiceName' $0
 
   ; register windows service
-  ExecWait 'sc create $serviceName error="severe" displayname="${displayName}" type="own" start="auto" binpath="$INSTDIR\openbas-agent.exe"'
+  ExecWait 'sc create $ServiceName error="severe" displayname="${displayName}" type="own" start="auto" binpath="$INSTDIR\openbas-agent.exe"'
 
   ; configure restart in case of failure
-  ExecWait 'sc failure $serviceName reset= 0 actions= restart/60000/restart/60000/restart/60000'
+  ExecWait 'sc failure $ServiceName reset= 0 actions= restart/60000/restart/60000/restart/60000'
 
   ; start the service
-  ExecWait 'sc start $serviceName'
+  ExecWait 'sc start $ServiceName'
 
   # Uninstaller - See function un.onInit and section "uninstall" for configuration
   writeUninstaller "$INSTDIR\uninstall.exe"
@@ -207,9 +207,114 @@ section "install"
 sectionEnd
  
 # Uninstaller
- 
+
+Function un.ReadServiceNameFromToml
+    StrCpy $ServiceName "" ; Reset
+    FileOpen $0 "$INSTDIR\openbas-agent-config.toml" r
+
+read_loop:
+    FileRead $0 $1
+    StrCmp $1 "" close_file ; End of file
+
+    ; Remove trailing newline/carriage return
+    Push $1
+    Call un.StripNewline
+    Pop $1
+
+    ; Skip empty lines
+    StrCmp $1 "" read_loop
+
+    ; Debug: Show every cleaned line being read (optional - can be removed)
+    ; MessageBox MB_OK "Line: '$1'"
+
+    ; Trim leading spaces
+trim_spaces:
+    StrCpy $2 $1 1
+    StrCmp $2 " " 0 after_trim
+    StrCpy $1 $1 "" 1
+    Goto trim_spaces
+
+after_trim:
+    ; See if this is the service_name line
+    StrCpy $2 $1 12
+    StrCmp $2 "service_name" match
+    Goto read_loop
+
+match:
+    ; Now, extract value after '='
+    StrCpy $3 $1
+    StrCpy $4 0
+
+find_eq:
+    StrCpy $5 $3 1 $4
+    StrCmp $5 "" read_loop  ; If no '=' found, continue to next line
+    StrCmp $5 "=" found_eq
+    IntOp $4 $4 + 1
+    Goto find_eq
+
+found_eq:
+    IntOp $4 $4 + 1
+    StrCpy $6 $3 "" $4 ; everything after '='
+
+    ; Remove leading space(s)
+trim_val:
+    StrCpy $7 $6 1
+    StrCmp $7 " " 0 trim_val_done
+    StrCpy $6 $6 "" 1
+    Goto trim_val
+
+trim_val_done:
+    ; Remove quotes if present
+    StrCpy $7 $6 1
+    StrCmp $7 '"' 0 check_end_quote
+    StrCpy $6 $6 "" 1
+
+check_end_quote:
+    StrLen $8 $6
+    IntCmp $8 0 skip_quote skip_quote
+    IntOp $8 $8 - 1
+    StrCpy $7 $6 1 $8
+    StrCmp $7 '"' 0 skip_quote
+    StrCpy $6 $6 $8
+
+skip_quote:
+    StrCpy $ServiceName $6
+    ; MessageBox MB_OK "Extracted ServiceName: '$ServiceName'"
+    Goto close_file
+
+close_file:
+    FileClose $0
+FunctionEnd
+
+Function un.StripNewline
+    Exch $0
+    Push $1
+    Push $2
+
+again:
+    StrLen $2 $0
+    IntCmp $2 0 done done
+    IntOp $2 $2 - 1
+    StrCpy $1 $0 1 $2
+    StrCmp $1 "$\r" strip
+    StrCmp $1 "$\n" strip
+    Goto done
+
+strip:
+    StrCpy $0 $0 $2
+    Goto again
+
+done:
+    Pop $2
+    Pop $1
+    Exch $0
+FunctionEnd
+
 function un.onInit
 	SetShellVarContext all
+
+	# Get ServiceName
+	Call un.ReadServiceNameFromToml
  
 	#Verify the uninstaller - last chance to back out
 	MessageBox MB_OKCANCEL "Permanently remove ${APPNAME}?" IDOK next
@@ -217,13 +322,13 @@ function un.onInit
 	next:
 	!insertmacro VerifyUserIsAdmin
 functionEnd
- 
+
 section "uninstall"
   ;stopping existing service
-  ExecWait 'sc stop $serviceName' $0
+  ExecWait 'sc stop $ServiceName' $0
 
   ; unregister service
-  ExecWait 'sc delete $serviceName'
+  ExecWait 'sc delete $ServiceName'
 
   ; delete everything
 	RMDir /r $INSTDIR

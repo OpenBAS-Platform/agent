@@ -284,6 +284,7 @@ section "install"
     FileWrite $4 "with_proxy = $ConfigWithProxy$\r$\n"
     FileWrite $4 "installation_mode = $\"session-user$\"$\r$\n"
     FileWrite $4 "service_name = $\"$ConfigServiceName$\"$\r$\n"
+    FileWrite $4 "service_full_name = $\"$AgentName$\"$\r$\n"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
@@ -324,26 +325,160 @@ section "install"
 sectionEnd
  
 # Uninstaller
+Function un.ReadServiceNameFromToml
+    StrCpy $serviceName "" ; Reset
+    FileOpen $0 "$INSTDIR\openbas-agent-config.toml" r
+
+read_loop:
+    FileRead $0 $1
+    StrCmp $1 "" close_file ; End of file
+
+    ; Remove trailing newline/carriage return
+    Push $1
+    Call un.StripNewline
+    Pop $1
+
+    ; Skip empty lines
+    StrCmp $1 "" read_loop
+
+    ; Debug: Show every cleaned line being read (optional - can be removed)
+    ; MessageBox MB_OK "Line: '$1'"
+
+    ; Trim leading spaces
+trim_spaces:
+    StrCpy $2 $1 1
+    StrCmp $2 " " 0 after_trim
+    StrCpy $1 $1 "" 1
+    Goto trim_spaces
+
+after_trim:
+    ; See if this is the service_full_name line
+    StrCpy $2 $1 12
+    StrCmp $2 "service_full_name" match
+    Goto read_loop
+
+match:
+    ; Now, extract value after '='
+    StrCpy $3 $1
+    StrCpy $4 0
+
+find_eq:
+    StrCpy $5 $3 1 $4
+    StrCmp $5 "" read_loop  ; If no '=' found, continue to next line
+    StrCmp $5 "=" found_eq
+    IntOp $4 $4 + 1
+    Goto find_eq
+
+found_eq:
+    IntOp $4 $4 + 1
+    StrCpy $6 $3 "" $4 ; everything after '='
+
+    ; Remove leading space(s)
+trim_val:
+    StrCpy $7 $6 1
+    StrCmp $7 " " 0 trim_val_done
+    StrCpy $6 $6 "" 1
+    Goto trim_val
+
+trim_val_done:
+    ; Remove quotes if present
+    StrCpy $7 $6 1
+    StrCmp $7 '"' 0 check_end_quote
+    StrCpy $6 $6 "" 1
+
+check_end_quote:
+    StrLen $8 $6
+    IntCmp $8 0 skip_quote skip_quote
+    IntOp $8 $8 - 1
+    StrCpy $7 $6 1 $8
+    StrCmp $7 '"' 0 skip_quote
+    StrCpy $6 $6 $8
+
+skip_quote:
+    StrCpy $AgentName $6
+    ; MessageBox MB_OK "Extracted aAgentName: '$AgentName'"
+    Goto close_file
+
+close_file:
+    FileClose $0
+FunctionEnd
+
+Function un.StripNewline
+    Exch $0
+    Push $1
+    Push $2
+
+again:
+    StrLen $2 $0
+    IntCmp $2 0 done done
+    IntOp $2 $2 - 1
+    StrCpy $1 $0 1 $2
+    StrCmp $1 "$\r" strip
+    StrCmp $1 "$\n" strip
+    Goto done
+
+strip:
+    StrCpy $0 $0 $2
+    Goto again
+
+done:
+    Pop $2
+    Pop $1
+    Exch $0
+FunctionEnd
+
 function un.onInit
 	SetShellVarContext all
- 
+
+   # Get ServiceName
+   Call un.ReadServiceNameFromToml
+
 	#Verify the uninstaller - last chance to back out
 	MessageBox MB_OKCANCEL "Permanently remove ${APPNAME}?" IDOK continue
 		Abort
 	continue:
 functionEnd
+
+Function un.StrContains
+   Exch $R1 ; substring to search for
+   Exch
+   Exch $R2 ; string to search in
+   Push $R3
+   Push $R4
+   Push $R5
+   StrLen $R3 $R1
+   StrLen $R4 $R2
+   IntOp $R5 $R4 - $R3
+
+loop:
+   IntCmp $R5 0 0 0 notfound
+   StrCpy $R4 $R2 $R3 $R5
+   StrCmp $R4 $R1 found
+   IntOp $R5 $R5 - 1
+   Goto loop
+
+notfound:
+   StrCpy $R1 ""
+   Goto done
+
+found:
+
+done:
+   Pop $R5
+   Pop $R4
+   Pop $R3
+   Pop $R2
+   Exch $R1
+FunctionEnd
  
 section "uninstall"
-  ;Get the directory name which is also the agent name
-  ${GetFileName} "$INSTDIR" $AgentName
+   ; Check if AgentName contains "Administrator"
+   Push $AgentName
+   Push "Administrator"
+   Call un.StrContains
+   Pop $R0
 
-  ; Get the length of admin agent name prefix
-  StrLen $R0 "$ConfigServiceName-Administrator"
-  ; Copy the first $R0 characters of $AgentName into $R1
-  StrCpy $R1 "$AgentName" $R0
-
-
-   ${If} $R1 == "$ConfigServiceName-Administrator"
+   ${If} $R0 != ""
     !insertmacro VerifyUserIsAdmin
      ; Stop the scheduled task
      ExecWait 'schtasks /End /TN "$AgentName"' $0

@@ -262,6 +262,7 @@ section "install"
     FileWrite $4 "with_proxy = $ConfigWithProxy$\r$\n"
     FileWrite $4 "installation_mode = $\"service-user$\"$\r$\n"
     FileWrite $4 "service_name = $\"$ConfigServiceName$\"$\r$\n"
+    FileWrite $4 "service_full_name = $\"$ServiceName$\"$\r$\n"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
@@ -314,9 +315,114 @@ section "install"
 sectionEnd
  
 # Uninstaller
- 
+
+Function un.ReadServiceNameFromToml
+    StrCpy $serviceName "" ; Reset
+    FileOpen $0 "$INSTDIR\openbas-agent-config.toml" r
+
+read_loop:
+    FileRead $0 $1
+    StrCmp $1 "" close_file ; End of file
+
+    ; Remove trailing newline/carriage return
+    Push $1
+    Call un.StripNewline
+    Pop $1
+
+    ; Skip empty lines
+    StrCmp $1 "" read_loop
+
+    ; Debug: Show every cleaned line being read (optional - can be removed)
+    ; MessageBox MB_OK "Line: '$1'"
+
+    ; Trim leading spaces
+trim_spaces:
+    StrCpy $2 $1 1
+    StrCmp $2 " " 0 after_trim
+    StrCpy $1 $1 "" 1
+    Goto trim_spaces
+
+after_trim:
+    ; See if this is the service_full_name line
+    StrCpy $2 $1 12
+    StrCmp $2 "service_full_name" match
+    Goto read_loop
+
+match:
+    ; Now, extract value after '='
+    StrCpy $3 $1
+    StrCpy $4 0
+
+find_eq:
+    StrCpy $5 $3 1 $4
+    StrCmp $5 "" read_loop  ; If no '=' found, continue to next line
+    StrCmp $5 "=" found_eq
+    IntOp $4 $4 + 1
+    Goto find_eq
+
+found_eq:
+    IntOp $4 $4 + 1
+    StrCpy $6 $3 "" $4 ; everything after '='
+
+    ; Remove leading space(s)
+trim_val:
+    StrCpy $7 $6 1
+    StrCmp $7 " " 0 trim_val_done
+    StrCpy $6 $6 "" 1
+    Goto trim_val
+
+trim_val_done:
+    ; Remove quotes if present
+    StrCpy $7 $6 1
+    StrCmp $7 '"' 0 check_end_quote
+    StrCpy $6 $6 "" 1
+
+check_end_quote:
+    StrLen $8 $6
+    IntCmp $8 0 skip_quote skip_quote
+    IntOp $8 $8 - 1
+    StrCpy $7 $6 1 $8
+    StrCmp $7 '"' 0 skip_quote
+    StrCpy $6 $6 $8
+
+skip_quote:
+    StrCpy $serviceName $6
+    ; MessageBox MB_OK "Extracted serviceName: '$serviceName'"
+    Goto close_file
+
+close_file:
+    FileClose $0
+FunctionEnd
+
+Function un.StripNewline
+    Exch $0
+    Push $1
+    Push $2
+
+again:
+    StrLen $2 $0
+    IntCmp $2 0 done done
+    IntOp $2 $2 - 1
+    StrCpy $1 $0 1 $2
+    StrCmp $1 "$\r" strip
+    StrCmp $1 "$\n" strip
+    Goto done
+
+strip:
+    StrCpy $0 $0 $2
+    Goto again
+
+done:
+    Pop $2
+    Pop $1
+    Exch $0
+FunctionEnd
+
 Function un.onInit
   SetShellVarContext all
+
+  # Get ServiceName
+  Call un.ReadServiceNameFromToml
 
   #Verify the uninstaller - last chance to back out
   MessageBox MB_OKCANCEL "Permanently remove ${APPNAME}?" IDOK next
@@ -324,9 +430,10 @@ Function un.onInit
   next:
     !insertmacro VerifyUserIsAdmin
 FunctionEnd
- 
+
 section "uninstall"
-  ;Get the directory name which is also the service name 
+  ;Get the directory name which is also the service name
+
   ${GetFileName} "$INSTDIR" $ServiceName
 
   ; unregister service
