@@ -440,21 +440,24 @@ function un.onInit
 functionEnd
 
 Function un.StrContains
-   Exch $R1 ; substring to search for
+   Exch $R1  ; Substring to search for
    Exch
-   Exch $R2 ; string to search in
+   Exch $R2  ; String to search in
    Push $R3
    Push $R4
    Push $R5
-   StrLen $R3 $R1
-   StrLen $R4 $R2
-   IntOp $R5 $R4 - $R3
+
+   StrLen $R3 $R1      ; $R3 = len(substring)
+   StrLen $R4 $R2      ; $R4 = len(string)
+   IntOp $R5 $R4 - $R3 ; $R5 = max start index
+
+   StrCpy $R0 0
 
 loop:
-   IntCmp $R5 0 0 0 notfound
-   StrCpy $R4 $R2 $R3 $R5
-   StrCmp $R4 $R1 found
-   IntOp $R5 $R5 - 1
+   IntCmp $R0 $R5 found notfound found
+   StrCpy $R6 $R2 $R3 $R0 ; $R6 = substring from position $R0
+   StrCmp $R6 $R1 found
+   IntOp $R0 $R0 + 1
    Goto loop
 
 notfound:
@@ -462,6 +465,8 @@ notfound:
    Goto done
 
 found:
+   StrCpy $R1 "1"
+   Goto done
 
 done:
    Pop $R5
@@ -472,7 +477,6 @@ done:
 FunctionEnd
  
 section "uninstall"
-   ; Check if AgentName contains "Administrator"
    Push $AgentName
    Push "Administrator"
    Call un.StrContains

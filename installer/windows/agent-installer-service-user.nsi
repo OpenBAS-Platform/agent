@@ -432,10 +432,6 @@ Function un.onInit
 FunctionEnd
 
 section "uninstall"
-  ;Get the directory name which is also the service name
-
-  ${GetFileName} "$INSTDIR" $ServiceName
-
   ; unregister service
   ExecWait 'sc stop $ServiceName'
   ExecWait 'sc delete $ServiceName'
