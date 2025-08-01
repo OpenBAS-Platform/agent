@@ -53,7 +53,7 @@ group="$GROUP_ARG"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
 install_dir="${OPENBAS_INSTALL_DIR}-${user}"
-service_name="${user}-openbas-agent"
+service_name="${user}-${OPENBAS_SERVICE_NAME}"
 
 
 if [ "${os}" != "linux" ]; then
@@ -86,6 +86,7 @@ token = "${OPENBAS_TOKEN}"
 unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
 with_proxy = "${OPENBAS_WITH_PROXY}"
 installation_mode = "service-user"
+service_name = "${OPENBAS_SERVICE_NAME}"
 EOF
 
 echo "04. Writing agent service"

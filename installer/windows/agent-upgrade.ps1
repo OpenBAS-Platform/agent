@@ -11,4 +11,4 @@ switch ($env:PROCESSOR_ARCHITECTURE)
 	}
 }
 if ([string]::IsNullOrEmpty($architecture)) { throw "Architecture $env:PROCESSOR_ARCHITECTURE is not supported yet, please create a ticket in openbas github project" }
-Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/service" -OutFile "openbas-installer.exe"; ./openbas-installer.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~INSTALL_DIR="${OPENBAS_INSTALL_DIR}"; Start-Sleep -Seconds 5; rm -force ./openbas-installer.exe;
+Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/service" -OutFile "openbas-installer.exe"; ./openbas-installer.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~SERVICE_NAME=${OPENBAS_SERVICE_NAME} ~INSTALL_DIR='"${OPENBAS_INSTALL_DIR}"'; Start-Sleep -Seconds 5; rm -force ./openbas-installer.exe;

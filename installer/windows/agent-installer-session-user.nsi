@@ -12,8 +12,6 @@ ${Using:StrFunc} StrCase
 !define APPNAME "OBAS Agent"
 !define COMPANYNAME "Filigran"
 !define DESCRIPTION "Filigran's agent for OpenBAS"
-!define ADMIN_AGENT_PREFIX "OBASAgent-Session-Administrator"
-!define STANDARD_AGENT_PREFIX "OBASAgent-Session"
 # These will be displayed by the "Click here for support information" link in "Add/Remove Programs"
 # It is possible to use "mailto:" links in here to open the email client
 !define HELPURL "https://filigran.io/" # "Support Information" link
@@ -21,8 +19,6 @@ ${Using:StrFunc} StrCase
 !define ABOUTURL "https://filigran.io/" # "Publisher" link
  
 RequestExecutionLevel user
- 
-# InstallDir "C:\${COMPANYNAME}\${APPNAME}"
  
 # rtf or txt file - remember if it is txt, it must be in the DOS text format (\r\n)
 LicenseData "license.txt"
@@ -56,7 +52,7 @@ Var LabelUnsecuredCertificate
 Var /GLOBAL ConfigUnsecuredCertificate
 Var LabelWithProxy
 Var /GLOBAL ConfigWithProxy
-Var LabelInstallDir
+Var /GLOBAL ConfigServiceName
 Var /GLOBAL ConfigInstallDir
 Var /GLOBAL ConfigWithAdminPrivilege
 Var /GLOBAL UserSanitized
@@ -87,11 +83,6 @@ function verifyParam
       Abort
   ${EndIf}
 
-  ${If} $ConfigInstallDir == ""
-    MessageBox MB_OK|MB_ICONEXCLAMATION "Missing installation directory"
-      Abort
-  ${EndIf}
-
 functionEnd
 
 function .onInit
@@ -101,7 +92,11 @@ function .onInit
     ${GetOptions} $R0 ~ACCESS_TOKEN= $ConfigToken
     ${GetOptions} $R0 ~UNSECURED_CERTIFICATE= $ConfigUnsecuredCertificate
     ${GetOptions} $R0 ~WITH_PROXY= $ConfigWithProxy
+    ${GetOptions} $R0 ~SERVICE_NAME= $ConfigServiceName
     ${GetOptions} $R0 ~INSTALL_DIR= $ConfigInstallDir
+    ${If} $ConfigServiceName == ""
+        StrCpy $ConfigServiceName "OBASAgent-Session"
+    ${EndIf}
     ${If} $ConfigInstallDir == ""
         StrCpy $ConfigInstallDir "C:\${COMPANYNAME}"
     ${EndIf}
@@ -128,7 +123,6 @@ Var ConfigURLForm
 Var ConfigTokenForm
 Var ConfigUnsecuredCertificateForm
 Var ConfigWithProxyForm
-Var ConfigInstallDirForm
 
 Function checkIfElevated
   ; Get the account type of the current process
@@ -170,16 +164,11 @@ Function nsDialogsConfig
 	Pop $LabelWithProxy
 	${NSD_CreateText} 0 84u 100% 12u "false"
 	Pop $ConfigWithProxyForm
-  ${NSD_CreateLabel} 0 80u 100% 12u "Install directory *"
-    Pop $LabelInstallDir
-    ${NSD_CreateText} 0 90u 100% 12u "$ConfigInstallDir"
-    Pop $ConfigInstallDirForm
 
   ${NSD_OnChange} $ConfigURLForm onFieldChange
   ${NSD_OnChange} $ConfigTokenForm onFieldChange
   ${NSD_OnChange} $ConfigUnsecuredCertificateForm onFieldChange
   ${NSD_OnChange} $ConfigWithProxyForm onFieldChange
-  ${NSD_OnChange} $ConfigInstallDirForm onFieldChange
   nsDialogs::Show
 
 FunctionEnd
@@ -190,14 +179,12 @@ Function onFieldChange
   ${NSD_GetText} $ConfigTokenForm $ConfigToken
   ${NSD_GetText} $ConfigUnsecuredCertificateForm $ConfigUnsecuredCertificate
   ${NSD_GetText} $ConfigWithProxyForm $ConfigWithProxy
-  ${NSD_GetText} $ConfigInstallDirForm $ConfigInstallDir
 
   ; enable next button if both defined 
   ${If} $ConfigURL != "" 
   ${AndIf} $ConfigToken != ""
   ${AndIf} $ConfigUnsecuredCertificate != ""
   ${AndIf} $ConfigWithProxy != ""
-  ${AndIf} $ConfigInstallDir != ""
     GetDlgItem $0 $HWNDPARENT 1
     EnableWindow $0 1
   ${Else}
@@ -210,9 +197,9 @@ FunctionEnd
 
 Function updateInstallDir
   ${If} $ConfigWithAdminPrivilege == "true"
-    StrCpy $AgentName "${ADMIN_AGENT_PREFIX}-$UserSanitized"
+    StrCpy $AgentName "$ConfigServiceName-Administrator-$UserSanitized"
   ${Else}
-    StrCpy $AgentName "${STANDARD_AGENT_PREFIX}-$UserSanitized"
+    StrCpy $AgentName "$ConfigServiceName-$UserSanitized"
   ${EndIf}
 
   StrCpy $INSTDIR "$ConfigInstallDir\$AgentName"
@@ -296,6 +283,7 @@ section "install"
     FileWrite $4 "unsecured_certificate = $ConfigUnsecuredCertificate$\r$\n"
     FileWrite $4 "with_proxy = $ConfigWithProxy$\r$\n"
     FileWrite $4 "installation_mode = $\"session-user$\"$\r$\n"
+    FileWrite $4 "service_name = $\"$ConfigServiceName$\"$\r$\n"
     FileWrite $4 "$\r$\n" ; newline
   FileClose $4
 
@@ -350,12 +338,12 @@ section "uninstall"
   ${GetFileName} "$INSTDIR" $AgentName
 
   ; Get the length of admin agent name prefix
-  StrLen $R0 "${ADMIN_AGENT_PREFIX}"
+  StrLen $R0 "$ConfigServiceName-Administrator"
   ; Copy the first $R0 characters of $AgentName into $R1
   StrCpy $R1 "$AgentName" $R0
 
 
-   ${If} $R1 == ${ADMIN_AGENT_PREFIX}
+   ${If} $R1 == "$ConfigServiceName-Administrator"
     !insertmacro VerifyUserIsAdmin
      ; Stop the scheduled task
      ExecWait 'schtasks /End /TN "$AgentName"' $0

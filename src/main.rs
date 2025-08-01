@@ -57,6 +57,7 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
     let unsecured_certificate = settings_data.openbas.unsecured_certificate;
     let with_proxy = settings_data.openbas.with_proxy;
     let installation_mode = settings_data.openbas.installation_mode;
+    let service_name = settings_data.openbas.service_name;
     let execution_details = ExecutionDetails::new(is_service).unwrap();
     info!(
         "ExecutionDetails : user {:?} -- is_elevated {:?} -- is_service {:?} ",
@@ -70,6 +71,7 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
         unsecured_certificate,
         with_proxy,
         installation_mode,
+        service_name,
         execution_details.clone(),
     );
     // Starts the agent listening thread

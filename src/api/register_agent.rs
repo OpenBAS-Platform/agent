@@ -44,8 +44,9 @@ pub fn get_operating_system() -> String {
     }
 }
 
-pub fn get_current_dir() -> PathBuf {
-    env::current_dir().unwrap()
+pub fn get_exe_dir() -> PathBuf {
+    let exe_path = env::current_exe().unwrap();
+    exe_path.parent().unwrap().to_path_buf()
 }
 
 impl Client {
@@ -55,6 +56,7 @@ impl Client {
         is_elevated: bool,
         executed_by_user: String,
         installation_mode: String,
+        service_name: String,
     ) -> Result<RegisterAgentResponse, Error> {
         // region Build the content to register
         let networks = NetworkInterface::show().unwrap();
@@ -91,7 +93,8 @@ impl Client {
           "agent_is_elevated": is_elevated,
           "agent_executed_by_user": executed_by_user,
           "agent_installation_mode": installation_mode,
-          "agent_installation_directory": get_current_dir(),
+          "agent_installation_directory": get_exe_dir(),
+          "agent_service_name": service_name,
         });
         // endregion
         // Post the input to the OpenBAS API

@@ -52,7 +52,7 @@ user="$USER_ARG"
 group="$GROUP_ARG"
 
 install_dir="${OPENBAS_INSTALL_DIR}-${user}"
-service_name="${user}-openbas-agent"
+service_name="${user}-${OPENBAS_SERVCICE_NAME}"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
 if [ "${os}" = "darwin" ]; then
@@ -70,7 +70,7 @@ echo "01. Stopping existing ${service_name}..."
 launchctl bootout system/ ~/Library/LaunchDaemons/${service_name}.plist || echo "${service_name} already stopped"
 
 echo "02. Downloading OpenBAS Agent into ${install_dir}..."
-(mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)
+(mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to ${install_dir}\n" >&2 && exit 1)
 curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o ${install_dir}/openbas-agent
 chmod +x ${install_dir}/openbas-agent
 
@@ -84,6 +84,7 @@ token = "${OPENBAS_TOKEN}"
 unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
 with_proxy = "${OPENBAS_WITH_PROXY}"
 installation_mode = "service-user"
+service_name = "${OPENBAS_SERVICE_NAME}"
 EOF
 
 echo "04. Writing agent service"
