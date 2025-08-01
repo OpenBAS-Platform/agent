@@ -56,26 +56,199 @@ Var /GLOBAL ConfigInstallDir
 Var /GLOBAL ConfigServiceName
 var /GLOBAL ServiceName
 
+Function ExtractParameter
+    ; Input: Parameter name in $0, Full command line in $1
+    ; Output: Parameter value in $0
+
+    Push $1
+    Push $2
+    Push $3
+    Push $4
+    Push $5
+    Push $6
+    Push $7
+    Push $8
+
+    StrCpy $2 $0  ; Parameter name to find
+    StrCpy $3 $1  ; Command line
+    StrCpy $0 ""  ; Clear output
+
+    ; Check if parameter is Windows-quoted: "~PARAM=value"
+    Push $3
+    Push '"~$2='
+    Call StrStr
+    Pop $4
+
+    StrCmp $4 "" try_normal 0
+    ; It's Windows-quoted, skip the quote
+    StrCpy $4 $4 "" 1
+    StrLen $5 "~$2="
+    StrCpy $4 $4 "" $5
+
+    ; Extract until the closing quote
+    StrCpy $0 ""
+    StrCpy $6 0
+quoted_extract:
+    StrCpy $5 $4 1 $6
+    StrCmp $5 "" done
+    StrCmp $5 '"' done  ; Stop at closing quote
+    StrCpy $0 "$0$5"
+    IntOp $6 $6 + 1
+    Goto quoted_extract
+
+try_normal:
+    ; Try normal format: ~PARAM=value
+    Push $3
+    Push "~$2="
+    Call StrStr
+    Pop $4
+
+    StrCmp $4 "" done  ; Parameter not found
+
+    ; Skip past parameter name and =
+    StrLen $5 "~$2="
+    StrCpy $4 $4 "" $5
+
+    ; Extract value - handle quoted and unquoted
+    StrCpy $5 $4 1  ; First character
+    StrCmp $5 '"' normal_quoted_value
+    StrCmp $5 "'" normal_single_quoted_value
+
+    ; Unquoted value - read until space or ~ or end
+    StrCpy $0 ""
+    StrCpy $6 0
+normal_unquoted_loop:
+    StrCpy $5 $4 1 $6
+    StrCmp $5 "" done
+    StrCmp $5 " " done
+    StrCmp $5 "~" done
+    StrCpy $0 "$0$5"
+    IntOp $6 $6 + 1
+    Goto normal_unquoted_loop
+
+normal_quoted_value:
+    ; Skip opening quote
+    StrCpy $4 $4 "" 1
+    StrCpy $0 ""
+    StrCpy $6 0
+normal_quoted_loop:
+    StrCpy $5 $4 1 $6
+    StrCmp $5 "" done
+    StrCmp $5 '"' done
+    StrCpy $0 "$0$5"
+    IntOp $6 $6 + 1
+    Goto normal_quoted_loop
+
+normal_single_quoted_value:
+    ; Skip opening quote
+    StrCpy $4 $4 "" 1
+    StrCpy $0 ""
+    StrCpy $6 0
+normal_single_quoted_loop:
+    StrCpy $5 $4 1 $6
+    StrCmp $5 "" done
+    StrCmp $5 "'" done
+    StrCpy $0 "$0$5"
+    IntOp $6 $6 + 1
+    Goto normal_single_quoted_loop
+
+done:
+    ; Trim trailing spaces
+trim_end:
+    StrLen $5 $0
+    IntCmp $5 0 really_done
+    IntOp $5 $5 - 1
+    StrCpy $6 $0 1 $5
+    StrCmp $6 " " 0 really_done
+    StrCpy $0 $0 $5
+    Goto trim_end
+
+really_done:
+    Pop $8
+    Pop $7
+    Pop $6
+    Pop $5
+    Pop $4
+    Pop $3
+    Pop $2
+    Pop $1
+FunctionEnd
+
+; StrStr function
+Function StrStr
+    Exch $R1 ; st=haystack,old$R1, $R1=needle
+    Exch     ; st=old$R1,haystack
+    Exch $R2 ; st=old$R1,old$R2, $R2=haystack
+    Push $R3
+    Push $R4
+    Push $R5
+    StrLen $R3 $R1
+    StrCpy $R4 0
+    ; $R1=needle
+    ; $R2=haystack
+    ; $R3=len(needle)
+    ; $R4=cnt
+    ; $R5=tmp
+loop:
+    StrCpy $R5 $R2 $R3 $R4
+    StrCmp $R5 $R1 done
+    StrCmp $R5 "" done
+    IntOp $R4 $R4 + 1
+    Goto loop
+done:
+    StrCpy $R1 $R2 "" $R4
+    Pop $R5
+    Pop $R4
+    Pop $R3
+    Pop $R2
+    Exch $R1
+FunctionEnd
+
 function .onInit
-	setShellVarContext all
-	!insertmacro VerifyUserIsAdmin
-	${GetParameters} $R0
-    ${GetOptions} $R0 ~OPENBAS_URL= $ConfigURL
-    ${GetOptions} $R0 ~ACCESS_TOKEN= $ConfigToken
-    ${GetOptions} $R0 ~UNSECURED_CERTIFICATE= $ConfigUnsecuredCertificate
-    ${GetOptions} $R0 ~WITH_PROXY= $ConfigWithProxy
-    ${GetOptions} $R0 ~SERVICE_NAME= $ConfigServiceName
-    ${GetOptions} $R0 ~INSTALL_DIR= $ConfigInstallDir
+    setShellVarContext all
+    !insertmacro VerifyUserIsAdmin
+
+    ${GetParameters} $R0
+
+    ; Extract parameters using custom function
+    Push $R0
+    Pop $1
+
+    StrCpy $0 "OPENBAS_URL"
+    Call ExtractParameter
+    StrCpy $ConfigURL $0
+
+    StrCpy $0 "ACCESS_TOKEN"
+    Call ExtractParameter
+    StrCpy $ConfigToken $0
+
+    StrCpy $0 "UNSECURED_CERTIFICATE"
+    Call ExtractParameter
+    StrCpy $ConfigUnsecuredCertificate $0
+
+    StrCpy $0 "WITH_PROXY"
+    Call ExtractParameter
+    StrCpy $ConfigWithProxy $0
+
+    StrCpy $0 "SERVICE_NAME"
+    Call ExtractParameter
+    StrCpy $ConfigServiceName $0
+
+    StrCpy $0 "INSTALL_DIR"
+    Call ExtractParameter
+    StrCpy $ConfigInstallDir $0
+
+    ; Set defaults if not provided
     ${If} $ConfigServiceName == ""
         StrCpy $ConfigServiceName "OBASAgentService"
     ${EndIf}
     ${If} $ConfigInstallDir == ""
         StrCpy $ConfigInstallDir "$PROGRAMFILES\${COMPANYNAME}\${APPNAME}"
     ${EndIf}
+
     StrCpy $ServiceName $ConfigServiceName
     StrCpy $INSTDIR $ConfigInstallDir
 functionEnd
-
 
 Var ConfigURLForm
 Var ConfigTokenForm
