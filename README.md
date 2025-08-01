@@ -1,7 +1,7 @@
 # OpenBAS Agent
 
 [![Website](https://img.shields.io/badge/website-openbas.io-blue.svg)](https://openbas.io)
-[![CircleCI](https://circleci.com/gh/OpenBAS-Platform/agent.svg?style=shield)](https://circleci.com/gh/OpenBAS-Platform/agent/tree/master)
+[![CircleCI](https://circleci.com/gh/OpenBAS-Platform/agent.svg?style=shield)](https://circleci.com/gh/OpenBAS-Platform/agent/tree/main)
 [![GitHub release](https://img.shields.io/github/release/OpenBAS-Platform/agent.svg)](https://github.com/OpenBAS-Platform/agent/releases/latest)
 [![Slack Status](https://img.shields.io/badge/slack-3K%2B%20members-4A154B)](https://community.filigran.io)
 
