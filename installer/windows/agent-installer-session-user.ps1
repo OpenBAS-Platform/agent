@@ -43,7 +43,7 @@ try {
     echo "Downloading and installing OpenBAS Agent...";
     Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/session-user" -OutFile "agent-installer-session-user.exe";
     $InstallParam = '~INSTALL_DIR="' + $InstallDir + '"'
-    ./agent-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~SERVICE_NAME=${OPENBAS_SERVICE_NAME} $InstallParam;
+    ./agent-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~SERVICE_NAME="${OPENBAS_SERVICE_NAME}" $InstallParam;
     Start-Sleep -Seconds 5;
     rm -force ./agent-installer-session-user.exe;
 	echo "OpenBAS agent has been successfully installed"
