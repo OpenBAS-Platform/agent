@@ -18,7 +18,7 @@ $parts  = $User -split '\\', 2
 $domain = $parts[0]
 if ($domain -eq '.') {
  throw "Local user notation '.' is not allowed. Please specify a 'DOMAIN\Username'."
-}²
+}
 #Verify the account actually exists by translating to a SID.
 try {
   $null = ([System.Security.Principal.NTAccount] $User).Translate([System.Security.Principal.SecurityIdentifier])
