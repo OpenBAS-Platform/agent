@@ -5,8 +5,8 @@ base_url=${OPENBAS_URL}
 architecture=$(uname -m)
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
-install_dir="/opt/openbas-agent"
-service_name="openbas-agent"
+install_dir="${OPENBAS_INSTALL_DIR}"
+service_name="${OPENBAS_SERVICE_NAME}"
 
 if [ "${os}" != "linux" ]; then
   echo "Operating system ${os} is not supported yet, please create a ticket in openbas github project"
@@ -36,6 +36,7 @@ token = "${OPENBAS_TOKEN}"
 unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
 with_proxy = "${OPENBAS_WITH_PROXY}"
 installation_mode = "service"
+service_name = "${OPENBAS_SERVICE_NAME}"
 EOF
 
 echo "03. Restarting the service"

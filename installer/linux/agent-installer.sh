@@ -5,8 +5,8 @@ base_url=${OPENBAS_URL}
 architecture=$(uname -m)
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
-install_dir="/opt/openbas-agent"
-service_name="openbas-agent"
+install_dir="${OPENBAS_INSTALL_DIR}"
+service_name="${OPENBAS_SERVICE_NAME}"
 
 if [ "${os}" != "linux" ]; then
   echo "Operating system $OSTYPE is not supported yet, please create a ticket in openbas github project"
@@ -24,7 +24,7 @@ echo "01. Stopping existing openbas-agent..."
 systemctl stop ${service_name} || echo "Fail stopping ${service_name}"
 
 echo "02. Downloading OpenBAS Agent into ${install_dir}..."
-(mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to /opt\n" >&2 && exit 1)
+(mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to ${install_dir}\n" >&2 && exit 1)
 curl -sSfL ${base_url}/api/agent/executable/openbas/${os}/${architecture} -o ${install_dir}/openbas-agent
 chmod 755 ${install_dir}/openbas-agent
 
@@ -38,6 +38,7 @@ token = "${OPENBAS_TOKEN}"
 unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
 with_proxy = "${OPENBAS_WITH_PROXY}"
 installation_mode = "service"
+service_name = "${OPENBAS_SERVICE_NAME}"
 EOF
 
 echo "04. Writing agent service"

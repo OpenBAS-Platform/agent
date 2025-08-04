@@ -7,9 +7,11 @@ mod windows;
 #[cfg(test)]
 mod tests;
 
-use log::info;
+use log::{error, info};
 use rolling_file::{BasicRollingFileAppender, RollingConditionBasic};
 use std::env;
+use std::ops::Deref;
+use std::panic;
 use std::sync::atomic::AtomicBool;
 use std::thread::JoinHandle;
 
@@ -24,12 +26,38 @@ pub static THREADS_CONTROL: AtomicBool = AtomicBool::new(true);
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const PREFIX_LOG_NAME: &str = "openbas-agent.log";
 
+// Get and log all errors from the agent execution
+pub fn set_error_hook() {
+    panic::set_hook(Box::new(|panic_info| {
+        let (filename, line) = panic_info
+            .location()
+            .map(|loc| (loc.file(), loc.line()))
+            .unwrap_or(("<unknown>", 0));
+
+        let cause = panic_info
+            .payload()
+            .downcast_ref::<String>()
+            .map(String::deref);
+
+        let cause = cause.unwrap_or_else(|| {
+            panic_info
+                .payload()
+                .downcast_ref::<&str>()
+                .copied()
+                .unwrap_or("<cause unknown>")
+        });
+
+        error!("An error occurred in file {filename:?} line {line:?}: {cause:?}");
+    }));
+}
+
 fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHandle<()>>, Error> {
     let url = settings_data.openbas.url;
     let token = settings_data.openbas.token;
     let unsecured_certificate = settings_data.openbas.unsecured_certificate;
     let with_proxy = settings_data.openbas.with_proxy;
     let installation_mode = settings_data.openbas.installation_mode;
+    let service_name = settings_data.openbas.service_name;
     let execution_details = ExecutionDetails::new(is_service).unwrap();
     info!(
         "ExecutionDetails : user {:?} -- is_elevated {:?} -- is_service {:?} ",
@@ -43,6 +71,7 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
         unsecured_certificate,
         with_proxy,
         installation_mode,
+        service_name,
         execution_details.clone(),
     );
     // Starts the agent listening thread
@@ -64,6 +93,7 @@ fn agent_start(settings_data: Settings, is_service: bool) -> Result<Vec<JoinHand
 }
 
 fn main() -> Result<(), Error> {
+    set_error_hook();
     // region Init logger
     let current_exe_patch = env::current_exe().unwrap();
     let parent_path = current_exe_patch.parent().unwrap();

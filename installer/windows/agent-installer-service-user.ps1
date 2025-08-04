@@ -47,7 +47,7 @@ if ([string]::IsNullOrEmpty($architecture)) { throw "Architecture $env:PROCESSOR
 echo "Downloading and installing OpenBAS Agent..."
 try {
     Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/service-user" -OutFile "agent-installer-service-user.exe";
-    ./agent-installer-service-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~USER="$User" ~PASSWORD="$Password" | Out-Null;
+    ./agent-installer-service-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~SERVICE_NAME="${OPENBAS_SERVICE_NAME}" ~INSTALL_DIR="${OPENBAS_INSTALL_DIR}" ~USER="$User" ~PASSWORD="$Password" | Out-Null;
 	echo "OpenBAS agent has been successfully installed"
 } catch {
     echo "Installation failed"

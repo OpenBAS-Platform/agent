@@ -21,20 +21,21 @@ function Sanitize-UserName {
     $pattern = '[\/\\:\*\?<>\|]'
     return ($UserName -replace $pattern, '')
 }
-$BasePath = "C:\Filigran\";
+$BasePath = "${OPENBAS_INSTALL_DIR}\";
 $User = whoami;
 $SanitizedUser =  Sanitize-UserName -UserName $user;
 $isElevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if ($isElevated) {
-    $AgentName = "OBASAgent-Session-Administrator-$SanitizedUser"
+    $AgentName = "${OPENBAS_SERVICE_NAME}-Administrator-$SanitizedUser"
 } else {
-    $AgentName = "OBASAgent-Session-$SanitizedUser"
+    $AgentName = "${OPENBAS_SERVICE_NAME}-$SanitizedUser"
 }
 $InstallDir = $BasePath + $AgentName;
 $AgentPath = $InstallDir + "\openbas-agent.exe";
 
 Get-Process | Where-Object { $_.Path -eq "$AgentPath" } | Stop-Process -Force;
 Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/session-user" -OutFile "openbas-installer-session-user.exe";
-./openbas-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} | Out-Null;
+$InstallParam = '~INSTALL_DIR="' + $InstallDir + '"'
+./openbas-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~SERVICE_NAME="${OPENBAS_SERVICE_NAME}" $InstallParam | Out-Null;
 
 rm -force ./openbas-installer-session-user.exe;

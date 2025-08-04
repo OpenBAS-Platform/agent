@@ -24,7 +24,7 @@ function Sanitize-UserName {
     $pattern = '[\/\\:\*\?<>\|]'
     return ($UserName -replace $pattern, '')
 }
-$BasePath = "C:\Filigran\";
+$BasePath = "${OPENBAS_INSTALL_DIR}\";
 $User = whoami;
 $SanitizedUser =  Sanitize-UserName -UserName $user;
 $isElevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -43,7 +43,8 @@ try {
 
     echo "Downloading and installing OpenBAS Agent...";
     Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/session-user" -OutFile "agent-installer-session-user.exe";
-    ./agent-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} | Out-Null;
+    $InstallParam = '~INSTALL_DIR="' + $InstallDir + '"'
+    ./agent-installer-session-user.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~SERVICE_NAME="${OPENBAS_SERVICE_NAME}" $InstallParam | Out-Null;
 	echo "OpenBAS agent has been successfully installed"
 } catch {
     echo "Installation failed"

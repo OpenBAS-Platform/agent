@@ -14,6 +14,7 @@ pub fn ping(
     unsecured_certificate: bool,
     with_proxy: bool,
     installation_mode: String,
+    service_name: String,
     execution_details: ExecutionDetails,
 ) -> Result<JoinHandle<()>, Error> {
     info!("Starting ping thread");
@@ -27,6 +28,7 @@ pub fn ping(
                 execution_details.is_elevated,
                 execution_details.executed_by_user.clone(),
                 installation_mode.clone(),
+                service_name.clone(),
             );
             if register.is_err() {
                 error!("Fail registering the agent {}", register.unwrap_err())
