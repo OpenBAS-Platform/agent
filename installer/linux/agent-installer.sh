@@ -3,6 +3,7 @@ set -e
 
 base_url=${OPENBAS_URL}
 architecture=$(uname -m)
+systemd_status=$(systemctl is-system-running)
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
 install_dir="${OPENBAS_INSTALL_DIR}"
