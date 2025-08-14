@@ -1,3 +1,4 @@
+[Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12;
 switch ($env:PROCESSOR_ARCHITECTURE)
 {
 	"AMD64" {$architecture = "x86_64"; Break}
@@ -23,10 +24,10 @@ function Sanitize-UserName {
 
 if ([string]::IsNullOrEmpty($architecture)) { throw "Architecture $env:PROCESSOR_ARCHITECTURE is not supported yet, please create a ticket in openbas github project" }
 
-$BasePath = "C:\Filigran\";
+$BasePath = "${OPENBAS_INSTALL_DIR}\";
 $User = whoami;
 $SanitizedUser =  Sanitize-UserName -UserName $user;
-$AgentName = "OBASAgent-Service-$SanitizedUser";
+$AgentName = "${OPENBAS_SERVICE_NAME}-$SanitizedUser";
 $InstallDir = $BasePath + $AgentName;
 $AgentPath = $InstallDir + "\openbas-agent.exe";
 $AgentUpgradedPath = $InstallDir + "\openbas-agent_upgrade.exe";

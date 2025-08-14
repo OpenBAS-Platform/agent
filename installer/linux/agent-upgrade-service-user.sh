@@ -8,8 +8,8 @@ group="$(id -gn)"
 systemd_status=$(systemctl is-system-running)
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
-install_dir="/opt/openbas-agent-service-${user}"
-service_name="${user}-openbas-agent"
+install_dir="${OPENBAS_INSTALL_DIR}-${user}"
+service_name="${user}-${OPENBAS_SERVICE_NAME}"
 
 if [ "${os}" != "linux" ]; then
   echo "Operating system $OSTYPE is not supported yet, please create a ticket in openbas github project"
@@ -42,6 +42,7 @@ token = "${OPENBAS_TOKEN}"
 unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
 with_proxy = "${OPENBAS_WITH_PROXY}"
 installation_mode = "service-user"
+service_name = "${OPENBAS_SERVICE_NAME}"
 EOF
 
 echo "03. Kill the process of the existing service"

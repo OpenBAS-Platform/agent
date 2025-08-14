@@ -1,26 +1,24 @@
 [package]
 name = "openbas-agent"
-version = "1.16.3"
+version = "1.18.10"
 edition = "2021"
 
-
 [dependencies]
-ureq = { version = "2.1", features = ["tls", "json"] }
+reqwest = { version = "0.12.15", features = ["blocking", "rustls-tls", "rustls-tls-native-roots", "json"], default-features = false }
 config = "0.15.0"
 serde = { version = "1.0.203", features = ["derive"] }
+serde_json = {version = "1.0.140"}
 log = { version = "0.4.22", features = ["kv"] }
 hostname = "0.4.0"
 network-interface = "2.0.0"
-signal-hook = "0.3.17"
-base64 = "0.22.1"
-mid = "3.0.0"
-tracing = "0.1.40"
+mid = "=3.0.2"
 tracing-subscriber = { version = "0.3.18", features = ["json"] }
 tracing-appender = "0.2.3"
 rolling-file = "0.2.0"
-rustls = { version ="0.23.13", features = ["ring"], default-features = false }
-rustls-platform-verifier = "0.5.0"
 
 [target.'cfg(windows)'.dependencies]
 windows-service = "0.8.0"
 windows-service-detector = "0.1.0"
+
+[dev-dependencies]
+mockito = "1.7.0"

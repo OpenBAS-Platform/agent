@@ -1,3 +1,4 @@
+[Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12;
 $isElevatedPowershell = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if ($isElevatedPowershell -like "False") { throw "PowerShell 'Run as Administrator' is required for installation" }
 # Can't install the OpenBAS agent in System32 location because NSIS 64 exe
@@ -20,14 +21,14 @@ if ([string]::IsNullOrEmpty($architecture)) { throw "Architecture $env:PROCESSOR
 echo "Downloading and installing OpenBAS Agent..."
 try {
     Invoke-WebRequest -Uri "${OPENBAS_URL}/api/agent/package/openbas/windows/${architecture}/service" -OutFile "openbas-installer.exe";
-    ./openbas-installer.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY};
-    Start-Sleep -Seconds 5;
-    rm -force ./openbas-installer.exe;
+    ./openbas-installer.exe /S ~OPENBAS_URL="${OPENBAS_URL}" ~ACCESS_TOKEN="${OPENBAS_TOKEN}" ~UNSECURED_CERTIFICATE=${OPENBAS_UNSECURED_CERTIFICATE} ~WITH_PROXY=${OPENBAS_WITH_PROXY} ~SERVICE_NAME="${OPENBAS_SERVICE_NAME}" ~INSTALL_DIR="${OPENBAS_INSTALL_DIR}" | Out-Null;
+
 	echo "OpenBAS agent has been successfully installed"
 } catch {
     echo "Installation failed"
   	if ((Get-Host).Version.Major -lt 7) { throw "PowerShell 7 or higher is required for installation" }
   	else { echo $_ }
 } finally {
+    rm -force ./openbas-installer.exe;
   	if ($location -like "*C:\Windows\System32*") { cd C:\Windows\System32 }
 }

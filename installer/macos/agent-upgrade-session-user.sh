@@ -4,8 +4,8 @@ set -e
 base_url=${OPENBAS_URL}
 architecture=$(uname -m)
 
-install_dir="$HOME/.local/openbas-agent-session"
-session_name="openbas-agent-session"
+install_dir="$HOME/${OPENBAS_INSTALL_DIR}"
+session_name="${OPENBAS_SERVICE_NAME}"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
 if [ "${os}" = "darwin" ]; then
@@ -34,6 +34,7 @@ token = "${OPENBAS_TOKEN}"
 unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
 with_proxy = "${OPENBAS_WITH_PROXY}"
 installation_mode = "session-user"
+service_name = "${OPENBAS_SERVICE_NAME}"
 EOF
 
 echo "03. Starting agent service"

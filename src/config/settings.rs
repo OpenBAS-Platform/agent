@@ -13,6 +13,7 @@ pub struct OpenBAS {
     pub unsecured_certificate: bool,
     pub with_proxy: bool,
     pub installation_mode: String,
+    pub service_name: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -44,7 +45,7 @@ impl Settings {
         } else {
             config
                 .add_source(File::with_name("config/default"))
-                .add_source(File::with_name(&format!("config/{}", run_mode)).required(false))
+                .add_source(File::with_name(&format!("config/{run_mode}")).required(false))
                 .build()?
                 .try_deserialize()
         }

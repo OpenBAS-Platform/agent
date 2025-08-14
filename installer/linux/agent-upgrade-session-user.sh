@@ -6,8 +6,8 @@ architecture=$(uname -m)
 systemd_status=$(systemctl is-system-running)
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
-install_dir="$HOME/.local/openbas-agent-session"
-session_name="openbas-agent-session"
+install_dir="$HOME/${OPENBAS_INSTALL_DIR}"
+session_name="${OPENBAS_SERVICE_NAME}"
 
 
 if [ "${os}" != "linux" ]; then
@@ -39,6 +39,7 @@ token = "${OPENBAS_TOKEN}"
 unsecured_certificate = "${OPENBAS_UNSECURED_CERTIFICATE}"
 with_proxy = "${OPENBAS_WITH_PROXY}"
 installation_mode = "session-user"
+service_name = "${OPENBAS_SERVICE_NAME}"
 EOF
 
 echo "03. Restarting the service"
