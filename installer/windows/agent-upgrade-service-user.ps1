@@ -25,7 +25,7 @@ if ([string]::IsNullOrEmpty($architecture)) { throw "Architecture $env:PROCESSOR
 
 $BasePath = "${OPENBAS_INSTALL_DIR}\";
 $User = whoami;
-$SanitizedUser =  Sanitize-UserName -UserName $user;
+$SanitizedUser = Sanitize-UserName -UserName $user;
 $AgentName = "${OPENBAS_SERVICE_NAME}-$SanitizedUser";
 $InstallDir = $BasePath + $AgentName;
 $AgentPath = $InstallDir + "\openbas-agent.exe";
