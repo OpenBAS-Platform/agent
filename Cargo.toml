@@ -1,6 +1,6 @@
 [package]
 name = "openbas-agent"
-version = "1.18.14"
+version = "1.18.15"
 edition = "2021"
 
 [dependencies]
