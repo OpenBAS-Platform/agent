@@ -95,7 +95,7 @@ cat > ~/Library/LaunchDaemons/${service_name}.plist <<EOF
 <plist version="1.0">
     <dict>
         <key>Label</key>
-        <string>${service_name}</string>
+        <string>io.filigran.${service_name}</string>
 
         <key>Program</key>
         <string>${install_dir}/openbas-agent</string>
@@ -136,7 +136,7 @@ EOF
 
 chown -R ${user}:${group} ${install_dir}
 echo "05. Starting agent service"
-launchctl enable system/${service_name}
+launchctl enable system/io.filigran.${service_name}
 launchctl bootstrap system/ ~/Library/LaunchDaemons/${service_name}.plist
 
 echo "OpenBAS Agent Service User started."

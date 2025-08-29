@@ -52,7 +52,7 @@ user="$USER_ARG"
 group="$GROUP_ARG"
 
 os=$(uname | tr '[:upper:]' '[:lower:]')
-install_dir="${OPENBAS_INSTALL_DIR}-${user}"
+install_dir="$HOME/${OPENBAS_INSTALL_DIR}-${user}"
 service_name="${user}-${OPENBAS_SERVICE_NAME}"
 
 

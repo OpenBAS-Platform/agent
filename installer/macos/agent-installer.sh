@@ -42,16 +42,16 @@ EOF
 
 echo "04. Writing agent service"
 mkdir -p ~/Library/LaunchDaemons
-cat > ~/Library/LaunchDaemons/${service_name}.plist <<EOF
+cat > ~/Library/LaunchDaemons/io.filigran.${service_name}.plist <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
     <dict>
         <key>Label</key>
-        <string>openbas.agent</string>
+        <string>io.filigran.${service_name}</string>
 
         <key>Program</key>
-        <string>${install_dir}/${service_name}</string>
+        <string>${install_dir}/openbas-agent</string>
 
         <key>RunAtLoad</key>
         <true/>
@@ -81,7 +81,7 @@ cat > ~/Library/LaunchDaemons/${service_name}.plist <<EOF
 EOF
 
 echo "05. Starting agent service"
-launchctl enable system/openbas.agent
-launchctl bootstrap system/ ~/Library/LaunchDaemons/${service_name}.plist
+launchctl enable system/io.filigran.${service_name}
+launchctl bootstrap system/ ~/Library/LaunchDaemons/io.filigran.${service_name}.plist
 
 echo "OpenBAS Agent started."
