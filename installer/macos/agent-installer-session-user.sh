@@ -81,7 +81,7 @@ cat > ~/Library/LaunchAgents/io.filigran.${session_name}.plist <<EOF
 EOF
 
 echo "05. Starting agent service"
-launchctl enable user/$(id -u)/~/Library/LaunchAgents/io.filigran.${session_name}.plist
+launchctl enable gui/$(id -u)/io.filigran.${session_name}
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/io.filigran.${session_name}.plist
 
 echo "OpenBAS Agent Session User started."

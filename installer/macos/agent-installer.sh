@@ -41,8 +41,8 @@ service_name = "${OPENBAS_SERVICE_NAME}"
 EOF
 
 echo "04. Writing agent service"
-mkdir -p ~/Library/LaunchDaemons
-cat > ~/Library/LaunchDaemons/io.filigran.${service_name}.plist <<EOF
+mkdir -p /Library/LaunchDaemons
+cat > /Library/LaunchDaemons/io.filigran.${service_name}.plist <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -82,6 +82,6 @@ EOF
 
 echo "05. Starting agent service"
 launchctl enable system/io.filigran.${service_name}
-launchctl bootstrap system/ ~/Library/LaunchDaemons/io.filigran.${service_name}.plist
+launchctl bootstrap system /Library/LaunchDaemons/io.filigran.${service_name}.plist
 
 echo "OpenBAS Agent started."
