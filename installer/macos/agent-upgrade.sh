@@ -39,7 +39,7 @@ service_name = "${OPENBAS_SERVICE_NAME}"
 EOF
 
 echo "03. Starting agent service"
-launchctl bootout system/ ~/Library/LaunchDaemons/io.filigran.${service_name}.plist || echo "openbas-agent already stopped"
-launchctl bootstrap system/ ~/Library/LaunchDaemons/io.filigran.${service_name}.plist
+launchctl bootout system /Library/LaunchDaemons/io.filigran.${service_name}.plist || echo "openbas-agent already stopped"
+launchctl bootstrap system /Library/LaunchDaemons/io.filigran.${service_name}.plist
 
 echo "OpenBAS Agent started."
