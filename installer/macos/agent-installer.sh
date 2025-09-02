@@ -20,7 +20,7 @@ fi
 echo "Starting install script for ${os} | ${architecture}"
 
 echo "01. Stopping existing ${service_name}..."
-launchctl bootout system /Library/LaunchDaemons/${service_name}.plist || echo "${service_name} already stopped"
+launchctl bootout system /Library/LaunchDaemons/io.filigran.${service_name}.plist || echo "io.filigran.${service_name} already stopped"
 
 echo "02. Downloading OpenBAS Agent into ${install_dir}..."
 (mkdir -p ${install_dir} && touch ${install_dir} >/dev/null 2>&1) || (echo -n "\nFatal: Can't write to ${install_dir}\n" >&2 && exit 1)
